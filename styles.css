@@ -6,3 +6,90 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+.gpt-helper__container {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+.gpt-helper__conversation {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 75%;
+  padding-right: 10px;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+
+.gpt-helper__conversation__item {
+  min-width: 30%;
+  max-width: 80%;
+  margin-bottom: 20px;
+}
+
+.gpt-helper__conversation__item__text {
+  display: flex;
+  position: relative;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: var(--radius-m);
+  flex-direction: column;
+}
+
+.gpt-helper__conversation__item__speaker {
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+}
+
+.gpt-helper__conversation__item--helper {
+  align-self: flex-start;
+}
+
+.gpt-helper__conversation__item--helper .gpt-helper__conversation__item__text {
+  border: 1px solid var(--text-normal);
+  border-bottom-left-radius: 0;
+}
+
+.gpt-helper__conversation__item--user {
+  align-self: flex-end;
+}
+
+.gpt-helper__conversation__item--user .gpt-helper__conversation__item__text {
+  border: 1px solid var(--text-accent);
+  border-bottom-right-radius: 0;
+}
+
+.gpt-helper__conversation__item--user .gpt-helper__conversation__item__speaker {
+  text-align: right;
+}
+
+.gpt-helper__conversation__item--error {
+  align-self: center;
+  border: none;
+  font-weight: bold;
+  font-style: italic;
+  font-variant: small-caps;
+}
+
+.gpt-helper__chat-form {
+  position: absolute;
+  width: 100%;
+  height: 20%;
+  bottom: 20px;
+}
+
+.gpt-helper__chat-form textarea {
+  width: 100%;
+  height: 100%;
+  resize: none;
+}
+
+.gpt-helper__submit-button {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  background-color: var(--interactive-accent);
+}
