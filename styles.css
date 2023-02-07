@@ -1,12 +1,29 @@
-/*
+.ai-research-assistant-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 5px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.ai-research-assistant-toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  height: 40px;
+}
 
-If your plugin does not need CSS, delete this file.
+.ai-research-assistant-toolbar > button:not(:last-child) {
+  margin-right: var(--size-4-1);
+}
 
-*/
-.gpt-helper__container {
+.ai-research-assistant-content {
+  position: relative;
+  display: contents;
+}
+
+.ai-research-assistant-content__container {
   display: flex;
   position: relative;
   width: 100%;
@@ -14,23 +31,24 @@ If your plugin does not need CSS, delete this file.
   flex-direction: column;
 }
 
-.gpt-helper__conversation {
+.ai-research-assistant__conversation {
   display: flex;
   position: relative;
   width: 100%;
-  height: 75%;
-  padding-right: 10px;
+  height: 80%;
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  padding: 5px;
   flex-direction: column;
   overflow-y: scroll;
 }
 
-.gpt-helper__conversation__item {
+.ai-research-assistant__conversation__item {
   min-width: 30%;
   max-width: 80%;
   margin-bottom: 20px;
 }
 
-.gpt-helper__conversation__item__text {
+.ai-research-assistant__conversation__item__text {
   display: flex;
   position: relative;
   padding: 10px;
@@ -39,45 +57,46 @@ If your plugin does not need CSS, delete this file.
   flex-direction: column;
 }
 
-.gpt-helper__conversation__item__footer {
+.ai-research-assistant__conversation__item__footer {
   font-size: var(--font-smallest);
   color: var(--text-muted);
 }
 
-.gpt-helper__conversation__item--helper {
+.ai-research-assistant__conversation__item--bot {
   align-self: flex-start;
 }
 
-.gpt-helper__conversation__item--helper .gpt-helper__conversation__item__text {
+.ai-research-assistant__conversation__item--bot .ai-research-assistant__conversation__item__text {
   border: 1px solid var(--text-normal);
   border-bottom-left-radius: 0;
 }
 
-.gpt-helper__conversation__item__footer {
+.ai-research-assistant__conversation__item__footer {
   display: flex;
   position: relative;
   align-items: center;
 }
 
-.gpt-helper__conversation__item--user {
+.ai-research-assistant__conversation__item--user {
   align-self: flex-end;
 }
 
-.gpt-helper__conversation__item--user .gpt-helper__conversation__item__text {
+.ai-research-assistant__conversation__item--user .ai-research-assistant__conversation__item__text {
   border: 1px solid var(--text-accent);
   border-bottom-right-radius: 0;
 }
 
-.gpt-helper__conversation__item--user .gpt-helper__conversation__item__footer {
+.ai-research-assistant__conversation__item--user
+  .ai-research-assistant__conversation__item__footer {
   justify-content: flex-end;
   text-align: right;
 }
 
-.gpt-helper__conversation__item__speaker {
+.ai-research-assistant__conversation__item__speaker {
   margin-right: 5px;
 }
 
-.gpt-helper__conversation__item--error {
+.ai-research-assistant__conversation__item--error {
   align-self: center;
   border: none;
   font-weight: bold;
@@ -85,39 +104,42 @@ If your plugin does not need CSS, delete this file.
   font-variant: small-caps;
 }
 
-.gpt-helper__conversation__item__timestamp {
+.ai-research-assistant__conversation__item__timestamp {
   font-style: italic;
   color: var(--text-faint);
 }
 
-.gpt-helper__chat-form {
+.ai-research-assistant__chat-form {
   position: absolute;
+  bottom: 30px;
   width: 100%;
-  height: 20%;
-  bottom: 20px;
+  height: 13%;
+  padding-right: 11px;
 }
 
-.gpt-helper__chat-form textarea {
+.ai-research-assistant__chat-form textarea {
   width: 100%;
   height: 100%;
   resize: none;
+  padding: 5px;
+  border-radius: 0;
 }
 
-.gpt-helper__submit-button {
+.ai-research-assistant__submit-button {
   position: absolute;
-  right: 5px;
-  bottom: 5px;
+  right: 16px;
+  bottom: 4px;
   background-color: var(--interactive-accent);
 }
 
-.gpt-helper__save-button {
+.ai-research-assistant__save-button {
   position: absolute;
   left: 5px;
   bottom: 5px;
   background-color: var(--interactive-accent);
 }
 
-.gpt-helper__submit-button__a11y-text {
+.ai-research-assistant__submit-button__a11y-text {
   border: 0;
   clip: rect(0 0 0 0);
   height: 1px;

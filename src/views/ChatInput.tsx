@@ -5,7 +5,6 @@ import { useLoading, Oval } from '@agney/react-loading'
 export interface ChatInputProps {
   input: string
   onChange: (input: string) => void
-  saveChat: () => Promise<void>
   allowSave?: boolean
   busy?: boolean
 }
@@ -14,7 +13,6 @@ export interface ChatInputProps {
 // and displays the response from openai
 const ChatInput = ({
   onChange,
-  saveChat,
   input = '',
   busy = false,
   allowSave = false,
@@ -29,16 +27,6 @@ const ChatInput = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     onChange(e.target.value)
-  }
-
-  const handleSave = (e: React.MouseEvent<HTMLButtonElement>): void => {
-    saveChat()
-      .then(() => {
-        console.log('Saved conversation')
-      })
-      .catch((error) => {
-        console.error(error)
-      })
   }
 
   useEffect(() => {
@@ -71,29 +59,15 @@ const ChatInput = ({
         readOnly={busy}
         disabled={busy}
       />
-      {allowSave ? (
-        <button
-          className="gpt-helper__save-button clickable-icon"
-          type="submit"
-          onClick={handleSave}
-          disabled={busy}
-        >
-          {/* @ts-expect-error */}
-          <div className="gpt-helper__save-button__icon" ref={saveButton} />
-          <div className="gpt-helper__submit-button__a11y-text">Save</div>
-        </button>
-      ) : (
-        <></>
-      )}
       <button
-        className="gpt-helper__submit-button clickable-icon"
+        className="ai-research-assistant__submit-button clickable-icon"
         type="submit"
         disabled={busy}
         {...containerProps}
       >
         {/* @ts-expect-error */}
-        {!busy ? <div className="gpt-helper__submit-button__icon" ref={chatButton} /> : <></>}
-        <div className="gpt-helper__submit-button__a11y-text">Send</div>
+        <div className="ai-research-assistant__submit-button__icon" ref={chatButton} />
+        <div className="ai-research-assistant__submit-button__a11y-text">Send</div>
         {indicatorEl}
       </button>
     </React.Fragment>

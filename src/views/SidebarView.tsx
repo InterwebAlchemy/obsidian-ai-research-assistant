@@ -1,147 +1,132 @@
 import React, { useState, useEffect } from 'react'
 
-import { openAI } from '../services/openai'
-
 import ChatInput from './ChatInput'
 
+import { DEFAULT_CONVERSATION_TITLE, USER_MESSAGE_OBJECT_TYPE, PLUGIN_SETTINGS } from '../constants'
+
+import { type GPTHelperSettings } from '../main'
+import type Chat from '../services/chat'
+import type { Conversation } from '../services/conversation'
+
+import type { OpenAICompletion, UserPrompt } from '../types'
+
 export interface SidebarViewProps {
-  apiKey: string
-  debug?: boolean
-  save: boolean | ((fileName: string, conversation: Array<Record<string, any>>) => Promise<void>)
+  chat: Chat
+  settings: GPTHelperSettings
 }
 
 // create a chat interface that sends user input to the openai api via the openai package
 // and displays the response from openai
 const SidebarView = ({
-  apiKey,
-  save = false,
-  debug = false,
+  chat,
+  settings = PLUGIN_SETTINGS,
 }: SidebarViewProps): React.ReactElement => {
   const [input, setInput] = useState('')
-  const [submittedInput, setSubmittedInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [conversation, setConversation] = useState<Array<Record<string, any>>>([])
-  const [title, setTitle] = useState('New Chat')
+  const [conversation, setConversation] = useState<Conversation | null>(null)
+  const [messages, setMessages] = useState<Conversation['messages']>([])
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
 
     setLoading(true)
 
-    setSubmittedInput(input)
-  }
+    const prompt = input.trim()
 
-  const handleSave = async (): Promise<void> => {
-    try {
-      if (typeof save === 'function') {
-        await save(title, conversation)
-      }
-    } catch (error) {
-      console.error(error)
-    }
-  }
+    setInput('')
 
-  useEffect(() => {
-    const fetchResponse = async (): Promise<void> => {
-      try {
-        const response = await openAI({ apiKey, input: submittedInput })
-
-        if (title === 'New Chat') {
-          setTitle(`Chat ${new Date().toISOString().replace(/:/g, '_')}`)
-        }
-
-        setConversation((conversation) => [...conversation, response])
-      } catch (error) {
-        setConversation((conversation) => [...conversation, { error: error.message }])
-      } finally {
-        setLoading(false)
-
-        setSubmittedInput('')
-        setInput('')
-      }
-    }
-
-    if (submittedInput) {
-      setConversation((conversation) => [
-        ...conversation,
-        { input: submittedInput, timestamp: new Date(), user: true },
-      ])
-
-      fetchResponse().catch((error) => {
+    chat
+      ?.send(prompt)
+      .catch((error) => {
         console.error(error)
-
-        setConversation((conversation) => [...conversation, { error: error.message }])
       })
-    }
-  }, [submittedInput])
+      .finally(() => {
+        setLoading(false)
+      })
+  }
 
-  return (
-    <div className="gpt-helper__container">
-      <div className="gpt-helper__conversation">
-        <div className="gpt-helper__conversation__header">
-          <div className="gpt-helper__conversation__header__title">{title}</div>
-        </div>
-        {conversation.map((item, index) => {
-          if (typeof item.error !== 'undefined') {
-            return (
-              <div
-                key={index}
-                className="gpt-helper__conversation__item gpt-helper__conversation__item--error"
-              >
-                {item.error}
-              </div>
-            )
-          }
-          if (typeof item.input !== 'undefined') {
-            return (
-              <div
-                key={index}
-                className="gpt-helper__conversation__item gpt-helper__conversation__item--user"
-              >
-                <div key={index} className="gpt-helper__conversation__item__text">
-                  {item.input}
-                </div>
-                <div className="gpt-helper__conversation__item__footer">
-                  <div className="gpt-helper__conversation__item__speaker">You</div>
-                  <div className="gpt-helper__conversation__item__timestamp">
-                    {item.timestamp.toISOString()}
-                  </div>
-                </div>
-              </div>
-            )
-          }
-
-          return (
-            <div
-              key={index}
-              className="gpt-helper__conversation__item gpt-helper__conversation__item--helper"
-            >
-              <div key={index} className="gpt-helper__conversation__item__text">
-                {item.choices[0].text}
-              </div>
-              <div className="gpt-helper__conversation__item__footer">
-                <div className="gpt-helper__conversation__item__speaker">Bot</div>
-                <div className="gpt-helper__conversation__item__timestamp">
-                  {new Date(item.created * 1000).toISOString()}
-                </div>
+  const renderMessage = (
+    item: UserPrompt | OpenAICompletion,
+    index: number
+  ): React.ReactElement => {
+    switch (item?.object) {
+      case USER_MESSAGE_OBJECT_TYPE:
+        return (
+          <div
+            key={item?.id ?? index}
+            className="ai-research-assistant__conversation__item ai-research-assistant__conversation__item--user"
+          >
+            <div key={index} className="ai-research-assistant__conversation__item__text">
+              {(item as UserPrompt).prompt.trim()}
+            </div>
+            <div className="ai-research-assistant__conversation__item__footer">
+              <div className="ai-research-assistant__conversation__item__speaker">You</div>
+              <div className="ai-research-assistant__conversation__item__timestamp">
+                {new Date(item.created * 1000).toISOString()}
               </div>
             </div>
-          )
-        })}
+          </div>
+        )
+
+      case 'text_completion':
+        return (
+          <div
+            key={item?.id ?? index}
+            className="ai-research-assistant__conversation__item ai-research-assistant__conversation__item--bot"
+          >
+            <div key={index} className="ai-research-assistant__conversation__item__text">
+              {(item as OpenAICompletion).choices[0].text.trim()}
+            </div>
+            <div className="ai-research-assistant__conversation__item__footer">
+              <div className="ai-research-assistant__conversation__item__speaker">Bot</div>
+              <div className="ai-research-assistant__conversation__item__timestamp">
+                {new Date(item.created * 1000).toISOString()}
+              </div>
+            </div>
+          </div>
+        )
+
+      default:
+        return (
+          <div
+            key={index}
+            className="ai-research-assistant__conversation__item ai-research-assistant__conversation__item--error"
+          >
+            {JSON.stringify(item)}
+          </div>
+        )
+    }
+  }
+
+  const renderConversation = (): React.ReactElement[] => messages.map(renderMessage)
+
+  useEffect(() => {
+    if (typeof chat !== 'undefined' && chat?.currentConversation() !== null) {
+      setConversation(chat.currentConversation())
+    }
+  }, [chat?.currentConversation() !== null])
+
+  useEffect(() => {
+    if (typeof conversation?.messages?.length !== 'undefined') {
+      setMessages(conversation.messages)
+    }
+  }, [conversation?.messages?.length])
+
+  return (
+    <div className="ai-research-assistant-content__container">
+      <div className="ai-research-assistant__conversation__header">
+        <div className="ai-research-assistant__conversation__header__title">
+          {conversation?.title ?? DEFAULT_CONVERSATION_TITLE}
+        </div>
       </div>
+      <div className="ai-research-assistant__conversation">{renderConversation()}</div>
       <form
-        className="gpt-helper__chat-form"
+        className="ai-research-assistant__chat-form"
         onSubmit={handleSubmit}
         autoCapitalize="off"
         noValidate
       >
-        <ChatInput
-          input={input}
-          onChange={setInput}
-          busy={loading}
-          saveChat={handleSave}
-          allowSave={typeof save === 'function'}
-        />
+        <ChatInput input={input} onChange={setInput} busy={loading} />
       </form>
     </div>
   )

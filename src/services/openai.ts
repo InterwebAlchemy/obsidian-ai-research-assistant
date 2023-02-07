@@ -2,22 +2,24 @@ import { requestUrl as obsidianRequest, type RequestUrlParam } from 'obsidian'
 
 import GPT3Tokenizer from 'gpt3-tokenizer'
 
-import { OPEN_AI_MODEL, OPEN_AI_MAX_TOKENS } from '../constants'
+import { OPEN_AI_MAX_TOKENS, OPEN_AI_MODEL, OPEN_AI_RESPONSE_TOKENS } from '../constants'
 
 import CHATGPT from '../prompts/chatgpt'
+
+import type { OpenAICompletionRequest, OpenAICompletion } from '../types'
 
 const BASE_URL = 'https://api.openai.com'
 
 const tokenizer = new GPT3Tokenizer({ type: 'gpt3' }) // or 'codex'
 
-export interface OpenAIRequest {
-  apiKey: string
-  input: string
-  persona?: string
-  initialize?: boolean
-}
-
-export const openAI = async ({ apiKey, input }: OpenAIRequest): Promise<Record<string, any>> => {
+export const openAICompletion = async ({
+  apiKey,
+  input,
+  temperature = 0.7,
+  context = CHATGPT(),
+  model = OPEN_AI_MODEL,
+  stream = false,
+}: OpenAICompletionRequest): Promise<OpenAICompletion> => {
   const requestUrl = new URL('/v1/completions', BASE_URL)
 
   const requestHeaders = {
@@ -26,21 +28,21 @@ export const openAI = async ({ apiKey, input }: OpenAIRequest): Promise<Record<s
     Accept: 'application/json',
   }
 
-  const persona = CHATGPT()
-
-  // add previous conversational context summary to input
-
-  const prompt = `${persona.trim()}\n${input}}`.trim()
-
-  // const prompt = `${input}}`.trim()
+  const prompt = `${context.trim()}\n${input.trim()}}`
 
   const tokens = tokenizer.encode(prompt)
 
+  const maxTokens = Math.min(
+    Math.min(OPEN_AI_RESPONSE_TOKENS + tokens.text.length, OPEN_AI_RESPONSE_TOKENS),
+    OPEN_AI_MAX_TOKENS
+  )
+
   const requestBody = {
     prompt,
-    model: OPEN_AI_MODEL,
-    max_tokens: Math.min(OPEN_AI_MAX_TOKENS - tokens.text.length, 300),
-    temperature: 0.7,
+    model,
+    stream,
+    temperature,
+    max_tokens: maxTokens,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
@@ -55,11 +57,13 @@ export const openAI = async ({ apiKey, input }: OpenAIRequest): Promise<Record<s
     throw: false,
   }
 
+  // DEBUG: remove in production
   console.log('REQUEST:', request)
 
   try {
     const response = await obsidianRequest(request)
 
+    // DEBUG: remove in production
     console.log('RESPONSE:', response)
 
     if (response.status < 400) {
@@ -67,15 +71,11 @@ export const openAI = async ({ apiKey, input }: OpenAIRequest): Promise<Record<s
     } else {
       console.error(response)
 
-      return {
-        error: 'Error contacting OpenAI API...',
-      }
+      throw new Error(response.text)
     }
   } catch (error) {
     console.error(error)
 
-    return {
-      error: 'Error contacting OpenAI API...',
-    }
+    throw error
   }
 }

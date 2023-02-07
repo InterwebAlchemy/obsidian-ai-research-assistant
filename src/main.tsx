@@ -1,4 +1,15 @@
-import { type App, ItemView, Plugin, PluginSettingTab, Setting, type WorkspaceLeaf } from 'obsidian'
+import {
+  type App,
+  ButtonComponent,
+  ItemView,
+  Plugin,
+  type PluginManifest,
+  PluginSettingTab,
+  Setting,
+  TFile,
+  type WorkspaceLeaf,
+  Notice,
+} from 'obsidian'
 
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
@@ -6,55 +17,69 @@ import { createRoot } from 'react-dom/client'
 
 import { AppContext } from './context'
 import SidebarView from './views/SidebarView'
+import Chat from './services/chat'
 
-interface GPTHelperSettings {
+import { summaryTemplate } from './templates/summaryTemplate'
+import CHATGPT from './prompts/chatgpt'
+import {
+  DEFAULT_CONVERSATION_TITLE,
+  PLUGIN_NAME,
+  PLUGIN_SETTINGS,
+  PLUGIN_PREFIX,
+} from './constants'
+
+import type { Conversation } from './services/conversation'
+
+export interface GPTHelperSettings {
   debugMode: boolean
   openApiKey: string
   apiKeySaved: boolean
   keepConversationHistory: boolean
   conversationHistoryDirectory: string
-  persona: string
 }
-
-const DEFAULT_SETTINGS: GPTHelperSettings = {
-  debugMode: false,
-  openApiKey: '',
-  apiKeySaved: false,
-  keepConversationHistory: false,
-  conversationHistoryDirectory: 'GPT History',
-  persona: 'Wintermute',
-}
-
-const VIEW_TYPE_EXAMPLE = 'example-view'
 
 export default class GPTHelper extends Plugin {
   settings: GPTHelperSettings
+  chat: Chat | null
+
+  constructor(app: App, manifest: PluginManifest) {
+    super(app, manifest)
+
+    this.chat = null
+  }
 
   async activateView(): Promise<void> {
-    const existingView = this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE)
+    const existingView = this.app.workspace.getLeavesOfType(PLUGIN_PREFIX)
 
     if (existingView.length === 0) {
       await this.app.workspace.getRightLeaf(false).setViewState({
-        type: VIEW_TYPE_EXAMPLE,
+        type: PLUGIN_PREFIX,
         active: true,
       })
+
+      if (this.chat !== null) {
+        this.chat?.start({ prompt: CHATGPT(), title: DEFAULT_CONVERSATION_TITLE })
+      }
     }
 
-    this.app.workspace.revealLeaf(this.app.workspace.getLeavesOfType(VIEW_TYPE_EXAMPLE)[0])
+    this.app.workspace.revealLeaf(this.app.workspace.getLeavesOfType(PLUGIN_PREFIX)[0])
   }
 
   async initializeChatInterface(): Promise<void> {
-    if (this.settings.openApiKey) {
-      this.addRibbonIcon('dice', 'GPT Helper', async (): Promise<void> => {
+    if (
+      typeof this.settings.openApiKey !== 'undefined' &&
+      this.settings.openApiKey !== '' &&
+      this.settings.openApiKey !== null
+    ) {
+      if (this.chat === null) {
+        this.chat = new Chat({ apiKey: this.settings.openApiKey })
+      }
+
+      this.addRibbonIcon('message-square', PLUGIN_NAME, async (): Promise<void> => {
         await this.activateView()
       })
 
-      this.registerView(VIEW_TYPE_EXAMPLE, (leaf) => new SampleView(leaf, this))
-
-      // This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-      const statusBarItemEl = this.addStatusBarItem()
-
-      statusBarItemEl.setText(this.settings.persona)
+      this.registerView(PLUGIN_PREFIX, (leaf) => new SampleView(leaf, this))
     }
   }
 
@@ -68,110 +93,109 @@ export default class GPTHelper extends Plugin {
   }
 
   onunload(): void {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_EXAMPLE)
+    this.app.workspace.detachLeavesOfType(PLUGIN_PREFIX)
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
+    this.settings = Object.assign({}, PLUGIN_SETTINGS, await this.loadData())
   }
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings)
   }
 
-  formatConversationHistory(title: string, conversation: Array<Record<string, any>>): string {
-    const simpleView = this.formatConversationOutput(conversation)
+  async saveConversation(conversation: Conversation): Promise<void> {
+    let canSave = true
 
-    const rawView = this.formatRawConversation(conversation)
+    const filePath = this.settings.conversationHistoryDirectory
 
-    return `
-    # ${title}
+    const existingDirectory = this.app.vault.getAbstractFileByPath(filePath)
 
-    ## Conversation
+    if (existingDirectory === null) {
+      await this.app.vault.createFolder(filePath)
+    } else if (existingDirectory instanceof TFile) {
+      canSave = false
 
-    ${simpleView}
-    
-    ## Raw Conversation
-
-    ${rawView}
-    `
-  }
-
-  formatConversationOutput(conversation: Array<Record<string, any>>): string {
-    return conversation
-      .map(
-        (item) =>
-          `> **${item?.user === true ? 'User' : 'Bot'}**: ${
-            item?.user === true ? (item.input as string) : (item.choices[0].text as string)
-          }\n`
+      // eslint-disable-next-line no-new
+      new Notice(
+        'ERROR: Cannot save Conversation. Configured conversation history directory is a file, not a directory.'
       )
-      .join('\n')
-  }
+    }
 
-  formatRawConversation(conversation: Array<Record<string, any>>): string {
-    return conversation
-      .map((item: Record<string, any>) => `\`\`\`json\n${JSON.stringify(item, null, '\t')}\n\`\`\``)
-      .join('\n')
-  }
-
-  async saveConversation(
-    fileName: string,
-    conversation: Array<Record<string, any>>
-  ): Promise<void> {
-    if (this.settings.keepConversationHistory) {
-      const filePath = this.settings.conversationHistoryDirectory
-
-      const existingDirectory = this.app.vault.getAbstractFileByPath(filePath)
-
-      if (existingDirectory === null) {
-        await this.app.vault.createFolder(filePath)
-      }
-
-      let file = `${filePath}/${fileName}.md`
-
-      console.log(file)
+    if (canSave) {
+      const file = `${filePath}/${conversation.title.replace(/[\\:/]/g, '_')}.md`
 
       const existingFile = this.app.vault.getAbstractFileByPath(file)
 
-      const fileContent = this.formatConversationHistory(fileName, conversation)
+      const fileContent = summaryTemplate(conversation)
 
       if (existingFile !== null) {
-        file = `${filePath}/${fileName}-${new Date().toISOString()}.md`
+        await this.app.vault.modify(existingFile as TFile, fileContent)
+      } else {
+        await this.app.vault.create(file, fileContent)
       }
-
-      await this.app.vault.create(file, fileContent)
     }
   }
 }
 
 class SampleView extends ItemView {
   settings: GPTHelperSettings
-  saveConversation: (fileName: string, conversation: Array<Record<string, any>>) => Promise<void>
+  chat: Chat
+  saveConversation: (conversation: Conversation) => Promise<void>
 
   constructor(leaf: WorkspaceLeaf, plugin: GPTHelper) {
     super(leaf)
     this.settings = plugin.settings
     this.saveConversation = plugin.saveConversation.bind(plugin)
+    this.chat = plugin.chat as Chat
   }
 
   getViewType(): string {
-    return VIEW_TYPE_EXAMPLE
+    return PLUGIN_PREFIX
   }
 
   getDisplayText(): string {
-    return this.settings.persona
+    return PLUGIN_NAME
   }
 
   async onOpen(): Promise<void> {
-    const root = createRoot(this.containerEl.children[1])
+    const { containerEl } = this
+
+    containerEl.empty()
+
+    const container = containerEl.createDiv(`${PLUGIN_PREFIX}-container`)
+
+    const toolbar = container.createDiv(`${PLUGIN_PREFIX}-toolbar`)
+
+    const saveButton = new ButtonComponent(toolbar)
+    saveButton.setButtonText('Save')
+    saveButton.setTooltip('Save Conversation')
+    saveButton.setIcon('save')
+
+    const debugButton = new ButtonComponent(toolbar)
+    debugButton.setButtonText('Debug')
+    debugButton.setTooltip('Debug Conversation')
+    debugButton.setIcon('code')
+
+    saveButton.onClick(async (): Promise<void> => {
+      if (this?.chat?.currentConversation() !== null) {
+        await this.saveConversation(this.chat.currentConversation() as Conversation)
+      }
+    })
+
+    debugButton.onClick(async (): Promise<void> => {
+      if (this?.chat?.currentConversation() !== null) {
+        console.log(this.chat.currentConversation())
+      }
+    })
+
+    const rootElement = container.createDiv(`${PLUGIN_PREFIX}-content`)
+
+    const root = createRoot(rootElement)
 
     root.render(
       <AppContext.Provider value={this.app}>
-        <SidebarView
-          apiKey={this.settings.openApiKey}
-          debug={this.settings.debugMode}
-          save={this.settings.keepConversationHistory ? this.saveConversation : false}
-        />
+        <SidebarView chat={this.chat} settings={this.settings} />
       </AppContext.Provider>
     )
   }
@@ -194,12 +218,12 @@ class SampleSettingTab extends PluginSettingTab {
 
     containerEl.empty()
 
-    containerEl.createEl('h2', { text: 'GPT Helper Settings.' })
+    containerEl.createEl('h2', { text: `${PLUGIN_NAME} Settings` })
 
     const settingsDescContainer = containerEl.createEl('div')
 
     settingsDescContainer.createEl('p', {
-      text: "GPT Helper is a plugin that uses OpenAI's GPT-3 API to generate text.",
+      text: `${PLUGIN_NAME} is a plugin that facilitates Researchers studying how ChatGPT and other conversational AIs respond to various prompts.`,
     })
 
     const helpText = settingsDescContainer.createEl('p', {
@@ -214,7 +238,7 @@ class SampleSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('DEBUG MODE')
       .setDesc(
-        `Don't automatically connect to the API. Provide a breakdown of tokens and tokens used.`
+        `(coming soon) Display extra debugging info like, a breakdown of tokens and tokens used.`
       )
       .addToggle((toggle) => {
         toggle.onChange(async (value) => {
@@ -242,9 +266,7 @@ class SampleSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Save Conversations')
-      .setDesc(
-        `Allows you to save conversations to your vault via a Save button in the Conversaton UI.`
-      )
+      .setDesc(`Automatically save conversations to your Vault.`)
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.keepConversationHistory)
 
@@ -254,33 +276,14 @@ class SampleSettingTab extends PluginSettingTab {
         })
       })
 
-    if (this.plugin.settings.keepConversationHistory) {
-      new Setting(containerEl)
-        .setName('Conversation Directory')
-        .setDesc('Where to save conversations.')
-        .addText((text) =>
-          text
-            .setValue(this.plugin.settings.conversationHistoryDirectory)
-            .onChange(async (value) => {
-              this.plugin.settings.conversationHistoryDirectory = value
-              await this.plugin.saveSettings()
-            })
-        )
-    }
-
     new Setting(containerEl)
-      .setName('Persona')
-      .setDesc('The persona to use')
+      .setName('Conversation Directory')
+      .setDesc('Where to save conversations.')
       .addText((text) =>
-        text
-          .setPlaceholder('Choose a Persona')
-          .setValue(this.plugin.settings.persona)
-          .onChange(async (value) => {
-            console.log('Persona: ' + value)
-            this.plugin.settings.persona = value
-            await this.plugin.saveSettings()
-          })
+        text.setValue(this.plugin.settings.conversationHistoryDirectory).onChange(async (value) => {
+          this.plugin.settings.conversationHistoryDirectory = value
+          await this.plugin.saveSettings()
+        })
       )
-      .setDisabled(true)
   }
 }

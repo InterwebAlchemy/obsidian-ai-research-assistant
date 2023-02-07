@@ -15,6 +15,7 @@
 		"@types/node": "^16.11.6",
 		"@types/react": "^18.0.27",
 		"@types/react-dom": "^18.0.10",
+		"@types/uuid": "^9.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.50.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
@@ -35,6 +36,6 @@
 		"gpt3-tokenizer": "^1.1.5",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"summarybot": "^0.0.7"
+		"uuid": "^9.0.0"
 	}
 }
