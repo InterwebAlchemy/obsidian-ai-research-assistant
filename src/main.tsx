@@ -11,6 +11,8 @@ interface GPTHelperSettings {
   debugMode: boolean
   openApiKey: string
   apiKeySaved: boolean
+  keepConversationHistory: boolean
+  conversationHistoryDirectory: string
   persona: string
 }
 
@@ -18,6 +20,8 @@ const DEFAULT_SETTINGS: GPTHelperSettings = {
   debugMode: false,
   openApiKey: '',
   apiKeySaved: false,
+  keepConversationHistory: false,
+  conversationHistoryDirectory: 'GPT History',
   persona: 'Wintermute',
 }
 
@@ -74,14 +78,80 @@ export default class GPTHelper extends Plugin {
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings)
   }
+
+  formatConversationHistory(title: string, conversation: Array<Record<string, any>>): string {
+    const simpleView = this.formatConversationOutput(conversation)
+
+    const rawView = this.formatRawConversation(conversation)
+
+    return `
+    # ${title}
+
+    ## Conversation
+
+    ${simpleView}
+    
+    ## Raw Conversation
+
+    ${rawView}
+    `
+  }
+
+  formatConversationOutput(conversation: Array<Record<string, any>>): string {
+    return conversation
+      .map(
+        (item) =>
+          `> **${item?.user === true ? 'User' : 'Bot'}**: ${
+            item?.user === true ? (item.input as string) : (item.choices[0].text as string)
+          }\n`
+      )
+      .join('\n')
+  }
+
+  formatRawConversation(conversation: Array<Record<string, any>>): string {
+    return conversation
+      .map((item: Record<string, any>) => `\`\`\`json\n${JSON.stringify(item, null, '\t')}\n\`\`\``)
+      .join('\n')
+  }
+
+  async saveConversation(
+    fileName: string,
+    conversation: Array<Record<string, any>>
+  ): Promise<void> {
+    if (this.settings.keepConversationHistory) {
+      const filePath = this.settings.conversationHistoryDirectory
+
+      const existingDirectory = this.app.vault.getAbstractFileByPath(filePath)
+
+      if (existingDirectory === null) {
+        await this.app.vault.createFolder(filePath)
+      }
+
+      let file = `${filePath}/${fileName}.md`
+
+      console.log(file)
+
+      const existingFile = this.app.vault.getAbstractFileByPath(file)
+
+      const fileContent = this.formatConversationHistory(fileName, conversation)
+
+      if (existingFile !== null) {
+        file = `${filePath}/${fileName}-${new Date().toISOString()}.md`
+      }
+
+      await this.app.vault.create(file, fileContent)
+    }
+  }
 }
 
 class SampleView extends ItemView {
   settings: GPTHelperSettings
+  saveConversation: (fileName: string, conversation: Array<Record<string, any>>) => Promise<void>
 
   constructor(leaf: WorkspaceLeaf, plugin: GPTHelper) {
     super(leaf)
     this.settings = plugin.settings
+    this.saveConversation = plugin.saveConversation.bind(plugin)
   }
 
   getViewType(): string {
@@ -97,7 +167,11 @@ class SampleView extends ItemView {
 
     root.render(
       <AppContext.Provider value={this.app}>
-        <SidebarView apiKey={this.settings.openApiKey} debug={this.settings.debugMode} />
+        <SidebarView
+          apiKey={this.settings.openApiKey}
+          debug={this.settings.debugMode}
+          save={this.settings.keepConversationHistory ? this.saveConversation : false}
+        />
       </AppContext.Provider>
     )
   }
@@ -145,6 +219,8 @@ class SampleSettingTab extends PluginSettingTab {
       .addToggle((toggle) => {
         toggle.onChange(async (value) => {
           this.plugin.settings.debugMode = value
+
+          toggle.setValue(this.plugin.settings.debugMode)
           await this.plugin.saveSettings()
         })
       })
@@ -163,6 +239,34 @@ class SampleSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings()
           })
       )
+
+    new Setting(containerEl)
+      .setName('Save Conversations')
+      .setDesc(
+        `Allows you to save conversations to your vault via a Save button in the Conversaton UI.`
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.keepConversationHistory)
+
+        toggle.onChange(async (value) => {
+          this.plugin.settings.keepConversationHistory = value
+          await this.plugin.saveSettings()
+        })
+      })
+
+    if (this.plugin.settings.keepConversationHistory) {
+      new Setting(containerEl)
+        .setName('Conversation Directory')
+        .setDesc('Where to save conversations.')
+        .addText((text) =>
+          text
+            .setValue(this.plugin.settings.conversationHistoryDirectory)
+            .onChange(async (value) => {
+              this.plugin.settings.conversationHistoryDirectory = value
+              await this.plugin.saveSettings()
+            })
+        )
+    }
 
     new Setting(containerEl)
       .setName('Persona')

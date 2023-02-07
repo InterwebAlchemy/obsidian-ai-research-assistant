@@ -39,7 +39,7 @@ If your plugin does not need CSS, delete this file.
   flex-direction: column;
 }
 
-.gpt-helper__conversation__item__speaker {
+.gpt-helper__conversation__item__footer {
   font-size: var(--font-smallest);
   color: var(--text-muted);
 }
@@ -53,6 +53,12 @@ If your plugin does not need CSS, delete this file.
   border-bottom-left-radius: 0;
 }
 
+.gpt-helper__conversation__item__footer {
+  display: flex;
+  position: relative;
+  align-items: center;
+}
+
 .gpt-helper__conversation__item--user {
   align-self: flex-end;
 }
@@ -62,8 +68,13 @@ If your plugin does not need CSS, delete this file.
   border-bottom-right-radius: 0;
 }
 
-.gpt-helper__conversation__item--user .gpt-helper__conversation__item__speaker {
+.gpt-helper__conversation__item--user .gpt-helper__conversation__item__footer {
+  justify-content: flex-end;
   text-align: right;
+}
+
+.gpt-helper__conversation__item__speaker {
+  margin-right: 5px;
 }
 
 .gpt-helper__conversation__item--error {
@@ -72,6 +83,11 @@ If your plugin does not need CSS, delete this file.
   font-weight: bold;
   font-style: italic;
   font-variant: small-caps;
+}
+
+.gpt-helper__conversation__item__timestamp {
+  font-style: italic;
+  color: var(--text-faint);
 }
 
 .gpt-helper__chat-form {
@@ -92,4 +108,23 @@ If your plugin does not need CSS, delete this file.
   right: 5px;
   bottom: 5px;
   background-color: var(--interactive-accent);
+}
+
+.gpt-helper__save-button {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
+  background-color: var(--interactive-accent);
+}
+
+.gpt-helper__submit-button__a11y-text {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }

@@ -31,8 +31,10 @@
 		"typescript": "^4.7.4"
 	},
 	"dependencies": {
+		"@agney/react-loading": "^0.1.2",
 		"gpt3-tokenizer": "^1.1.5",
 		"react": "^18.2.0",
-		"react-dom": "^18.2.0"
+		"react-dom": "^18.2.0",
+		"summarybot": "^0.0.7"
 	}
 }
