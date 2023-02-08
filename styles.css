@@ -57,6 +57,8 @@
   margin-bottom: 5px;
   border-radius: var(--radius-m);
   flex-direction: column;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .ai-research-assistant__conversation__item__footer {
