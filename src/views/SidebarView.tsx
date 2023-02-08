@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 
 import ChatInput from './ChatInput'
 
+import useChatScroll from '../hooks/useChatScroll'
+
 import { DEFAULT_CONVERSATION_TITLE, USER_MESSAGE_OBJECT_TYPE, PLUGIN_SETTINGS } from '../constants'
 
 import { type GPTHelperSettings } from '../main'
@@ -25,6 +27,17 @@ const SidebarView = ({
   const [loading, setLoading] = useState(false)
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Conversation['messages']>([])
+
+  // TODO: include toggleScrolling state change
+  const [scrollRef] = useChatScroll(conversation?.messages?.length)
+
+  const handleUserScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>): void => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+
+    // TODO: add a way to toggle auto scrolling when user scrolls up manually
+
+    console.debug({ scrollTop, scrollHeight, clientHeight })
+  }
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
@@ -119,7 +132,14 @@ const SidebarView = ({
           {conversation?.title ?? DEFAULT_CONVERSATION_TITLE}
         </div>
       </div>
-      <div className="ai-research-assistant__conversation">{renderConversation()}</div>
+      <div
+        className="ai-research-assistant__conversation"
+        // @ts-expect-error
+        ref={scrollRef}
+        onScroll={handleUserScroll}
+      >
+        {renderConversation()}
+      </div>
       <form
         className="ai-research-assistant__chat-form"
         onSubmit={handleSubmit}
