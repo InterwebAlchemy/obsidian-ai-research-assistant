@@ -58,13 +58,13 @@ export const openAICompletion = async ({
   }
 
   // DEBUG: remove in production
-  console.log('REQUEST:', request)
+  console.debug('REQUEST:', request)
 
   try {
     const response = await obsidianRequest(request)
 
     // DEBUG: remove in production
-    console.log('RESPONSE:', response)
+    console.debug('RESPONSE:', response)
 
     if (response.status < 400) {
       return response.json

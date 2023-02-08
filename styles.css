@@ -112,7 +112,7 @@
 }
 
 .ai-research-assistant__chat-form {
-  position: absolute;
+  position: fixed;
   bottom: 30px;
   width: 100%;
   height: 13%;

@@ -34,18 +34,20 @@ export interface GPTHelperSettings {
   debugMode: boolean
   openApiKey: string
   apiKeySaved: boolean
-  keepConversationHistory: boolean
+  autosaveConversationHistory: boolean
   conversationHistoryDirectory: string
 }
 
 export default class GPTHelper extends Plugin {
   settings: GPTHelperSettings
   chat: Chat | null
+  autoSaving: boolean
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest)
 
     this.chat = null
+    this.autoSaving = false
   }
 
   async activateView(): Promise<void> {
@@ -139,15 +141,24 @@ export default class GPTHelper extends Plugin {
 }
 
 class SampleView extends ItemView {
+  plugin: GPTHelper
   settings: GPTHelperSettings
   chat: Chat
   saveConversation: (conversation: Conversation) => Promise<void>
+  saveButton: ButtonComponent | null
+  autosaveInterval: number | null
+  lastSavedMessageId: string | null
 
   constructor(leaf: WorkspaceLeaf, plugin: GPTHelper) {
     super(leaf)
+
+    this.plugin = plugin
     this.settings = plugin.settings
     this.saveConversation = plugin.saveConversation.bind(plugin)
     this.chat = plugin.chat as Chat
+    this.saveButton = null
+    this.autosaveInterval = null
+    this.lastSavedMessageId = null
   }
 
   getViewType(): string {
@@ -158,8 +169,69 @@ class SampleView extends ItemView {
     return PLUGIN_NAME
   }
 
+  autosaveConversation(): void {
+    console.debug('Checking Autosave requirements...')
+
+    const conversation = this.chat?.currentConversation()
+
+    if (
+      typeof conversation !== 'undefined' &&
+      conversation !== null &&
+      conversation.messages.length > 0
+    ) {
+      const finalMessaggeId = conversation?.messages?.last()?.id
+
+      if (finalMessaggeId !== this.lastSavedMessageId) {
+        // eslint-disable-next-line no-new
+        new Notice('Autosaving conversation...', 1000)
+
+        console.debug('Autosaving conversation...')
+        console.debug(conversation)
+
+        this.plugin.autoSaving = true
+        this.saveButton?.setIcon('loader-2')
+        this.saveButton?.setDisabled(true)
+
+        this.saveConversation(conversation)
+          .then(() => {
+            const lastMessageId = conversation?.messages?.last()?.id
+
+            if (typeof lastMessageId !== 'undefined') {
+              this.lastSavedMessageId = lastMessageId
+            }
+
+            console.debug('Conversation saved.')
+          })
+          .catch((error) => {
+            if (this.settings.debugMode) {
+              // eslint-disable-next-line no-new
+              new Notice(`Error saving conversation: ${error.message as string}`)
+            }
+
+            console.error(error)
+          })
+          .finally(() => {
+            this.plugin.autoSaving = false
+            this.saveButton?.setIcon('save')
+          })
+      } else {
+        console.debug('No changes since last save...')
+      }
+    }
+  }
+
   async onOpen(): Promise<void> {
     const { containerEl } = this
+
+    // autosave
+    if (this.settings.autosaveConversationHistory) {
+      console.debug('Autosaving conversation every 5 seconds...')
+      this.autosaveInterval = this.registerInterval(
+        window.setInterval(() => {
+          this.autosaveConversation()
+        }, 10000)
+      )
+    }
 
     containerEl.empty()
 
@@ -167,17 +239,17 @@ class SampleView extends ItemView {
 
     const toolbar = container.createDiv(`${PLUGIN_PREFIX}-toolbar`)
 
-    const saveButton = new ButtonComponent(toolbar)
-    saveButton.setButtonText('Save')
-    saveButton.setTooltip('Save Conversation')
-    saveButton.setIcon('save')
+    this.saveButton = new ButtonComponent(toolbar)
+    this.saveButton.setButtonText('Save')
+    this.saveButton.setTooltip('Save Conversation')
+    this.saveButton.setIcon('save')
 
     const debugButton = new ButtonComponent(toolbar)
     debugButton.setButtonText('Debug')
     debugButton.setTooltip('Debug Conversation')
     debugButton.setIcon('code')
 
-    saveButton.onClick(async (): Promise<void> => {
+    this.saveButton.onClick(async (): Promise<void> => {
       if (this?.chat?.currentConversation() !== null) {
         await this.saveConversation(this.chat.currentConversation() as Conversation)
       }
@@ -241,10 +313,9 @@ class SampleSettingTab extends PluginSettingTab {
         `(coming soon) Display extra debugging info like, a breakdown of tokens and tokens used.`
       )
       .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.debugMode)
         toggle.onChange(async (value) => {
           this.plugin.settings.debugMode = value
-
-          toggle.setValue(this.plugin.settings.debugMode)
           await this.plugin.saveSettings()
         })
       })
@@ -265,13 +336,16 @@ class SampleSettingTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Save Conversations')
-      .setDesc(`Automatically save conversations to your Vault.`)
+      .setName('Autosave Conversations')
+      .setDesc(
+        `Automatically save conversations to your Vault. You will need to close any open the Chat windows for this change to take effect.`
+      )
       .addToggle((toggle) => {
-        toggle.setValue(this.plugin.settings.keepConversationHistory)
+        toggle.setValue(this.plugin.settings.autosaveConversationHistory)
 
         toggle.onChange(async (value) => {
-          this.plugin.settings.keepConversationHistory = value
+          this.plugin.settings.autosaveConversationHistory = value
+
           await this.plugin.saveSettings()
         })
       })
