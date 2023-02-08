@@ -246,8 +246,8 @@ class SampleView extends ItemView {
 
     const debugButton = new ButtonComponent(toolbar)
     debugButton.setButtonText('Debug')
-    debugButton.setTooltip('Debug Conversation')
-    debugButton.setIcon('code')
+    debugButton.setTooltip('Log Conversation to Console')
+    debugButton.setIcon('curly-braces')
 
     this.saveButton.onClick(async (): Promise<void> => {
       if (this?.chat?.currentConversation() !== null) {

@@ -20,7 +20,10 @@
 
 .ai-research-assistant-content {
   position: relative;
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
 }
 
 .ai-research-assistant-content__container {
@@ -35,9 +38,7 @@
   display: flex;
   position: relative;
   width: 100%;
-  min-height: 75%;
-  height: 75%;
-  max-height: 75%;
+  height: 77%;
   border: var(--input-border-width) solid var(--background-modifier-border);
   padding: 5px;
   flex-direction: column;
@@ -116,9 +117,16 @@
 .ai-research-assistant__chat-form {
   position: fixed;
   bottom: 30px;
-  width: 100%;
-  height: 13%;
-  padding-right: 11px;
+  display: flex;
+  width: 97%;
+  height: 15%;
+  flex-direction: column;
+}
+
+.ai-research-assistant__chat-form__counter {
+  text-align: right;
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
 }
 
 .ai-research-assistant__chat-form textarea {
@@ -131,8 +139,8 @@
 
 .ai-research-assistant__submit-button {
   position: absolute;
-  right: 16px;
-  bottom: 4px;
+  right: 3px;
+  bottom: 3px;
   background-color: var(--interactive-accent);
 }
 

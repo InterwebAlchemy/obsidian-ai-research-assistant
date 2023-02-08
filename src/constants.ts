@@ -13,10 +13,11 @@ export const PLUGIN_SETTINGS: GPTHelperSettings = {
   debugMode: false,
   openApiKey: '',
   apiKeySaved: false,
-  keepConversationHistory: false,
+  autosaveConversationHistory: false,
   conversationHistoryDirectory: `${PLUGIN_NAME}/History`,
 }
-export const OPEN_AI_PERSONA = 'ChatGPT'
+
+export const OPEN_AI_BASE_URL = 'https://api.openai.com'
 export const OPEN_AI_MODEL = 'text-davinci-003'
-export const OPEN_AI_RESPONSE_TOKENS = 300
+export const OPEN_AI_RESPONSE_TOKENS = 500
 export const OPEN_AI_MAX_TOKENS = 4097

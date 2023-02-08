@@ -4,7 +4,7 @@ import { useLoading, Oval } from '@agney/react-loading'
 
 export interface ChatInputProps {
   input: string
-  onChange: (input: string) => void
+  onChange: (val: string) => void
   allowSave?: boolean
   busy?: boolean
 }

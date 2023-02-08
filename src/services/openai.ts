@@ -1,16 +1,18 @@
 import { requestUrl as obsidianRequest, type RequestUrlParam } from 'obsidian'
 
-import GPT3Tokenizer from 'gpt3-tokenizer'
+import tokenCounter from '../utils/tokenCounter'
+import formatInput from '../utils/formatInput'
 
-import { OPEN_AI_MAX_TOKENS, OPEN_AI_MODEL, OPEN_AI_RESPONSE_TOKENS } from '../constants'
+import {
+  OPEN_AI_MAX_TOKENS,
+  OPEN_AI_MODEL,
+  OPEN_AI_RESPONSE_TOKENS,
+  OPEN_AI_BASE_URL,
+} from '../constants'
 
 import CHATGPT from '../prompts/chatgpt'
 
 import type { OpenAICompletionRequest, OpenAICompletion } from '../types'
-
-const BASE_URL = 'https://api.openai.com'
-
-const tokenizer = new GPT3Tokenizer({ type: 'gpt3' }) // or 'codex'
 
 export const openAICompletion = async ({
   apiKey,
@@ -20,7 +22,7 @@ export const openAICompletion = async ({
   model = OPEN_AI_MODEL,
   stream = false,
 }: OpenAICompletionRequest): Promise<OpenAICompletion> => {
-  const requestUrl = new URL('/v1/completions', BASE_URL)
+  const requestUrl = new URL('/v1/completions', OPEN_AI_BASE_URL)
 
   const requestHeaders = {
     Authorization: `Bearer ${apiKey}`,
@@ -28,12 +30,12 @@ export const openAICompletion = async ({
     Accept: 'application/json',
   }
 
-  const prompt = `${context.trim()}\n${input.trim()}}`
+  const prompt = formatInput(`${context}\n${input}}`)
 
-  const tokens = tokenizer.encode(prompt)
+  const tokens = tokenCounter(prompt)
 
   const maxTokens = Math.min(
-    Math.min(OPEN_AI_RESPONSE_TOKENS + tokens.text.length, OPEN_AI_RESPONSE_TOKENS),
+    Math.min(OPEN_AI_RESPONSE_TOKENS + tokens, OPEN_AI_RESPONSE_TOKENS),
     OPEN_AI_MAX_TOKENS
   )
 

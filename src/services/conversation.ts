@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 
+import formatInput from '../utils/formatInput'
 import CHATGPT from '../prompts/chatgpt'
 import { DEFAULT_CONVERSATION_TITLE, OPEN_AI_MODEL, USER_MESSAGE_OBJECT_TYPE } from '../constants'
 
@@ -60,14 +61,11 @@ export class Conversation {
 
       // TODO: summarize the prompt (or maybe the response from OpenAI) and add it to the context
       // instead of just appending the message
-      this.context = `${this.context}\n${(message as UserPrompt).prompt.trim()}`.replace(
-        /\n\n/g,
-        '\n'
-      )
+      this.context = formatInput(`${this.context}\n${(message as UserPrompt).prompt}`)
     } else if (message.object === 'text_completion') {
-      this.context = `${this.context.trim()}\n${(
-        message as OpenAICompletion
-      ).choices[0].text.trim()}`.replace(/\n\n/g, '\n')
+      this.context = formatInput(
+        `${this.context}\n${(message as OpenAICompletion).choices[0].text}`
+      )
     }
 
     this.messages.push(message as ConversationMessage)

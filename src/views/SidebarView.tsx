@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
 import ChatInput from './ChatInput'
+import TokenCounter from './TokenCounter'
 
 import useChatScroll from '../hooks/useChatScroll'
 
@@ -27,6 +28,7 @@ const SidebarView = ({
   const [loading, setLoading] = useState(false)
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Conversation['messages']>([])
+  const [context, setContext] = useState<Conversation['context']>('')
 
   // TODO: include toggleScrolling state change
   const [scrollRef] = useChatScroll(conversation?.messages?.length)
@@ -125,6 +127,12 @@ const SidebarView = ({
     }
   }, [conversation?.messages?.length])
 
+  useEffect(() => {
+    if (typeof conversation?.context !== 'undefined') {
+      setContext(conversation.context)
+    }
+  }, [conversation?.context])
+
   return (
     <div className="ai-research-assistant-content__container">
       <div className="ai-research-assistant__conversation__header">
@@ -146,6 +154,7 @@ const SidebarView = ({
         autoCapitalize="off"
         noValidate
       >
+        <TokenCounter input={input} options={{ debug: settings.debugMode, prefix: context }} />
         <ChatInput input={input} onChange={setInput} busy={loading} />
       </form>
     </div>

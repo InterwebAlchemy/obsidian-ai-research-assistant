@@ -36,6 +36,7 @@
 		"gpt3-tokenizer": "^1.1.5",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
+		"use-debounce": "^9.0.3",
 		"uuid": "^9.0.0"
 	}
 }
