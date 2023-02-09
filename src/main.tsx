@@ -13,7 +13,7 @@ import {
 
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { createRoot } from 'react-dom/client'
+import { createRoot, type Root } from 'react-dom/client'
 
 import { AppContext } from './context'
 import SidebarView from './views/SidebarView'
@@ -146,8 +146,11 @@ class SampleView extends ItemView {
   chat: Chat
   saveConversation: (conversation: Conversation) => Promise<void>
   saveButton: ButtonComponent | null
+  debugButton: ButtonComponent | null
+  newConversationButton: ButtonComponent | null
   autosaveInterval: number | null
   lastSavedMessageId: string | null
+  root: Root | null
 
   constructor(leaf: WorkspaceLeaf, plugin: GPTHelper) {
     super(leaf)
@@ -177,7 +180,8 @@ class SampleView extends ItemView {
     if (
       typeof conversation !== 'undefined' &&
       conversation !== null &&
-      conversation.messages.length > 0
+      conversation.messages.length > 1 &&
+      conversation.title !== DEFAULT_CONVERSATION_TITLE
     ) {
       const finalMessaggeId = conversation?.messages?.last()?.id
 
@@ -185,8 +189,7 @@ class SampleView extends ItemView {
         // eslint-disable-next-line no-new
         new Notice('Autosaving conversation...', 1000)
 
-        console.debug('Autosaving conversation...')
-        console.debug(conversation)
+        console.debug(`Autosaving conversation ${conversation.id}...`)
 
         this.plugin.autoSaving = true
         this.saveButton?.setIcon('loader-2')
@@ -220,12 +223,43 @@ class SampleView extends ItemView {
     }
   }
 
+  async onChatUpdate(): Promise<void> {
+    const currentConversation = this.chat?.currentConversation()
+
+    if (
+      typeof currentConversation?.messages !== 'undefined' &&
+      currentConversation.messages.length > 0 &&
+      this.chat.currentConversation() !== null
+    ) {
+      if (this.saveButton?.disabled === true) {
+        this.saveButton?.setDisabled(false)
+      }
+
+      if (this.debugButton?.disabled === true) {
+        this.debugButton?.setDisabled(false)
+      }
+
+      if (this.newConversationButton?.disabled === true) {
+        this.newConversationButton?.setDisabled(false)
+      }
+    }
+  }
+
+  async renderView(): Promise<void> {
+    const onChatUpdate = this.onChatUpdate.bind(this)
+
+    this?.root?.render(
+      <AppContext.Provider value={this.app}>
+        <SidebarView chat={this.chat} onChatUpdate={onChatUpdate} settings={this.settings} />
+      </AppContext.Provider>
+    )
+  }
+
   async onOpen(): Promise<void> {
     const { containerEl } = this
 
     // autosave
     if (this.settings.autosaveConversationHistory) {
-      console.debug('Autosaving conversation every 5 seconds...')
       this.autosaveInterval = this.registerInterval(
         window.setInterval(() => {
           this.autosaveConversation()
@@ -244,10 +278,24 @@ class SampleView extends ItemView {
     this.saveButton.setTooltip('Save Conversation')
     this.saveButton.setIcon('save')
 
-    const debugButton = new ButtonComponent(toolbar)
-    debugButton.setButtonText('Debug')
-    debugButton.setTooltip('Log Conversation to Console')
-    debugButton.setIcon('curly-braces')
+    this.newConversationButton = new ButtonComponent(toolbar)
+    this.newConversationButton.setButtonText('New')
+    this.newConversationButton.setTooltip('New Conversation')
+    this.newConversationButton.setIcon('list-plus')
+
+    this.debugButton = new ButtonComponent(toolbar)
+    this.debugButton.setButtonText('Debug')
+    this.debugButton.setTooltip('Log Conversation to Console')
+    this.debugButton.setIcon('curly-braces')
+
+    if (
+      this.chat.currentConversation()?.messages.length === 0 ||
+      this.chat.currentConversation() === null
+    ) {
+      this.saveButton.setDisabled(true)
+      this.debugButton.setDisabled(true)
+      this.newConversationButton.setDisabled(true)
+    }
 
     this.saveButton.onClick(async (): Promise<void> => {
       if (this?.chat?.currentConversation() !== null) {
@@ -255,21 +303,29 @@ class SampleView extends ItemView {
       }
     })
 
-    debugButton.onClick(async (): Promise<void> => {
+    this.debugButton.onClick(async (): Promise<void> => {
       if (this?.chat?.currentConversation() !== null) {
         console.log(this.chat.currentConversation())
       }
     })
 
+    this.newConversationButton.onClick(async (): Promise<void> => {
+      if (this?.chat?.currentConversation() !== null) {
+        this.chat?.start({ prompt: CHATGPT(), title: DEFAULT_CONVERSATION_TITLE })
+
+        this.saveButton?.setDisabled(true)
+        this.newConversationButton?.setDisabled(true)
+        this.debugButton?.setDisabled(true)
+
+        await this.renderView()
+      }
+    })
+
     const rootElement = container.createDiv(`${PLUGIN_PREFIX}-content`)
 
-    const root = createRoot(rootElement)
+    this.root = createRoot(rootElement)
 
-    root.render(
-      <AppContext.Provider value={this.app}>
-        <SidebarView chat={this.chat} settings={this.settings} />
-      </AppContext.Provider>
-    )
+    await this.renderView()
   }
 
   async onClose(): Promise<void> {

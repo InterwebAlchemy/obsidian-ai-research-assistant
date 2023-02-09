@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
-import ChatInput from './ChatInput'
-import TokenCounter from './TokenCounter'
+import ChatInput from '../components/ChatInput'
+import TokenCounter from '../components/TokenCounter'
 
 import useChatScroll from '../hooks/useChatScroll'
 
@@ -16,14 +16,19 @@ import type { OpenAICompletion, UserPrompt } from '../types'
 export interface SidebarViewProps {
   chat: Chat
   settings: GPTHelperSettings
+  onChatUpdate: () => Promise<void>
 }
 
 // create a chat interface that sends user input to the openai api via the openai package
 // and displays the response from openai
 const SidebarView = ({
   chat,
+  onChatUpdate,
   settings = PLUGIN_SETTINGS,
 }: SidebarViewProps): React.ReactElement => {
+  console.log(chat)
+
+  const [conversationId, setConversationId] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversation, setConversation] = useState<Conversation | null>(null)
@@ -56,6 +61,12 @@ const SidebarView = ({
         console.error(error)
       })
       .finally(() => {
+        if (typeof onChatUpdate === 'function') {
+          onChatUpdate().catch((error) => {
+            console.error(error)
+          })
+        }
+
         setLoading(false)
       })
   }
@@ -113,19 +124,33 @@ const SidebarView = ({
     }
   }
 
-  const renderConversation = (): React.ReactElement[] => messages.map(renderMessage)
+  const renderConversation = (): React.ReactElement[] =>
+    messages.length > 0 ? messages.map(renderMessage) : [<></>]
 
   useEffect(() => {
     if (typeof chat !== 'undefined' && chat?.currentConversation() !== null) {
-      setConversation(chat.currentConversation())
+      setInput('')
+
+      setConversationId(chat.currentConversationId)
     }
-  }, [chat?.currentConversation() !== null])
+  }, [chat?.currentConversationId])
 
   useEffect(() => {
-    if (typeof conversation?.messages?.length !== 'undefined') {
+    if (
+      typeof chat !== 'undefined' &&
+      typeof chat?.conversations !== 'undefined' &&
+      typeof conversationId !== 'undefined' &&
+      conversationId !== null
+    ) {
+      setConversation(chat.currentConversation())
+    }
+  }, [chat?.conversations, conversationId])
+
+  useEffect(() => {
+    if (typeof conversation?.id !== 'undefined' && typeof conversation?.messages !== 'undefined') {
       setMessages(conversation.messages)
     }
-  }, [conversation?.messages?.length])
+  }, [conversation?.messages, conversation?.id])
 
   useEffect(() => {
     if (typeof conversation?.context !== 'undefined') {

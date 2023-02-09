@@ -19,12 +19,14 @@ class Chat {
   adapter: ChatAdapter
   model: string
   currentConversationId: string | null = null
+  conversations: typeof Conversations
 
   constructor({ apiKey, model = OPEN_AI_MODEL }: ChatInterface) {
     this.apiKey = apiKey
     this.adapter = 'openai'
     this.currentConversationId = null
     this.model = model
+    this.conversations = Conversations
   }
 
   currentConversation(): Conversation | null {
@@ -32,7 +34,7 @@ class Chat {
       return null
     }
 
-    return Conversations.getConversation(this.currentConversationId)
+    return this.conversations.getConversation(this.currentConversationId)
   }
 
   async send(message: string): Promise<void> {
@@ -65,14 +67,16 @@ class Chat {
   }
 
   start({ prompt, title }: Partial<Conversation>): void {
-    const conversation = Conversations.startConversation({ prompt, title })
+    const conversation = this.conversations.startConversation({ prompt, title })
 
     this.currentConversationId = conversation.id
   }
 
   updateConversationTitle(title: string, id = this.currentConversationId): void {
     if (id !== null) {
-      Conversations.updateConversationTitle(id, title)
+      this.conversations.updateConversationTitle(id, title)
+    } else if (this.currentConversationId !== null) {
+      this.conversations.updateConversationTitle(this.currentConversationId, title)
     }
   }
 }

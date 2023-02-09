@@ -5,18 +5,12 @@ import { useLoading, Oval } from '@agney/react-loading'
 export interface ChatInputProps {
   input: string
   onChange: (val: string) => void
-  allowSave?: boolean
   busy?: boolean
 }
 
 // create a chat interface that sends user input to the openai api via the openai package
 // and displays the response from openai
-const ChatInput = ({
-  onChange,
-  input = '',
-  busy = false,
-  allowSave = false,
-}: ChatInputProps): React.ReactElement => {
+const ChatInput = ({ onChange, input = '', busy = false }: ChatInputProps): React.ReactElement => {
   const saveButton = useRef<HTMLElement>()
   const chatButton = useRef<HTMLElement>()
 

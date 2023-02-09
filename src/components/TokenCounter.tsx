@@ -15,8 +15,8 @@ const TokenCounter = ({ input = '', options = {} }: TokenCounterProps): React.Re
   const [count, setCount] = useState(0)
   const [prefixCount, setPrefixCount] = useState(0)
 
-  const [debouncedInput] = useDebounce(input, 200, { maxWait: 500 })
-  const [debouncedPrefix] = useDebounce(options?.prefix, 200, { maxWait: 500 })
+  const [debouncedInput] = useDebounce(input, 300, { maxWait: 1000 })
+  const [debouncedPrefix] = useDebounce(options?.prefix, 300, { maxWait: 1000 })
 
   useEffect(() => {
     if (debouncedInput.length === 0) {
