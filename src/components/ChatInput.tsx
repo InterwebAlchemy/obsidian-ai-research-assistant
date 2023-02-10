@@ -4,7 +4,7 @@ import { useLoading, Oval } from '@agney/react-loading'
 
 export interface ChatInputProps {
   input: string
-  onChange: (val: string) => void
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
   busy?: boolean
 }
 
@@ -18,10 +18,6 @@ const ChatInput = ({ onChange, input = '', busy = false }: ChatInputProps): Reac
     loading: busy,
     indicator: <Oval width="20" />,
   })
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
-    onChange(e.target.value)
-  }
 
   useEffect(() => {
     if (typeof chatButton.current !== 'undefined') {
@@ -43,11 +39,12 @@ const ChatInput = ({ onChange, input = '', busy = false }: ChatInputProps): Reac
     }
   }, [saveButton])
 
+  // TODO: fix the error that eats first character in textarea
   return (
     <React.Fragment>
       <textarea
         placeholder="Type your message here"
-        onChange={handleChange}
+        onChange={onChange}
         value={input}
         required
         readOnly={busy}

@@ -1,41 +1,21 @@
+import type { OpenAIModel, OpenAICompletion } from './services/openai/types'
+
 // TODO: update this union type with other valid adapters as they are added
 export type ChatAdapter = 'openai'
 
-export interface OpenAICompletionRequest {
-  apiKey: string
-  input: string
-  temperature?: number
-  context?: string
-  model?: string
-  stream?: boolean
-}
+export interface PluginSettings {
+  debugMode: boolean
 
-export interface OpenAICompletionChoiceFinishDetails {
-  type: string
-  stop: string
-}
+  openApiKey: string
+  apiKeySaved: boolean
 
-export interface OpenAICompletionChoice {
-  text: string
-  index: number
-  logprobs: null | unknown
-  finish_details: OpenAICompletionChoiceFinishDetails
-}
+  defaultModel: OpenAIModel
 
-export interface OpenAICompletionUsage {
-  prompt_tokens: number
-  completion_tokens: number
-  total_tokens: number
-}
+  userPrefix: string
+  botPrefix: string
 
-export interface OpenAICompletion {
-  id: string
-  // TODO: find out what other valid object values are
-  object: 'text_completion'
-  created: number
-  model: string
-  choices: OpenAICompletionChoice[]
-  usage: OpenAICompletionUsage
+  autosaveConversationHistory: boolean
+  conversationHistoryDirectory: string
 }
 
 export interface UserPrompt {

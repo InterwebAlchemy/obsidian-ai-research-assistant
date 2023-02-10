@@ -4,26 +4,23 @@
 import Conversations, { type Conversation } from './conversation'
 import { openAICompletion } from './openai'
 
-import { OPEN_AI_MODEL, USER_MESSAGE_OBJECT_TYPE } from '../constants'
+import { USER_MESSAGE_OBJECT_TYPE } from '../constants'
 
-import type { ChatAdapter } from '../types'
+import { OPEN_AI_DEFAULT_MODEL } from './openai/constants'
+
+import type { ModelDefinition } from './openai/types'
 
 export interface ChatInterface {
   apiKey: string
-  adapter?: ChatAdapter
-  model?: string
+  model?: ModelDefinition
 }
 
 class Chat {
-  apiKey: string
-  adapter: ChatAdapter
-  model: string
+  model: ModelDefinition
   currentConversationId: string | null = null
   conversations: typeof Conversations
 
-  constructor({ apiKey, model = OPEN_AI_MODEL }: ChatInterface) {
-    this.apiKey = apiKey
-    this.adapter = 'openai'
+  constructor({ model = OPEN_AI_DEFAULT_MODEL }: ChatInterface) {
     this.currentConversationId = null
     this.model = model
     this.conversations = Conversations
@@ -46,15 +43,17 @@ class Chat {
         object: USER_MESSAGE_OBJECT_TYPE,
       })
 
-      switch (this.adapter) {
+      switch (this.model.adapter) {
         case 'openai':
           try {
-            const response = await openAICompletion({
-              apiKey: this.apiKey,
-              input: message,
-              context: conversation.context,
-              model: this.model,
-            })
+            const response = await openAICompletion(
+              {
+                input: message,
+                context: conversation.context,
+                model: this.model,
+              },
+              this.currentConversation()?.settings
+            )
 
             conversation.addMessage(response)
           } catch (error) {
@@ -66,8 +65,8 @@ class Chat {
     }
   }
 
-  start({ prompt, title }: Partial<Conversation>): void {
-    const conversation = this.conversations.startConversation({ prompt, title })
+  start({ prompt, title, settings }: Partial<Conversation>): void {
+    const conversation = this.conversations.startConversation({ prompt, title, settings })
 
     this.currentConversationId = conversation.id
   }

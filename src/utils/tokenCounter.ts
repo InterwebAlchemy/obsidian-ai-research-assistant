@@ -2,9 +2,11 @@ import GPT3Tokenizer from 'gpt3-tokenizer'
 
 import formatInput from './formatInput'
 
+export type TokenCounterType = 'gpt3' | 'codex'
+
 export interface TokenCounterOptions {
   // TODO: figure out what may need to be done to support other adapters and models
-  type?: 'gpt3' | 'codex'
+  type?: TokenCounterType
   debug?: boolean
   prefix?: string
 }

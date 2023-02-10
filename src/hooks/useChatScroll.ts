@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-const useChatScroll = <T>(
+export const useChatScroll = <T>(
   scrollActivator: T
 ): [
   React.MutableRefObject<HTMLDivElement | undefined>,
@@ -21,5 +21,3 @@ const useChatScroll = <T>(
 
   return [ref, setShouldScroll]
 }
-
-export default useChatScroll

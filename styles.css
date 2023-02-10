@@ -141,7 +141,16 @@
   position: absolute;
   right: 3px;
   bottom: 3px;
-  background-color: var(--interactive-accent);
+  display: flex;
+  border: var(--input-border-width) solid var(--interactive-accent);
+}
+
+.ai-research-assistant__submit-button > div {
+  display: flex;
+}
+
+.ai-research-assistant__submit-button svg {
+  color: var(--interactive-accent);
 }
 
 .ai-research-assistant__save-button {

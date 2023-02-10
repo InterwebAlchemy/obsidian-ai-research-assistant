@@ -1,7 +1,6 @@
-import type { App } from 'obsidian'
 import { useContext } from 'react'
-import { AppContext } from '../context'
+import { AppContext, type AppContextInterface } from '../contexts/AppContext'
 
-export const useApp = (): App => {
+export const useApp = (): AppContextInterface => {
   return useContext(AppContext)
 }

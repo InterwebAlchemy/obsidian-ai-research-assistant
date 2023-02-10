@@ -1,10 +1,12 @@
 import { v4 as uuidv4 } from 'uuid'
 
 import formatInput from '../utils/formatInput'
+import getUnixTimestamp from 'src/utils/getUnixTimestamp'
 import CHATGPT from '../prompts/chatgpt'
-import { DEFAULT_CONVERSATION_TITLE, OPEN_AI_MODEL, USER_MESSAGE_OBJECT_TYPE } from '../constants'
-
-import type { UserPrompt, ConversationMessage, OpenAICompletion } from '../types'
+import { PLUGIN_SETTINGS, DEFAULT_CONVERSATION_TITLE, USER_MESSAGE_OBJECT_TYPE } from '../constants'
+import { OPEN_AI_DEFAULT_MODEL, OPEN_AI_COMPLETION_OBJECT_TYPE } from './openai/constants'
+import type { OpenAICompletion } from './openai/types'
+import type { UserPrompt, ConversationMessage, PluginSettings } from '../types'
 
 export interface ConversationInterface {
   id: string
@@ -14,6 +16,7 @@ export interface ConversationInterface {
   messages: ConversationMessage[]
   adapter: string
   model?: string
+  settings: PluginSettings
 }
 
 export class Conversation {
@@ -24,16 +27,18 @@ export class Conversation {
   messages: ConversationInterface['messages']
   context: string
   adapter: string
-  model?: string
+  model: string
+  settings: PluginSettings
 
   constructor({
     title = DEFAULT_CONVERSATION_TITLE,
     prompt = CHATGPT(),
-    timestamp = Math.round(+new Date() / 1000),
+    timestamp = getUnixTimestamp(),
     id = uuidv4(),
     messages = [],
-    model = OPEN_AI_MODEL,
-    adapter = 'openai',
+    model = OPEN_AI_DEFAULT_MODEL.model,
+    adapter = OPEN_AI_DEFAULT_MODEL.adapter,
+    settings = PLUGIN_SETTINGS,
   }: Partial<ConversationInterface>) {
     this.id = id
     this.prompt = prompt
@@ -43,6 +48,55 @@ export class Conversation {
     this.context = prompt
     this.model = model
     this.adapter = adapter
+    this.settings = settings
+  }
+
+  getContext(includePrompt: boolean = false): string {
+    // TODO: summarize the prompt (or maybe the response from OpenAI) and add it to the context
+    // instead of just appending the message
+    const contextMessages = this.messages
+      .filter((message) =>
+        [USER_MESSAGE_OBJECT_TYPE, OPEN_AI_COMPLETION_OBJECT_TYPE].includes(message.object)
+      )
+      // borrowed from: https://stackoverflow.com/a/6473869/656011
+      // TODO: make this configurable
+      .slice(Math.max(this.messages.length - 12, 0))
+      .map((message) => {
+        switch (message.object) {
+          case USER_MESSAGE_OBJECT_TYPE:
+            return formatInput(`${this.settings.userPrefix} ${(message as UserPrompt).prompt}`)
+
+          case OPEN_AI_COMPLETION_OBJECT_TYPE:
+            return formatInput(
+              `${this.settings.botPrefix} ${(message as OpenAICompletion).choices[0].text}`
+            )
+
+          default:
+            return ''
+        }
+      })
+
+    if (includePrompt) {
+      contextMessages.unshift(formatInput(this.prompt))
+    }
+
+    return contextMessages.join('\n')
+  }
+
+  getFullMessageText(message: ConversationMessage): string {
+    if (message.object === USER_MESSAGE_OBJECT_TYPE) {
+      return formatInput(
+        `${this.prompt}\n${this.getContext()}\n${this.settings.userPrefix} ${
+          (message as UserPrompt).prompt
+        }\n${this.settings.botPrefix}`
+      )
+    } else if (message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
+      return formatInput(
+        `${this.settings.botPrefix} ${(message as OpenAICompletion).choices[0].text}`
+      )
+    } else {
+      return JSON.stringify(message)
+    }
   }
 
   addMessage(message: Partial<ConversationMessage>): void {
@@ -51,21 +105,19 @@ export class Conversation {
     }
 
     if (typeof message?.created === 'undefined') {
-      message.created = Math.round(+new Date() / 1000)
+      message.created = getUnixTimestamp()
     }
 
     if (message.object === USER_MESSAGE_OBJECT_TYPE) {
-      if (typeof (message as UserPrompt)?.context === 'undefined') {
-        ;(message as UserPrompt).context = this.context.trim()
-      }
+      const inputText = formatInput(`${(message as UserPrompt).prompt}`)
+      const inputContext = formatInput(this.prompt + this.getContext())
 
-      // TODO: summarize the prompt (or maybe the response from OpenAI) and add it to the context
-      // instead of just appending the message
-      this.context = formatInput(`${this.context}\n${(message as UserPrompt).prompt}`)
-    } else if (message.object === 'text_completion') {
-      this.context = formatInput(
-        `${this.context}\n${(message as OpenAICompletion).choices[0].text}`
-      )
+      ;(message as UserPrompt).context = inputContext
+      ;(message as UserPrompt).prompt = inputText
+
+      this.context = this.getFullMessageText(message as ConversationMessage)
+    } else if (message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
+      this.context = this.getFullMessageText(message as ConversationMessage)
     }
 
     this.messages.push(message as ConversationMessage)
@@ -92,10 +144,11 @@ export class ConversationManager {
     this.conversations = {}
   }
 
-  startConversation({ prompt, title }: Partial<Conversation>): Conversation {
+  startConversation({ prompt, title, settings }: Partial<Conversation>): Conversation {
     const conversation = new Conversation({
       prompt,
       title,
+      settings,
     })
 
     this.conversations[conversation.id] = conversation

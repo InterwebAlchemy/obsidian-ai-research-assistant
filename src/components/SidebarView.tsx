@@ -1,49 +1,51 @@
 import React, { useState, useEffect } from 'react'
 
-import ChatInput from '../components/ChatInput'
-import TokenCounter from '../components/TokenCounter'
+import ChatInput from './ChatInput'
+import TokenCounter from './TokenCounter'
 
-import useChatScroll from '../hooks/useChatScroll'
+import { useChatScroll } from '../hooks/useChatScroll'
+import { useApp } from '../hooks/useApp'
 
-import { DEFAULT_CONVERSATION_TITLE, USER_MESSAGE_OBJECT_TYPE, PLUGIN_SETTINGS } from '../constants'
+import { DEFAULT_CONVERSATION_TITLE, USER_MESSAGE_OBJECT_TYPE } from '../constants'
+import { OPEN_AI_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
 
-import { type GPTHelperSettings } from '../main'
-import type Chat from '../services/chat'
 import type { Conversation } from '../services/conversation'
+import type { OpenAICompletion } from '../services/openai/types'
+import type { UserPrompt } from '../types'
+import converstUnixTimestampToISODate from 'src/utils/getISODate'
 
-import type { OpenAICompletion, UserPrompt } from '../types'
-
-export interface SidebarViewProps {
-  chat: Chat
-  settings: GPTHelperSettings
-  onChatUpdate: () => Promise<void>
+export interface ChatFormProps {
+  onChatUpdate?: () => Promise<void>
 }
 
-// create a chat interface that sends user input to the openai api via the openai package
-// and displays the response from openai
-const SidebarView = ({
-  chat,
-  onChatUpdate,
-  settings = PLUGIN_SETTINGS,
-}: SidebarViewProps): React.ReactElement => {
-  console.log(chat)
+const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
+  const { plugin } = useApp()
+
+  const { chat, logger, settings } = plugin
 
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Conversation['messages']>([])
-  const [context, setContext] = useState<Conversation['context']>('')
 
   // TODO: include toggleScrolling state change
-  const [scrollRef] = useChatScroll(conversation?.messages?.length)
+  const [scrollRef] = useChatScroll(messages?.length)
 
   const handleUserScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>): void => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
 
     // TODO: add a way to toggle auto scrolling when user scrolls up manually
 
-    console.debug({ scrollTop, scrollHeight, clientHeight })
+    logger.debug({ scrollTop, scrollHeight, clientHeight })
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    const value = e.currentTarget.value
+
+    console.log(value)
+
+    setInput(value)
   }
 
   const handleSubmit = (e: React.FormEvent): void => {
@@ -58,12 +60,12 @@ const SidebarView = ({
     chat
       ?.send(prompt)
       .catch((error) => {
-        console.error(error)
+        logger.error(error)
       })
       .finally(() => {
         if (typeof onChatUpdate === 'function') {
           onChatUpdate().catch((error) => {
-            console.error(error)
+            logger.error(error)
           })
         }
 
@@ -82,19 +84,21 @@ const SidebarView = ({
             key={item?.id ?? index}
             className="ai-research-assistant__conversation__item ai-research-assistant__conversation__item--user"
           >
-            <div key={index} className="ai-research-assistant__conversation__item__text">
+            <div className="ai-research-assistant__conversation__item__text">
               {(item as UserPrompt).prompt.trim()}
             </div>
             <div className="ai-research-assistant__conversation__item__footer">
-              <div className="ai-research-assistant__conversation__item__speaker">You</div>
+              <div className="ai-research-assistant__conversation__item__speaker">
+                {settings.userPrefix}
+              </div>
               <div className="ai-research-assistant__conversation__item__timestamp">
-                {new Date(item.created * 1000).toISOString()}
+                {converstUnixTimestampToISODate(item.created)}
               </div>
             </div>
           </div>
         )
 
-      case 'text_completion':
+      case OPEN_AI_COMPLETION_OBJECT_TYPE:
         return (
           <div
             key={item?.id ?? index}
@@ -104,9 +108,11 @@ const SidebarView = ({
               {(item as OpenAICompletion).choices[0].text.trim()}
             </div>
             <div className="ai-research-assistant__conversation__item__footer">
-              <div className="ai-research-assistant__conversation__item__speaker">Bot</div>
+              <div className="ai-research-assistant__conversation__item__speaker">
+                {settings.botPrefix}
+              </div>
               <div className="ai-research-assistant__conversation__item__timestamp">
-                {new Date(item.created * 1000).toISOString()}
+                {converstUnixTimestampToISODate(item.created)}
               </div>
             </div>
           </div>
@@ -125,7 +131,9 @@ const SidebarView = ({
   }
 
   const renderConversation = (): React.ReactElement[] =>
-    messages.length > 0 ? messages.map(renderMessage) : [<></>]
+    messages.length > 0
+      ? messages.map(renderMessage)
+      : [<React.Fragment key="no-results"></React.Fragment>]
 
   useEffect(() => {
     if (typeof chat !== 'undefined' && chat?.currentConversation() !== null) {
@@ -152,12 +160,6 @@ const SidebarView = ({
     }
   }, [conversation?.messages, conversation?.id])
 
-  useEffect(() => {
-    if (typeof conversation?.context !== 'undefined') {
-      setContext(conversation.context)
-    }
-  }, [conversation?.context])
-
   return (
     <div className="ai-research-assistant-content__container">
       <div className="ai-research-assistant__conversation__header">
@@ -179,8 +181,8 @@ const SidebarView = ({
         autoCapitalize="off"
         noValidate
       >
-        <TokenCounter input={input} options={{ debug: settings.debugMode, prefix: context }} />
-        <ChatInput input={input} onChange={setInput} busy={loading} />
+        <TokenCounter input={input} />
+        <ChatInput input={input} onChange={handleChange} busy={loading} />
       </form>
     </div>
   )
