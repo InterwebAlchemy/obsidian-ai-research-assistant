@@ -12,6 +12,7 @@ export const DEFAULT_CONVERSATION_TITLE = 'New Conversation'
 export const USER_MESSAGE_OBJECT_TYPE = `${PLUGIN_PREFIX.replace(/-/g, '_')}_user_message`
 export const USER_PREFIX = 'You:'
 export const BOT_PREFIX = 'ChatGPT:'
+export const DEFAULT_TOKEN_TYPE = 'gpt3'
 
 export const PLUGIN_SETTINGS: PluginSettings = {
   debugMode: false,

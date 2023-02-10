@@ -1,6 +1,6 @@
 import GPT3Tokenizer from 'gpt3-tokenizer'
 
-import formatInput from './formatInput'
+import { DEFAULT_TOKEN_TYPE } from '../constants'
 
 export type TokenCounterType = 'gpt3' | 'codex'
 
@@ -12,11 +12,11 @@ export interface TokenCounterOptions {
 }
 
 const tokenCounter = (text: string, options: TokenCounterOptions = {}): number => {
-  const { type = 'gpt3', debug = false, prefix = '' } = options
+  const { type = DEFAULT_TOKEN_TYPE, debug = false } = options
 
   const tokenizer = new GPT3Tokenizer({ type })
 
-  const tokens = tokenizer.encode(formatInput(`${prefix}\n${text}`))
+  const tokens = tokenizer.encode(text)
 
   if (debug) {
     console.debug('TOKENS:', tokens)

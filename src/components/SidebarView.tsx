@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
 import ChatInput from './ChatInput'
-import TokenCounter from './TokenCounter'
 
 import { useChatScroll } from '../hooks/useChatScroll'
 import { useApp } from '../hooks/useApp'
@@ -38,14 +37,6 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
     // TODO: add a way to toggle auto scrolling when user scrolls up manually
 
     logger.debug({ scrollTop, scrollHeight, clientHeight })
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
-    const value = e.currentTarget.value
-
-    console.log(value)
-
-    setInput(value)
   }
 
   const handleSubmit = (e: React.FormEvent): void => {
@@ -181,8 +172,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
         autoCapitalize="off"
         noValidate
       >
-        <TokenCounter input={input} />
-        <ChatInput input={input} onChange={handleChange} busy={loading} />
+        <ChatInput input={input} onChange={setInput} busy={loading} />
       </form>
     </div>
   )

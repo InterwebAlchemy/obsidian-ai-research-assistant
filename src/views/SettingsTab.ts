@@ -2,6 +2,8 @@ import { type App, PluginSettingTab, Setting } from 'obsidian'
 
 import OpenAIModels from '../services/openai/models'
 
+import obfuscateApiKey from '../utils/obfuscateApiKey'
+
 import { BOT_PREFIX, PLUGIN_NAME, PLUGIN_PREFIX, USER_PREFIX } from '../constants'
 import { OPEN_AI_API_KEY_URL } from '../services/openai/constants'
 
@@ -68,7 +70,11 @@ export default class SettingsTab extends PluginSettingTab {
       )
       .addText((text) =>
         text
-          .setPlaceholder(`${this.plugin.settings.apiKeySaved ? 'Update' : 'Set'} your API key`)
+          .setPlaceholder(
+            this.plugin.settings.apiKeySaved
+              ? `${obfuscateApiKey(this.plugin.settings.openApiKey)}`
+              : 'Set your API key'
+          )
           .onChange(async (value) => {
             this.plugin.settings.openApiKey = value
             this.plugin.settings.apiKeySaved = true

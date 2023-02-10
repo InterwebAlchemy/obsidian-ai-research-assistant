@@ -123,13 +123,26 @@
   flex-direction: column;
 }
 
-.ai-research-assistant__chat-form__counter {
-  text-align: right;
+.ai-research-assistant__input-area {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+.ai-research-assistant__input-area__toolbar {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
   font-size: var(--font-smallest);
+  color: var(--text-faint);
+}
+
+.ai-research-assistant__input-area__toolbar__counter {
   color: var(--text-muted);
 }
 
-.ai-research-assistant__chat-form textarea {
+.ai-research-assistant__input-area textarea {
   width: 100%;
   height: 100%;
   resize: none;

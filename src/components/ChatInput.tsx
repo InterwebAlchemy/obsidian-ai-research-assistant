@@ -2,16 +2,17 @@ import React, { useEffect, useRef } from 'react'
 import { setIcon } from 'obsidian'
 import { useLoading, Oval } from '@agney/react-loading'
 
+import InputArea from './InputArea'
+
 export interface ChatInputProps {
   input: string
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  onChange: React.Dispatch<React.SetStateAction<string>>
   busy?: boolean
 }
 
 // create a chat interface that sends user input to the openai api via the openai package
 // and displays the response from openai
 const ChatInput = ({ onChange, input = '', busy = false }: ChatInputProps): React.ReactElement => {
-  const saveButton = useRef<HTMLElement>()
   const chatButton = useRef<HTMLElement>()
 
   const { containerProps, indicatorEl } = useLoading({
@@ -29,26 +30,14 @@ const ChatInput = ({ onChange, input = '', busy = false }: ChatInputProps): Reac
     }
   }, [chatButton])
 
-  useEffect(() => {
-    if (typeof saveButton.current !== 'undefined') {
-      const button = saveButton.current
-
-      if (button instanceof HTMLElement) {
-        setIcon(button, 'save')
-      }
-    }
-  }, [saveButton])
-
-  // TODO: fix the error that eats first character in textarea
   return (
     <React.Fragment>
-      <textarea
-        placeholder="Type your message here"
-        onChange={onChange}
+      <InputArea
         value={input}
-        required
-        readOnly={busy}
-        disabled={busy}
+        onChange={onChange}
+        countType="tokens"
+        countPosition="top"
+        countAlign="right"
       />
       <button
         className="ai-research-assistant__submit-button clickable-icon"
