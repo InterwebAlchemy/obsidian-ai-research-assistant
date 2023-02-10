@@ -10,8 +10,6 @@ import SidebarView from '../components/SidebarView'
 import type Chat from '../services/chat'
 import type { Conversation } from '../services/conversation'
 
-import CHATGPT from '../prompts/chatgpt'
-
 import { DEFAULT_CONVERSATION_TITLE, PLUGIN_NAME, PLUGIN_PREFIX } from '../constants'
 
 import type ObsidianAIResearchAssistant from '../main'
@@ -190,7 +188,7 @@ export default class ChatView extends ItemView {
     this.newConversationButton.onClick(async (): Promise<void> => {
       if (this?.chat?.currentConversation() !== null) {
         this.chat?.start({
-          prompt: CHATGPT(),
+          prompt: '',
           title: DEFAULT_CONVERSATION_TITLE,
           settings: this.settings,
         })

@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import formatInput from '../utils/formatInput'
 import getUnixTimestamp from 'src/utils/getUnixTimestamp'
-import CHATGPT from '../prompts/chatgpt'
+
 import { PLUGIN_SETTINGS, DEFAULT_CONVERSATION_TITLE, USER_MESSAGE_OBJECT_TYPE } from '../constants'
 import { OPEN_AI_DEFAULT_MODEL, OPEN_AI_COMPLETION_OBJECT_TYPE } from './openai/constants'
 import type { OpenAICompletion } from './openai/types'
@@ -32,7 +32,7 @@ export class Conversation {
 
   constructor({
     title = DEFAULT_CONVERSATION_TITLE,
-    prompt = CHATGPT(),
+    prompt = '',
     timestamp = getUnixTimestamp(),
     id = uuidv4(),
     messages = [],

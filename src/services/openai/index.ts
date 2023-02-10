@@ -6,8 +6,6 @@ import formatInput from '../../utils/formatInput'
 import { OPEN_AI_DEFAULT_MODEL, OPEN_AI_RESPONSE_TOKENS, OPEN_AI_BASE_URL } from './constants'
 import { PLUGIN_SETTINGS } from '../../constants'
 
-import CHATGPT from '../../prompts/chatgpt'
-
 import type { OpenAICompletionRequest, OpenAICompletion } from './types'
 
 import type { PluginSettings } from '../../types'
@@ -16,7 +14,6 @@ export const openAICompletion = async (
   {
     input,
     temperature = 0.7,
-    context = CHATGPT(),
     model = OPEN_AI_DEFAULT_MODEL,
     stream = false,
   }: OpenAICompletionRequest,
@@ -32,16 +29,16 @@ export const openAICompletion = async (
     Accept: 'application/json',
   }
 
-  const prompt = formatInput(`${context}\n${userPrefix} ${input}${botPrefix}`)
+  const prompt = formatInput(input)
 
-  const tokens = tokenCounter(prompt)
+  const tokens = tokenCounter(input)
 
   const maxTokens = Math.min(
     Math.min(OPEN_AI_RESPONSE_TOKENS + tokens, OPEN_AI_RESPONSE_TOKENS),
     model.maxTokens
   )
 
-  const stopWords = ['<|im_stop|>']
+  const stopWords = model.stopWords ?? []
 
   if (typeof userPrefix !== 'undefined' && userPrefix !== '') {
     stopWords.push(userPrefix)

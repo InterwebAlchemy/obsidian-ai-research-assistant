@@ -34,6 +34,41 @@
   flex-direction: column;
 }
 
+.ai-research-assistant__conversation__header {
+  display: flex;
+  position: relative;
+  width: 100%;
+  align-items: center;
+  flex-direction: row;
+  font-size: var(--font-smallest);
+}
+
+.ai-research-assistant__conversation__header__title {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 85%;
+}
+
+.ai-research-assistant__conversation__header > input {
+  width: 100%;
+  height: auto;
+  font-size: var(--font-small);
+  padding: 0 25px 0 5px;
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  border-radius: 0;
+  margin: 0;
+}
+
+.ai-research-assistant__conversation__header__edit {
+  position: absolute;
+  right: 5px;
+}
+
+.ai-research-assistant__conversation__header__edit > .ai-research-assistant__icon-button {
+  padding: 0;
+}
+
 .ai-research-assistant__conversation {
   display: flex;
   position: relative;
@@ -150,30 +185,40 @@
   border-radius: 0;
 }
 
-.ai-research-assistant__submit-button {
-  position: absolute;
-  right: 3px;
-  bottom: 3px;
+.ai-research-assistant__icon-button {
   display: flex;
-  border: var(--input-border-width) solid var(--interactive-accent);
+  border: var(--input-border-width) solid var(--icon-color);
 }
 
-.ai-research-assistant__submit-button > div {
+.ai-research-assistant__icon-button--iconOnly {
+  border: none;
+}
+
+.ai-research-assistant__icon-button--primary {
+  border-color: var(--interactive-accent);
+}
+
+.ai-research-assistant__icon-button--danger {
+  border-color: var(--text-error);
+}
+
+.ai-research-assistant__icon-button > div {
   display: flex;
 }
 
-.ai-research-assistant__submit-button svg {
+.ai-research-assistant__icon-button svg {
+  color: var(--icon-color);
+}
+
+.ai-research-assistant__icon-button--primary svg {
   color: var(--interactive-accent);
 }
 
-.ai-research-assistant__save-button {
-  position: absolute;
-  left: 5px;
-  bottom: 5px;
-  background-color: var(--interactive-accent);
+.ai-research-assistant__icon-button--danger svg {
+  color: var(--text-error);
 }
 
-.ai-research-assistant__submit-button__a11y-text {
+.ai-research-assistant__icon-button__a11y-text {
   border: 0;
   clip: rect(0 0 0 0);
   height: 1px;
@@ -183,4 +228,10 @@
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+
+.ai-research-assistant__chat__input__send {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
 }

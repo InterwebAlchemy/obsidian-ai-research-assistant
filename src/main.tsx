@@ -8,7 +8,7 @@ import OpenAIModels from './services/openai/models'
 import Logger from './services/logger'
 
 import { summaryTemplate } from './templates/summaryTemplate'
-import CHATGPT from './prompts/chatgpt'
+
 import {
   DEFAULT_CONVERSATION_TITLE,
   PLUGIN_NAME,
@@ -43,7 +43,7 @@ export default class ObsidianAIResearchAssistant extends Plugin {
 
       if (typeof this.chat !== 'undefined') {
         this.chat?.start({
-          prompt: CHATGPT(),
+          prompt: '',
           title: DEFAULT_CONVERSATION_TITLE,
           settings: this.settings,
         })
@@ -113,6 +113,20 @@ export default class ObsidianAIResearchAssistant extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings)
+  }
+
+  async checkForExistingFile(title: string): Promise<boolean> {
+    const filePath = this.settings.conversationHistoryDirectory
+
+    const file = `${filePath}/${title.replace(/[\\:/]/g, '_')}.md`
+
+    const existingFile = this.app.vault.getAbstractFileByPath(file)
+
+    if (existingFile !== null) {
+      return true
+    }
+
+    return false
   }
 
   async saveConversation(conversation: Conversation): Promise<void> {

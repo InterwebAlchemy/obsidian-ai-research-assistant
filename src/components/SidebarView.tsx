@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 
+import ChatTitle from './ChatTitle'
 import ChatInput from './ChatInput'
 
 import { useChatScroll } from '../hooks/useChatScroll'
 import { useApp } from '../hooks/useApp'
 
-import { DEFAULT_CONVERSATION_TITLE, USER_MESSAGE_OBJECT_TYPE } from '../constants'
+import { USER_MESSAGE_OBJECT_TYPE } from '../constants'
 import { OPEN_AI_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
 
 import type { Conversation } from '../services/conversation'
@@ -31,16 +32,16 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   // TODO: include toggleScrolling state change
   const [scrollRef] = useChatScroll(messages?.length)
 
-  const handleUserScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>): void => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+  const handleUserScroll = (event: React.UIEvent<HTMLDivElement, UIEvent>): void => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget
 
     // TODO: add a way to toggle auto scrolling when user scrolls up manually
 
     logger.debug({ scrollTop, scrollHeight, clientHeight })
   }
 
-  const handleSubmit = (e: React.FormEvent): void => {
-    e.preventDefault()
+  const handleSubmit = (event: React.FormEvent): void => {
+    event.preventDefault()
 
     setLoading(true)
 
@@ -153,11 +154,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
 
   return (
     <div className="ai-research-assistant-content__container">
-      <div className="ai-research-assistant__conversation__header">
-        <div className="ai-research-assistant__conversation__header__title">
-          {conversation?.title ?? DEFAULT_CONVERSATION_TITLE}
-        </div>
-      </div>
+      <ChatTitle loading={loading} />
       <div
         className="ai-research-assistant__conversation"
         // @ts-expect-error

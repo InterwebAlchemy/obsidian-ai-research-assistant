@@ -13,6 +13,7 @@ export interface ModelDefinition {
   model: OpenAIModel
   maxTokens: number
   tokenType: TokenCounterType
+  stopWords: string[]
 }
 
 export interface OpenAICompletionRequest {
