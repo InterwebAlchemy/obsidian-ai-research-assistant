@@ -155,13 +155,6 @@ export default class ChatView extends ItemView {
     this.debugButton.setTooltip('Log Conversation to this.plugin.logger')
     this.debugButton.setIcon('curly-braces')
 
-    this.memoryButton = new ButtonComponent(toolbar)
-    this.memoryButton.setButtonText(`${this.chat.hasMemory() ? 'Disable' : 'Enable'} Memories`)
-    this.memoryButton.setTooltip(
-      `Click to turn ${this.chat.hasMemory() ? 'off' : 'on'} Memories for this conversation`
-    )
-    this.memoryButton.setIcon(`${this.chat.hasMemory() ? 'clipboard-list' : 'clipboard-x'}`)
-
     if (
       typeof this.chat === 'undefined' ||
       this.chat?.currentConversation()?.messages.length === 0 ||
@@ -198,13 +191,26 @@ export default class ChatView extends ItemView {
       }
     })
 
-    this.memoryButton.onClick(async (): Promise<void> => {
-      this.chat.hasMemory() ? this.chat.disableMemory() : this.chat.enableMemory()
+    if (this.settings.enableMemoryManager) {
+      this.memoryButton = new ButtonComponent(toolbar)
+      this.memoryButton.setButtonText(
+        `${this.chat.hasMemory() ? 'Disable' : 'Enable'} Memory Manager`
+      )
+      this.memoryButton.setTooltip(
+        `Click to turn ${
+          this.chat.hasMemory() ? 'off' : 'on'
+        } the Memory Manager for this conversation`
+      )
+      this.memoryButton.setIcon(`${this.chat.hasMemory() ? 'clipboard-list' : 'clipboard-x'}`)
 
-      await this.renderToolbar()
+      this.memoryButton.onClick(async (): Promise<void> => {
+        this.chat.hasMemory() ? this.chat.disableMemory() : this.chat.enableMemory()
 
-      await this.renderView()
-    })
+        await this.renderToolbar()
+
+        await this.renderView()
+      })
+    }
   }
 
   async onOpen(): Promise<void> {

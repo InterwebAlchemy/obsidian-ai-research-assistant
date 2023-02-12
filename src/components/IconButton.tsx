@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { setIcon } from 'obsidian'
 
-export interface IconButtonProps extends React.ComponentPropsWithoutRef<'button'> {
+export interface IconButtonProps extends React.ComponentPropsWithRef<'button'> {
   iconName: string
   a11yText: string
   buttonStyle?: 'primary' | 'secondary' | 'danger' | 'success'

@@ -108,7 +108,9 @@ const InputArea = ({
           textAlign: countAlign,
         }}
       >
-        <div className="ai-research-assistant__input-area__toolbar__counter">{count}</div>
+        <div className="ai-research-assistant__input-area__toolbar__counter">
+          {count} {count === 1 ? countType.slice(0, -1) : countType}
+        </div>
         {warning ? (
           <div
             className="ai-research-assistant__input-area__counter__warning"

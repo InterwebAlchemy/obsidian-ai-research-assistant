@@ -110,10 +110,35 @@ export default class SettingsTab extends PluginSettingTab {
         })
       })
 
+    new Setting(containerEl)
+      .setName('Enable Memory Manager')
+      .setDesc(
+        '(EXPERIMENTAL) Enable or disable the ability to change which messages are used as memories when adding context to the given prompt. Core memories will always be included. Remembered messages will be included if there is more room for memories. Forgotten messages will never be included. By default, the most recent messages up to the Maximum Memory Count are included. Changing this value will reset any existing chat windows.'
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.enableMemoryManager)
+
+        toggle.onChange(async (value) => {
+          this.plugin.settings.enableMemoryManager = value
+
+          await this.plugin.saveSettings()
+
+          await this.resetPluginView()
+
+          this.display()
+        })
+      })
+
     if (this.plugin.settings.enableMemory) {
       new Setting(containerEl)
         .setName('Maximum Memory Count')
-        .setDesc('The number of messages that can be stored in conversation memory.')
+        .setDesc(
+          `The number of messages that should be stored in conversation memory. Set to 0 for no limit.${
+            this.plugin.settings.enableMemoryManager
+              ? ' Note: Core Memories will always be included when the Experimental Memory Manager is enabled, but if there are more Core Memories than this limit, no other memories will be included.'
+              : ''
+          }`
+        )
         .addSlider((slider) => {
           slider
             .setDynamicTooltip()

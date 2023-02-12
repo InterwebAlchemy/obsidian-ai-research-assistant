@@ -26,4 +26,5 @@ export const PLUGIN_SETTINGS: PluginSettings = {
   botPrefix: BOT_PREFIX,
   enableMemory: false,
   maxMemoryCount: DEFAULT_MAX_MEMORY_COUNT,
+  enableMemoryManager: false,
 }

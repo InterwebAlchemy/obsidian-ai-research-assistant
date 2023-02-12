@@ -39,6 +39,7 @@ export class Conversation {
   model: ModelDefinition
   settings: PluginSettings
   hasMemory: boolean
+  useMemoryManager: boolean
 
   constructor({
     title = DEFAULT_CONVERSATION_TITLE,
@@ -58,6 +59,7 @@ export class Conversation {
     this.model = model
     this.settings = settings
     this.hasMemory = settings.enableMemory
+    this.useMemoryManager = settings.enableMemoryManager
   }
 
   setHasMemory(hasMemory: boolean): void {
@@ -68,6 +70,7 @@ export class Conversation {
     // TODO: summarize the prompt (or maybe the response from OpenAI) and add it to the context
     // instead of just appending the message
     const contextMessages = []
+    const coreMemories = []
 
     if (this.settings.enableMemory) {
       const maxMemories = this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
@@ -75,51 +78,54 @@ export class Conversation {
       // get all memories that haven't been forgotten
       const memories = [...this.messages].filter(({ memoryState }) => memoryState !== 'forgotten')
 
-      // get core memories take precedence
-      contextMessages.push(
-        ...memories
-          .filter(({ memoryState }) => memoryState === 'core')
-          // borrowed from: https://stackoverflow.com/a/6473869/656011
-          .slice(Math.max(contextMessages.length - maxMemories, 0))
-      )
+      // core memories take precedence
+      // and we don't limit how many we include
+      coreMemories.push(...memories.filter(({ memoryState }) => memoryState === 'core'))
 
+      // if we still need more memories, add remembered memories
       if (contextMessages.length < maxMemories) {
         // specific memories come next
         contextMessages.push(
           ...memories
             .filter(({ memoryState }) => memoryState === 'remembered')
+            // grab the most recent memories that we can fit
             // borrowed from: https://stackoverflow.com/a/6473869/656011
             .slice(Math.max(contextMessages.length - maxMemories, 0))
         )
       }
 
+      // if we still need more memories, add latest messages that weren't forgotten
       if (contextMessages.length < maxMemories) {
         // most recent mesages come last
         contextMessages.push(
           ...[...memories]
-            // reverse chronological order
-            .reverse()
             // make sure we're looking at the default memories
             .filter(({ memoryState }) => memoryState === 'default')
+            // grab the most recent number of messages we can fit
             // borrowed from: https://stackoverflow.com/a/6473869/656011
             .slice(Math.max(contextMessages.length - maxMemories, 0))
-            // shift back to chronological order
-            .reverse()
         )
       }
     }
 
-    const formattedContextMessages = contextMessages
+    const formattedContextMessages = [...coreMemories, ...contextMessages]
+      // because we've added memories of different types to the memory stack at different times
+      // we want to sort it chronologically so the final order of the memories will make sense
+      .sort((a, b) => b.message.created - a.message.created)
 
       // get formatted message text
       .map((message) => {
         if (message.message.object === USER_MESSAGE_OBJECT_TYPE) {
           return this.formatMessagePart(
-            `${this.settings.userPrefix}\n${(message.message as UserPrompt).prompt}`
+            `${this.settings.userPrefix}\n${(message.message as UserPrompt).prompt}`,
+            true,
+            true
           )
         } else if (message.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
           return this.formatMessagePart(
-            `${this.settings.botPrefix}\n${(message.message as OpenAICompletion).choices[0].text}`
+            `${this.settings.botPrefix}\n${(message.message as OpenAICompletion).choices[0].text}`,
+            true,
+            true
           )
         } else {
           return ''

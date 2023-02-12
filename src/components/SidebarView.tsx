@@ -76,7 +76,11 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   return (
     <div className="ai-research-assistant-content__container">
       <ChatTitle loading={loading} />
-      <ChatWindow messages={messages} hasMemory={conversation?.hasMemory} />
+      <ChatWindow
+        messages={messages}
+        hasMemory={conversation?.hasMemory}
+        useMemoryManager={conversation?.useMemoryManager}
+      />
       <ChatInput input={input} onChange={setInput} onSubmit={handleSubmit} busy={loading} />
     </div>
   )

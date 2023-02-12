@@ -21,6 +21,7 @@ export interface PluginSettings {
 
   enableMemory: boolean
   maxMemoryCount?: number
+  enableMemoryManager: boolean
 }
 
 export interface UserPrompt {
