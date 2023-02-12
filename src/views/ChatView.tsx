@@ -20,12 +20,16 @@ export default class ChatView extends ItemView {
   settings: PluginSettings
   chat: Chat
   saveConversation: (conversation: Conversation) => Promise<void>
-  saveButton: ButtonComponent | null
-  debugButton: ButtonComponent | null
-  newConversationButton: ButtonComponent | null
+  toolbar: HTMLDivElement
+  saveButton: ButtonComponent
+  debugButton: ButtonComponent
+  newConversationButton: ButtonComponent
+  memoryButton: ButtonComponent
   autosaveInterval: number | null
   lastSavedMessageId: string | null
   root: Root | null
+
+  icon = 'bot'
 
   constructor(leaf: WorkspaceLeaf, plugin: ObsidianAIResearchAssistant) {
     super(leaf)
@@ -34,7 +38,6 @@ export default class ChatView extends ItemView {
     this.settings = plugin.settings
     this.saveConversation = plugin.saveConversation.bind(plugin)
     this.chat = plugin.chat
-    this.saveButton = null
     this.autosaveInterval = null
     this.lastSavedMessageId = null
   }
@@ -106,18 +109,20 @@ export default class ChatView extends ItemView {
       currentConversation.messages.length > 0 &&
       this.chat.currentConversation() !== null
     ) {
-      if (this.saveButton?.disabled === true) {
+      if (this.saveButton?.disabled) {
         this.saveButton?.setDisabled(false)
       }
 
-      if (this.debugButton?.disabled === true) {
+      if (this.debugButton?.disabled) {
         this.debugButton?.setDisabled(false)
       }
 
-      if (this.newConversationButton?.disabled === true) {
+      if (this.newConversationButton?.disabled) {
         this.newConversationButton?.setDisabled(false)
       }
     }
+
+    await this.renderToolbar()
   }
 
   async renderView(): Promise<void> {
@@ -130,23 +135,10 @@ export default class ChatView extends ItemView {
     )
   }
 
-  async onOpen(): Promise<void> {
-    const { containerEl } = this
+  async renderToolbar(): Promise<void> {
+    const { toolbar } = this
 
-    // autosave
-    if (this.settings.autosaveConversationHistory) {
-      this.autosaveInterval = this.registerInterval(
-        window.setInterval(() => {
-          this.autosaveConversation()
-        }, 10000)
-      )
-    }
-
-    containerEl.empty()
-
-    const container = containerEl.createDiv(`${PLUGIN_PREFIX}-container`)
-
-    const toolbar = container.createDiv(`${PLUGIN_PREFIX}-toolbar`)
+    toolbar.empty()
 
     this.saveButton = new ButtonComponent(toolbar)
     this.saveButton.setButtonText('Save')
@@ -162,6 +154,13 @@ export default class ChatView extends ItemView {
     this.debugButton.setButtonText('Debug')
     this.debugButton.setTooltip('Log Conversation to this.plugin.logger')
     this.debugButton.setIcon('curly-braces')
+
+    this.memoryButton = new ButtonComponent(toolbar)
+    this.memoryButton.setButtonText(`${this.chat.hasMemory() ? 'Disable' : 'Enable'} Memories`)
+    this.memoryButton.setTooltip(
+      `Click to turn ${this.chat.hasMemory() ? 'off' : 'on'} Memories for this conversation`
+    )
+    this.memoryButton.setIcon(`${this.chat.hasMemory() ? 'clipboard-list' : 'clipboard-x'}`)
 
     if (
       typeof this.chat === 'undefined' ||
@@ -188,22 +187,57 @@ export default class ChatView extends ItemView {
     this.newConversationButton.onClick(async (): Promise<void> => {
       if (this?.chat?.currentConversation() !== null) {
         this.chat?.start({
-          prompt: '',
+          preamble: '',
           title: DEFAULT_CONVERSATION_TITLE,
           settings: this.settings,
         })
 
-        this.saveButton?.setDisabled(true)
-        this.newConversationButton?.setDisabled(true)
-        this.debugButton?.setDisabled(true)
+        await this.renderToolbar()
 
         await this.renderView()
       }
     })
 
+    this.memoryButton.onClick(async (): Promise<void> => {
+      this.chat.hasMemory() ? this.chat.disableMemory() : this.chat.enableMemory()
+
+      await this.renderToolbar()
+
+      await this.renderView()
+    })
+  }
+
+  async onOpen(): Promise<void> {
+    const { containerEl } = this
+
+    // autosave
+    if (this.settings.autosaveConversationHistory) {
+      this.autosaveInterval = this.registerInterval(
+        window.setInterval(() => {
+          this.autosaveConversation()
+        }, 10000)
+      )
+    }
+
+    containerEl.empty()
+
+    const container = containerEl.createDiv(`${PLUGIN_PREFIX}-container`)
+
+    this.toolbar = container.createDiv(`${PLUGIN_PREFIX}-toolbar`)
+
     const rootElement = container.createDiv(`${PLUGIN_PREFIX}-content`)
 
     this.root = createRoot(rootElement)
+
+    if (typeof this.chat !== 'undefined' && this.chat?.currentConversation() === null) {
+      this.chat?.start({
+        preamble: '',
+        title: DEFAULT_CONVERSATION_TITLE,
+        settings: this.settings,
+      })
+    }
+
+    await this.renderToolbar()
 
     await this.renderView()
   }

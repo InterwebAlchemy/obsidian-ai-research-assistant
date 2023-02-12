@@ -9,12 +9,7 @@ import Logger from './services/logger'
 
 import { summaryTemplate } from './templates/summaryTemplate'
 
-import {
-  DEFAULT_CONVERSATION_TITLE,
-  PLUGIN_NAME,
-  PLUGIN_SETTINGS,
-  PLUGIN_PREFIX,
-} from './constants'
+import { PLUGIN_NAME, PLUGIN_SETTINGS, PLUGIN_PREFIX } from './constants'
 
 import type { Conversation } from './services/conversation'
 
@@ -40,14 +35,6 @@ export default class ObsidianAIResearchAssistant extends Plugin {
         type: PLUGIN_PREFIX,
         active: true,
       })
-
-      if (typeof this.chat !== 'undefined') {
-        this.chat?.start({
-          prompt: '',
-          title: DEFAULT_CONVERSATION_TITLE,
-          settings: this.settings,
-        })
-      }
     }
 
     this.app.workspace.revealLeaf(this.app.workspace.getLeavesOfType(PLUGIN_PREFIX)[0])

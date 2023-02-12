@@ -4,7 +4,7 @@ import { setIcon } from 'obsidian'
 export interface IconButtonProps extends React.ComponentPropsWithoutRef<'button'> {
   iconName: string
   a11yText: string
-  buttonStyle?: 'primary' | 'secondary' | 'danger'
+  buttonStyle?: 'primary' | 'secondary' | 'danger' | 'success'
   buttonVariant?: 'outlined' | 'iconOnly'
 }
 
@@ -20,8 +20,6 @@ const IconButton = ({
   const iconButton = useRef<HTMLElement>()
 
   useEffect(() => {
-    console.log(iconButton.current)
-
     if (typeof iconButton.current !== 'undefined') {
       const button = iconButton.current
 

@@ -21,14 +21,17 @@ const ChatTitle = ({ loading = false }: ChatTitleProps): React.ReactElement => {
 
   const [editing, setEditing] = useState(false)
 
-  const onClickEdit = (): void => {
+  const onEdit = (event: React.FormEvent): void => {
+    event.preventDefault()
+
     setUpdatedTitle(title)
 
     setEditing(true)
   }
 
-  const onClickSave = (): void => {
-    console.log(updatedTitle)
+  const onSave = (event: React.FormEvent): void => {
+    event.preventDefault()
+
     if (typeof updatedTitle === 'string' && updatedTitle !== '') {
       plugin
         .checkForExistingFile(updatedTitle)
@@ -61,7 +64,10 @@ const ChatTitle = ({ loading = false }: ChatTitleProps): React.ReactElement => {
   }, [title])
 
   return (
-    <div className="ai-research-assistant__conversation__header">
+    <form
+      className="ai-research-assistant__conversation__header"
+      onSubmit={editing ? onSave : onEdit}
+    >
       {!editing ? (
         <div className="ai-research-assistant__conversation__header__title">{title}</div>
       ) : (
@@ -71,12 +77,12 @@ const ChatTitle = ({ loading = false }: ChatTitleProps): React.ReactElement => {
         <IconButton
           iconName={editing ? 'save' : 'pencil'}
           a11yText={`${editing ? 'Save' : 'Edit'} Conversation Title`}
-          onClick={editing ? onClickSave : onClickEdit}
           buttonVariant="iconOnly"
           buttonStyle="primary"
+          type={'submit'}
         />
       </div>
-    </div>
+    </form>
   )
 }
 

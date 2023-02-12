@@ -34,13 +34,14 @@ class Chat {
     return this.conversations.getConversation(this.currentConversationId)
   }
 
-  async send(message: string): Promise<void> {
+  async send(prompt: string): Promise<void> {
     const conversation = this.currentConversation()
 
-    if (typeof message !== 'undefined' && message !== '' && conversation !== null) {
-      conversation.addMessage({
-        prompt: message,
+    if (typeof prompt !== 'undefined' && prompt !== '' && conversation !== null) {
+      const message = conversation.addMessage({
+        prompt,
         object: USER_MESSAGE_OBJECT_TYPE,
+        model: this.model,
       })
 
       switch (this.model.adapter) {
@@ -48,8 +49,7 @@ class Chat {
           try {
             const response = await openAICompletion(
               {
-                input: message,
-                context: conversation.context,
+                input: conversation.getFullMessageText(message),
                 model: this.model,
               },
               this.currentConversation()?.settings
@@ -65,8 +65,8 @@ class Chat {
     }
   }
 
-  start({ prompt, title, settings }: Partial<Conversation>): void {
-    const conversation = this.conversations.startConversation({ prompt, title, settings })
+  start({ preamble, title, settings }: Partial<Conversation>): void {
+    const conversation = this.conversations.startConversation({ preamble, title, settings })
 
     this.currentConversationId = conversation.id
   }
@@ -76,6 +76,32 @@ class Chat {
       this.conversations.updateConversationTitle(id, title)
     } else if (this.currentConversationId !== null) {
       this.conversations.updateConversationTitle(this.currentConversationId, title)
+    }
+  }
+
+  hasMemory(): boolean {
+    const conversation = this.currentConversation()
+
+    if (conversation !== null) {
+      return conversation.hasMemory
+    }
+
+    return false
+  }
+
+  enableMemory(): void {
+    const conversation = this.currentConversation()
+
+    if (conversation !== null) {
+      conversation.setHasMemory(true)
+    }
+  }
+
+  disableMemory(): void {
+    const conversation = this.currentConversation()
+
+    if (conversation !== null) {
+      conversation.setHasMemory(false)
     }
   }
 }

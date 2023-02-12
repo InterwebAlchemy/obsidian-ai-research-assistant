@@ -3,124 +3,210 @@ import { v4 as uuidv4 } from 'uuid'
 import formatInput from '../utils/formatInput'
 import getUnixTimestamp from 'src/utils/getUnixTimestamp'
 
-import { PLUGIN_SETTINGS, DEFAULT_CONVERSATION_TITLE, USER_MESSAGE_OBJECT_TYPE } from '../constants'
+import {
+  PLUGIN_SETTINGS,
+  DEFAULT_CONVERSATION_TITLE,
+  USER_MESSAGE_OBJECT_TYPE,
+  DEFAULT_MAX_MEMORY_COUNT,
+} from '../constants'
 import { OPEN_AI_DEFAULT_MODEL, OPEN_AI_COMPLETION_OBJECT_TYPE } from './openai/constants'
-import type { OpenAICompletion } from './openai/types'
-import type { UserPrompt, ConversationMessage, PluginSettings } from '../types'
+import type { ModelDefinition, OpenAICompletion } from './openai/types'
+import type {
+  UserPrompt,
+  ConversationMessageType,
+  ConversationMessage,
+  PluginSettings,
+  MemoryState,
+} from '../types'
 
 export interface ConversationInterface {
   id: string
   title: string
-  prompt: string
+  preamble: string
   timestamp: number
   messages: ConversationMessage[]
-  adapter: string
-  model?: string
+  model?: ModelDefinition
   settings: PluginSettings
 }
 
 export class Conversation {
   id: ConversationInterface['id']
-  prompt: ConversationInterface['prompt']
+  preamble: ConversationInterface['preamble']
   title: ConversationInterface['title']
   timestamp: ConversationInterface['timestamp']
   messages: ConversationInterface['messages']
   context: string
-  adapter: string
-  model: string
+  model: ModelDefinition
   settings: PluginSettings
+  hasMemory: boolean
 
   constructor({
     title = DEFAULT_CONVERSATION_TITLE,
-    prompt = '',
+    preamble = '',
     timestamp = getUnixTimestamp(),
     id = uuidv4(),
     messages = [],
-    model = OPEN_AI_DEFAULT_MODEL.model,
-    adapter = OPEN_AI_DEFAULT_MODEL.adapter,
+    model = OPEN_AI_DEFAULT_MODEL,
     settings = PLUGIN_SETTINGS,
   }: Partial<ConversationInterface>) {
     this.id = id
-    this.prompt = prompt
+    this.preamble = preamble
     this.title = title
     this.timestamp = timestamp
     this.messages = messages
-    this.context = prompt
+    this.context = preamble
     this.model = model
-    this.adapter = adapter
     this.settings = settings
+    this.hasMemory = settings.enableMemory
   }
 
-  getContext(includePrompt: boolean = false): string {
+  setHasMemory(hasMemory: boolean): void {
+    this.hasMemory = hasMemory
+  }
+
+  getContext(includePreamble: boolean = false): string {
     // TODO: summarize the prompt (or maybe the response from OpenAI) and add it to the context
     // instead of just appending the message
-    const contextMessages = this.messages
-      .filter((message) =>
-        [USER_MESSAGE_OBJECT_TYPE, OPEN_AI_COMPLETION_OBJECT_TYPE].includes(message.object)
+    const contextMessages = []
+
+    if (this.settings.enableMemory) {
+      const maxMemories = this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
+
+      // get all memories that haven't been forgotten
+      const memories = [...this.messages].filter(({ memoryState }) => memoryState !== 'forgotten')
+
+      // get core memories take precedence
+      contextMessages.push(
+        ...memories
+          .filter(({ memoryState }) => memoryState === 'core')
+          // borrowed from: https://stackoverflow.com/a/6473869/656011
+          .slice(Math.max(contextMessages.length - maxMemories, 0))
       )
-      // borrowed from: https://stackoverflow.com/a/6473869/656011
-      // TODO: make this configurable
-      .slice(Math.max(this.messages.length - 12, 0))
+
+      if (contextMessages.length < maxMemories) {
+        // specific memories come next
+        contextMessages.push(
+          ...memories
+            .filter(({ memoryState }) => memoryState === 'remembered')
+            // borrowed from: https://stackoverflow.com/a/6473869/656011
+            .slice(Math.max(contextMessages.length - maxMemories, 0))
+        )
+      }
+
+      if (contextMessages.length < maxMemories) {
+        // most recent mesages come last
+        contextMessages.push(
+          ...[...memories]
+            // reverse chronological order
+            .reverse()
+            // make sure we're looking at the default memories
+            .filter(({ memoryState }) => memoryState === 'default')
+            // borrowed from: https://stackoverflow.com/a/6473869/656011
+            .slice(Math.max(contextMessages.length - maxMemories, 0))
+            // shift back to chronological order
+            .reverse()
+        )
+      }
+    }
+
+    const formattedContextMessages = contextMessages
+
+      // get formatted message text
       .map((message) => {
-        switch (message.object) {
-          case USER_MESSAGE_OBJECT_TYPE:
-            return formatInput(`${this.settings.userPrefix} ${(message as UserPrompt).prompt}`)
-
-          case OPEN_AI_COMPLETION_OBJECT_TYPE:
-            return formatInput(
-              `${this.settings.botPrefix} ${(message as OpenAICompletion).choices[0].text}`
-            )
-
-          default:
-            return ''
+        if (message.message.object === USER_MESSAGE_OBJECT_TYPE) {
+          return this.formatMessagePart(
+            `${this.settings.userPrefix}\n${(message.message as UserPrompt).prompt}`
+          )
+        } else if (message.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
+          return this.formatMessagePart(
+            `${this.settings.botPrefix}\n${(message.message as OpenAICompletion).choices[0].text}`
+          )
+        } else {
+          return ''
         }
       })
 
-    if (includePrompt) {
-      contextMessages.unshift(formatInput(this.prompt))
+    // if we want to include our preamble in the context, add it to the beginning of the array
+    if (includePreamble && this.preamble !== '') {
+      formattedContextMessages.unshift(this.preamble)
     }
 
-    return contextMessages.join('\n')
+    return formatInput(formattedContextMessages.join('\n'))
   }
 
-  getFullMessageText(message: ConversationMessage): string {
-    if (message.object === USER_MESSAGE_OBJECT_TYPE) {
+  formatMessagePart(part: string = '', prefix = true, suffix = false): string {
+    if (typeof part !== 'undefined' && part !== null && part !== '') {
+      return `${
+        prefix && typeof this?.model?.startWord !== 'undefined' ? this.model.startWord : ''
+      }${part}${suffix && typeof this?.model?.stopWord !== 'undefined' ? this.model.stopWord : ''}`
+    } else {
+      return ''
+    }
+  }
+
+  getFullMessageText(message: ConversationMessage | ConversationMessage['message']): string {
+    let currentMessage = message as ConversationMessageType
+
+    if (typeof (message as ConversationMessage)?.message !== 'undefined') {
+      currentMessage = (message as ConversationMessage).message
+    }
+
+    if (currentMessage.object === USER_MESSAGE_OBJECT_TYPE) {
       return formatInput(
-        `${this.prompt}\n${this.getContext()}\n${this.settings.userPrefix} ${
-          (message as UserPrompt).prompt
-        }\n${this.settings.botPrefix}`
+        `${this.formatMessagePart(this.preamble)}${this.getContext()}${this.formatMessagePart(
+          `${this.settings.userPrefix}\n${(currentMessage as UserPrompt).prompt}`
+        )}${this.formatMessagePart(`${this.settings.botPrefix}\n`, true)}`
       )
-    } else if (message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
+    } else if (currentMessage.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
       return formatInput(
-        `${this.settings.botPrefix} ${(message as OpenAICompletion).choices[0].text}`
+        `${this.formatMessagePart(
+          `${this.settings.botPrefix}\n${(currentMessage as OpenAICompletion).choices[0].text}`
+        )}`
       )
     } else {
-      return JSON.stringify(message)
+      return this.formatMessagePart(JSON.stringify(currentMessage))
     }
   }
 
-  addMessage(message: Partial<ConversationMessage>): void {
-    if (typeof message?.id === 'undefined') {
-      message.id = uuidv4()
+  addMessage(message: Partial<ConversationMessageType>): ConversationMessage {
+    const conversationMessage: ConversationMessage = {
+      id:
+        typeof (message as OpenAICompletion)?.id !== 'undefined'
+          ? (message as OpenAICompletion).id
+          : uuidv4(),
+      memoryState: 'default' as MemoryState,
+      message: message as ConversationMessage['message'],
     }
 
-    if (typeof message?.created === 'undefined') {
-      message.created = getUnixTimestamp()
+    if (typeof conversationMessage?.message?.created === 'undefined') {
+      conversationMessage.message.created = getUnixTimestamp()
     }
 
-    if (message.object === USER_MESSAGE_OBJECT_TYPE) {
+    if (conversationMessage.message.object === USER_MESSAGE_OBJECT_TYPE) {
       const inputText = formatInput(`${(message as UserPrompt).prompt}`)
-      const inputContext = formatInput(this.prompt + this.getContext())
+      const inputContext = formatInput(this.getContext(true))
+      const fullText = formatInput(this.getFullMessageText(conversationMessage.message))
 
       ;(message as UserPrompt).context = inputContext
       ;(message as UserPrompt).prompt = inputText
+      ;(message as UserPrompt).fullText = fullText
 
-      this.context = this.getFullMessageText(message as ConversationMessage)
-    } else if (message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
-      this.context = this.getFullMessageText(message as ConversationMessage)
+      this.context = this.getFullMessageText(message as ConversationMessageType)
+    } else if (conversationMessage.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
+      this.context = this.getFullMessageText(message as ConversationMessageType)
+    } else {
+      conversationMessage.memoryState = 'forgotten' as MemoryState
+
+      conversationMessage.message = {
+        object: 'system_message',
+        created: getUnixTimestamp(),
+        output: JSON.stringify(message),
+      }
     }
 
-    this.messages.push(message as ConversationMessage)
+    this.messages.push(conversationMessage)
+
+    return conversationMessage
   }
 
   updateTitle(title: string): void {
@@ -144,9 +230,9 @@ export class ConversationManager {
     this.conversations = {}
   }
 
-  startConversation({ prompt, title, settings }: Partial<Conversation>): Conversation {
+  startConversation({ preamble, title, settings }: Partial<Conversation>): Conversation {
     const conversation = new Conversation({
-      prompt,
+      preamble,
       title,
       settings,
     })

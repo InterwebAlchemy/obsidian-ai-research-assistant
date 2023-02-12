@@ -38,7 +38,11 @@ export const openAICompletion = async (
     model.maxTokens
   )
 
-  const stopWords = model.stopWords ?? []
+  const stopWords: string[] = []
+
+  if (typeof model.stopWord !== 'undefined' && model.stopWord !== '') {
+    stopWords.push(model.stopWord)
+  }
 
   if (typeof userPrefix !== 'undefined' && userPrefix !== '') {
     stopWords.push(userPrefix)

@@ -1,7 +1,9 @@
-import type { OpenAIModel, OpenAICompletion } from './services/openai/types'
+import type { ModelDefinition, OpenAIModel, OpenAICompletion } from './services/openai/types'
 
 // TODO: update this union type with other valid adapters as they are added
 export type ChatAdapter = 'openai'
+
+export type MemoryState = 'default' | 'core' | 'remembered' | 'forgotten'
 
 export interface PluginSettings {
   debugMode: boolean
@@ -16,14 +18,30 @@ export interface PluginSettings {
 
   autosaveConversationHistory: boolean
   conversationHistoryDirectory: string
+
+  enableMemory: boolean
+  maxMemoryCount?: number
 }
 
 export interface UserPrompt {
-  id: string
   object: string
   prompt: string
   created: number
   context?: string
+  fullText?: string
+  model?: ModelDefinition
 }
 
-export type ConversationMessage = UserPrompt | OpenAICompletion
+export interface SystemMessage {
+  object: string
+  output: string
+  created: number
+}
+
+export type ConversationMessageType = UserPrompt | OpenAICompletion | SystemMessage
+
+export interface ConversationMessage {
+  id: string
+  memoryState: MemoryState
+  message: ConversationMessageType
+}

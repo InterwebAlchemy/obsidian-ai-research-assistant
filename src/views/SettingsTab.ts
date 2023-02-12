@@ -4,7 +4,13 @@ import OpenAIModels from '../services/openai/models'
 
 import obfuscateApiKey from '../utils/obfuscateApiKey'
 
-import { BOT_PREFIX, PLUGIN_NAME, PLUGIN_PREFIX, USER_PREFIX } from '../constants'
+import {
+  BOT_PREFIX,
+  DEFAULT_MAX_MEMORY_COUNT,
+  PLUGIN_NAME,
+  PLUGIN_PREFIX,
+  USER_PREFIX,
+} from '../constants'
 import { OPEN_AI_API_KEY_URL } from '../services/openai/constants'
 
 import type ObsidianAIResearchAssistant from '../main'
@@ -84,6 +90,44 @@ export default class SettingsTab extends PluginSettingTab {
             await this.resetPluginView()
           })
       )
+
+    new Setting(containerEl)
+      .setName('Enable Memories')
+      .setDesc(
+        'Enable or disable the ability to store messages in memory. Changing this value will reset any existing chat windows.'
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.enableMemory)
+
+        toggle.onChange(async (value) => {
+          this.plugin.settings.enableMemory = value
+
+          await this.plugin.saveSettings()
+
+          await this.resetPluginView()
+
+          this.display()
+        })
+      })
+
+    if (this.plugin.settings.enableMemory) {
+      new Setting(containerEl)
+        .setName('Maximum Memory Count')
+        .setDesc('The number of messages that can be stored in conversation memory.')
+        .addSlider((slider) => {
+          slider
+            .setDynamicTooltip()
+            .setLimits(0, 20, 1)
+            .setValue(this.plugin.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT)
+            .onChange(async (value) => {
+              this.plugin.settings.maxMemoryCount = value
+
+              await this.plugin.saveSettings()
+
+              await this.resetPluginView()
+            })
+        })
+    }
 
     new Setting(containerEl)
       .setName('Default Model')

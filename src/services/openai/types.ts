@@ -13,13 +13,13 @@ export interface ModelDefinition {
   model: OpenAIModel
   maxTokens: number
   tokenType: TokenCounterType
-  stopWords: string[]
+  startWord?: string
+  stopWord?: string
 }
 
 export interface OpenAICompletionRequest {
   input: string
   temperature?: number
-  context?: string
   model?: ModelDefinition
   stream?: boolean
 }

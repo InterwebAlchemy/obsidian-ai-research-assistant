@@ -14,7 +14,6 @@ export const useChatScroll = <T>(
 
   useEffect(() => {
     if (typeof ref?.current !== 'undefined' && shouldScroll) {
-      console.debug(ref.current.scrollTop, ref.current.scrollHeight)
       ref.current.scrollTop = ref.current.scrollHeight
     }
   }, [scrollActivator, shouldScroll])

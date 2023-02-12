@@ -86,6 +86,39 @@
   margin-bottom: 20px;
 }
 
+.ai-research-assistant__conversation__item__container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.ai-research-assistant__conversation__item--bot
+  .ai-research-assistant__conversation__item__container {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+}
+
+.ai-research-assistant__conversation__item--user
+  .ai-research-assistant__conversation__item__container {
+  justify-content: flex-end;
+}
+
+.ai-research-assistant__conversation__item__action {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-research-assistant__conversation__item--bot .ai-research-assistant__conversation__item__action {
+  margin-left: 5px;
+}
+
+.ai-research-assistant__conversation__item--user
+  .ai-research-assistant__conversation__item__action {
+  margin-right: 5px;
+}
+
 .ai-research-assistant__conversation__item__text {
   display: flex;
   position: relative;
@@ -202,6 +235,10 @@
   border-color: var(--text-error);
 }
 
+.ai-research-assistant__icon-button--success {
+  border-color: var(--text-success);
+}
+
 .ai-research-assistant__icon-button > div {
   display: flex;
 }
@@ -216,6 +253,10 @@
 
 .ai-research-assistant__icon-button--danger svg {
   color: var(--text-error);
+}
+
+.ai-research-assistant__icon-button--success svg {
+  color: var(--text-success);
 }
 
 .ai-research-assistant__icon-button__a11y-text {
