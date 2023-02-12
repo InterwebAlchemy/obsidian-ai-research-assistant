@@ -21,7 +21,6 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversation, setConversation] = useState<Conversation | null>(null)
-  const [messages, setMessages] = useState<Conversation['messages']>([])
 
   const handleSubmit = (event: React.FormEvent): void => {
     event.preventDefault()
@@ -67,20 +66,18 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
     }
   }, [chat?.conversations, conversationId])
 
-  useEffect(() => {
-    if (typeof conversation?.id !== 'undefined' && typeof conversation?.messages !== 'undefined') {
-      setMessages(conversation.messages)
-    }
-  }, [conversation?.messages, conversation?.id])
-
   return (
     <div className="ai-research-assistant-content__container">
       <ChatTitle loading={loading} />
-      <ChatWindow
-        messages={messages}
-        hasMemory={conversation?.hasMemory}
-        useMemoryManager={conversation?.useMemoryManager}
-      />
+      {conversation !== null ? (
+        <ChatWindow
+          conversation={conversation}
+          hasMemory={conversation?.hasMemory}
+          useMemoryManager={conversation?.useMemoryManager}
+        />
+      ) : (
+        <></>
+      )}
       <ChatInput input={input} onChange={setInput} onSubmit={handleSubmit} busy={loading} />
     </div>
   )

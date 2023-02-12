@@ -5,12 +5,14 @@ import IconButton, { type IconButtonProps } from './IconButton'
 import { OPEN_AI_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
 
 import type { ConversationMessage, MemoryState } from '../types'
+import type { Conversation } from '../services/conversation'
 
 export interface MemoryManagerProps {
   message: ConversationMessage
+  conversation?: Conversation
 }
 
-const MemoryManager = ({ message }: MemoryManagerProps): React.ReactElement => {
+const MemoryManager = ({ message, conversation }: MemoryManagerProps): React.ReactElement => {
   const isBotMessage = message?.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE
 
   const [memoryState, setMemoryState] = useState<MemoryState>('default')
@@ -110,6 +112,9 @@ const MemoryManager = ({ message }: MemoryManagerProps): React.ReactElement => {
             buttonStyle={getMemoryIconColor('default')}
           >
             Default
+            {typeof conversation !== 'undefined'
+              ? ` (${conversation?.getNumberofMemoriesForState('default')})`
+              : ''}
           </IconButton>
           <IconButton
             iconName={getMemoryIcon('core')}
@@ -119,6 +124,9 @@ const MemoryManager = ({ message }: MemoryManagerProps): React.ReactElement => {
             buttonStyle={getMemoryIconColor('core')}
           >
             Core
+            {typeof conversation !== 'undefined'
+              ? ` (${conversation?.getNumberofMemoriesForState('core')})`
+              : ''}
           </IconButton>
           <IconButton
             iconName={getMemoryIcon('remembered')}
@@ -128,6 +136,9 @@ const MemoryManager = ({ message }: MemoryManagerProps): React.ReactElement => {
             buttonStyle={getMemoryIconColor('remembered')}
           >
             Remember
+            {typeof conversation !== 'undefined'
+              ? ` (${conversation?.getNumberofMemoriesForState('remembered')})`
+              : ''}
           </IconButton>
           <IconButton
             iconName={getMemoryIcon('forgotten')}
@@ -137,6 +148,9 @@ const MemoryManager = ({ message }: MemoryManagerProps): React.ReactElement => {
             buttonStyle={getMemoryIconColor('forgotten')}
           >
             Forget
+            {typeof conversation !== 'undefined'
+              ? ` (${conversation?.getNumberofMemoriesForState('forgotten')})`
+              : ''}
           </IconButton>
         </div>
       ) : (

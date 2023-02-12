@@ -66,6 +66,26 @@ export class Conversation {
     this.hasMemory = hasMemory
   }
 
+  getNumberofMemoriesForState(state: MemoryState): number {
+    return this.getMemories(state).length
+  }
+
+  getTotalNumberOfMemories(): number {
+    return this.getMemories(['default', 'core', 'remembered']).length
+  }
+
+  getMemories(
+    state: MemoryState | MemoryState[],
+    messages?: ConversationMessage[]
+  ): ConversationMessage[] {
+    const comparison = (memoryState: MemoryState): boolean =>
+      Array.isArray(state) ? state.includes(memoryState) : memoryState === state
+
+    return (typeof messages !== 'undefined' ? messages : this.messages).filter((message) =>
+      comparison(message.memoryState)
+    )
+  }
+
   getContext(includePreamble: boolean = false): string {
     // TODO: summarize the prompt (or maybe the response from OpenAI) and add it to the context
     // instead of just appending the message
@@ -76,18 +96,17 @@ export class Conversation {
       const maxMemories = this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
 
       // get all memories that haven't been forgotten
-      const memories = [...this.messages].filter(({ memoryState }) => memoryState !== 'forgotten')
+      const memories = this.getMemories(['default', 'remembered', 'core'])
 
       // core memories take precedence
       // and we don't limit how many we include
-      coreMemories.push(...memories.filter(({ memoryState }) => memoryState === 'core'))
+      coreMemories.push(...this.getMemories('core', memories))
 
       // if we still need more memories, add remembered memories
       if (contextMessages.length < maxMemories) {
         // specific memories come next
         contextMessages.push(
-          ...memories
-            .filter(({ memoryState }) => memoryState === 'remembered')
+          ...this.getMemories('remembered', memories)
             // grab the most recent memories that we can fit
             // borrowed from: https://stackoverflow.com/a/6473869/656011
             .slice(Math.max(contextMessages.length - maxMemories, 0))
@@ -98,9 +117,8 @@ export class Conversation {
       if (contextMessages.length < maxMemories) {
         // most recent mesages come last
         contextMessages.push(
-          ...[...memories]
-            // make sure we're looking at the default memories
-            .filter(({ memoryState }) => memoryState === 'default')
+          // make sure we're looking at the default memories
+          ...this.getMemories('default', memories)
             // grab the most recent number of messages we can fit
             // borrowed from: https://stackoverflow.com/a/6473869/656011
             .slice(Math.max(contextMessages.length - maxMemories, 0))

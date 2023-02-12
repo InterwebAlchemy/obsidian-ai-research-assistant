@@ -1,5 +1,6 @@
 import converstUnixTimestampToISODate from '../utils/getISODate'
 import tokenCounter from '../utils/tokenCounter'
+import formatInput from '../utils/formatInput'
 
 import { USER_MESSAGE_OBJECT_TYPE } from '../constants'
 
@@ -60,11 +61,11 @@ ${conversation.messages
         ? (item.message as UserPrompt).prompt
         : (item.message as OpenAICompletion).choices[0].text
 
-    return `> **${speaker}**${
+    return `> **${speaker}** ${formatInput(message).replace(/\n/g, '\n> ')}\n${
       item.memoryState !== 'default'
-        ? ` _(${item.memoryState[0].toUpperCase()}${item.memoryState.slice(1)} Memory)_`
+        ? `    _(${item.memoryState[0].toUpperCase()}${item.memoryState.slice(1)} Memory)_`
         : ''
-    } ${message.replace(/\n/g, '\n> ')}\n`
+    }`
   })
   .join('\n')}
 

@@ -1,5 +1,7 @@
 # Obsidian AI Research Assistant
 
+> Build better Prompts and AI integrations with this advanced research tool for Prompt Engineering.
+
 This plugin integrates tools for Prompt Engineering and researching AI tools and language models
 like OpenAI's GPT-3 into Obsidian.
 
@@ -41,21 +43,35 @@ between what you might be editing when you click on an `Edit Prompt` button.
 - **Handles**: Handles are short identifiers used to differentiate between speakers in the Context.
   By default this plugin uses `You:` to represent the Human and `AI:` to represent the AI model. You
   can change these prefixes in the AI Research Assistant settings.
-- **Memories**: When Memories are enabled, the Context is generated from the Preamble and a defined
-  number of previous messages. If the experimental Memory Manager is enabled, you can edit the
-  Context in real time for each Prompt by defining memory staties for previous messages.
-  - **Memory States**:
-    - **Default**: By default, messages are remembered in reverse chronological order, the most
-      recent messages are most likely to be remembered and older messages are the first to be
-      forgotten. These memories follow a basic First In First Out (FIFO) queue.
-    - **Core Memory**: Core Memories are messages that are remembered indefinitely . They are
-      usually the most important messages in the conversation and are used to provide context for
-      the model. They are not forgotten, and do not count towards the maximum number of memories.
-    - **Remembered**: Remembered Memories are messages that are remembered for a limited amount of
-      time. They are usually more important messages, but not as important as Core Memories. They do
-      count towards the maximum number of memories, and are accessed in reverse chronological order.
-      If the maximum number of memories is reached, the oldest Remembered Memories will not be
-      included in the Context.
-    - **Forgotten**: Forgotten Memories are never included in the Conversation's Context.
-  - **Memory Management**: You can manage the Memories of a Conversation in real time by clicking on
-    the Memory State button next to each message bubble and choosing a new state for that memory.
+- **Memories**: When [Memories](#memories) are enabled, the Context is generated from the Preamble
+  and a defined number of previous messages. If the experimental Memory Manager is enabled, you can
+  edit the Context in real time for each Prompt by defining memory staties for previous messages.
+
+## Memories
+
+Memories give your Conversation context and allow the language model to use what's already been said
+to inform future responses.
+
+There are four different [Memory States](#memory-states), and each message can have one of them:
+
+You can manage the Memories of a Conversation in real time by clicking on the Memory State button
+next to each message bubble and choosing a new state for that memory.
+
+### Memory States
+
+- **Default**: By default, messages are **somtimes** remembered (in reverse chronological order),
+  the most recent Memories are most likely to be remembered and older Memories are the first to be
+  excluded frm the Conversation's Context. These Memories follow a basic First In First Out (FIFO)
+  queue.
+- **Core Memory**: Core Memories are **always** included in the Conversation's Context. They are
+  usually the most important messages in the conversation and are used to provide consistent Context
+  for the model. They do not count towards the maximum number of memories for a Conversation
+  configured in the plugin's settings.
+- **Remembered**: Remembered Memories **often** included in the Conversation's Context, until your
+  Conversation reaches the maximum number of memories configured in the plugin's settings. They are
+  usually more important messages, but not as important as Core Memories. They do count towards the
+  maximum number of memories, and are accessed in reverse chronological order. If the maximum number
+  of memories is reached, the oldest Remembered Memories will not be included in the Context.
+- **Forgotten**: Forgotten Memories are **never** included in the Conversation's Context. You can
+  forget a Memory at any time during the Conversation, and also restore Forgotten Memories to
+  another Memory State.

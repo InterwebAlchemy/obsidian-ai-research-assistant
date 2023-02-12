@@ -116,7 +116,7 @@ const InputArea = ({
             className="ai-research-assistant__input-area__counter__warning"
             style={{ display: warning ? 'block' : 'none' }}
           >
-            TOO MUCH
+            TOO MANY TOKENS
           </div>
         ) : (
           <></>

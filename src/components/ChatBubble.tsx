@@ -10,16 +10,21 @@ import { USER_MESSAGE_OBJECT_TYPE } from '../constants'
 import { OPEN_AI_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
 
 import type { OpenAICompletion } from '../services/openai/types'
+import type { Conversation } from '../services/conversation'
 import type { ConversationMessage, UserPrompt } from '../types'
 
 export interface ChatBubbleProps {
   message: ConversationMessage
-  containerRef?: React.RefObject<HTMLDivElement>
+  conversation?: Conversation
   hasMemory?: boolean
   useMemoryManager?: boolean
 }
 
-const ChatBubble = ({ message, useMemoryManager = false }: ChatBubbleProps): React.ReactElement => {
+const ChatBubble = ({
+  message,
+  conversation,
+  useMemoryManager = false,
+}: ChatBubbleProps): React.ReactElement => {
   const { plugin } = useApp()
 
   const { settings } = plugin
@@ -46,7 +51,7 @@ const ChatBubble = ({ message, useMemoryManager = false }: ChatBubbleProps): Rea
       <div className="ai-research-assistant__conversation__item__container">
         {useMemoryManager && (isUserMessage || isBotMessage) ? (
           <div className="ai-research-assistant__conversation__item__action">
-            <MemoryManager message={message} />
+            <MemoryManager message={message} conversation={conversation} />
           </div>
         ) : (
           <></>

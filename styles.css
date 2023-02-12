@@ -86,6 +86,11 @@
   margin-bottom: 20px;
 }
 
+.ai-research-assistant__conversation__item--forgotten {
+  transition: all 0.3s ease-in-out;
+  opacity: 0.75;
+}
+
 .ai-research-assistant__conversation__item__container {
   display: flex;
   flex-direction: row;
@@ -124,20 +129,6 @@
   position: relative;
   align-items: center;
 }
-
-/* .ai-research-assistant__conversation__item:first-of-type
-  .ai-research-assistant__conversation__item__memory:has(
-    .ai-research-assistant__conversation__item__memory__manager
-  ) {
-  align-items: flex-start;
-}
-
-.ai-research-assistant__conversation__item:last-of-type
-  .ai-research-assistant__conversation__item__memory:has(
-    .ai-research-assistant__conversation__item__memory__manager
-  ) {
-  align-items: flex-end;
-} */
 
 .ai-research-assistant__conversation__item__memory__manager {
   background: var(--background-primary);

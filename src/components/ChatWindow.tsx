@@ -7,25 +7,26 @@ import { useChatScroll } from '../hooks/useChatScroll'
 import type { Conversation } from '../services/conversation'
 
 export interface ChatWindowProps {
-  messages: Conversation['messages']
+  conversation: Conversation
   hasMemory?: boolean
   useMemoryManager?: boolean
 }
 
 const ChatWindow = ({
-  messages,
+  conversation,
   hasMemory = false,
   useMemoryManager = false,
 }: ChatWindowProps): React.ReactElement => {
   // TODO: include toggleScrolling state change
-  const [scrollRef] = useChatScroll(messages?.length)
+  const [scrollRef] = useChatScroll(conversation.messages?.length)
 
   const renderConversation = (): React.ReactElement[] =>
-    messages.length > 0
-      ? messages.map((message, index) => (
+    conversation.messages.length > 0
+      ? conversation.messages.map((message, index) => (
           <ChatBubble
             key={message.id ?? `message-${index}`}
             message={message}
+            conversation={conversation}
             hasMemory={hasMemory}
             useMemoryManager={useMemoryManager}
           />
