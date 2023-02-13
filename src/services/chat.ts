@@ -51,6 +51,11 @@ class Chat {
               {
                 input: conversation.getFullMessageText(message),
                 model: this.model,
+                temperature: conversation.settings.temperature,
+                maxTokens: conversation.settings.maxTokens,
+                topP: conversation.settings.topP,
+                presencePenalty: conversation.settings.presencePenalty,
+                frequencyPenalty: conversation.settings.frequencyPenalty,
               },
               this.currentConversation()?.settings
             )

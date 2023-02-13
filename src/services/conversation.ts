@@ -9,7 +9,12 @@ import {
   USER_MESSAGE_OBJECT_TYPE,
   DEFAULT_MAX_MEMORY_COUNT,
 } from '../constants'
-import { OPEN_AI_DEFAULT_MODEL, OPEN_AI_COMPLETION_OBJECT_TYPE } from './openai/constants'
+import {
+  OPEN_AI_DEFAULT_MODEL,
+  OPEN_AI_COMPLETION_OBJECT_TYPE,
+  OPEN_AI_DEFAULT_TEMPERATURE,
+  OPEN_AI_RESPONSE_TOKENS,
+} from './openai/constants'
 import type { ModelDefinition, OpenAICompletion } from './openai/types'
 import type {
   UserPrompt,
@@ -19,6 +24,14 @@ import type {
   MemoryState,
 } from '../types'
 
+export interface ConversationSettings extends PluginSettings {
+  temperature?: number
+  maxTokens?: number
+  topP?: number
+  frequencyPenalty?: number
+  presencePenalty?: number
+}
+
 export interface ConversationInterface {
   id: string
   title: string
@@ -26,7 +39,7 @@ export interface ConversationInterface {
   timestamp: number
   messages: ConversationMessage[]
   model?: ModelDefinition
-  settings: PluginSettings
+  settings: ConversationSettings
 }
 
 export class Conversation {
@@ -36,9 +49,10 @@ export class Conversation {
   timestamp: ConversationInterface['timestamp']
   messages: ConversationInterface['messages']
   model: ModelDefinition
-  settings: PluginSettings
+  settings: ConversationSettings
   hasMemory: boolean
   useMemoryManager: boolean
+  temperature: number
 
   constructor({
     title = DEFAULT_CONVERSATION_TITLE,
@@ -55,9 +69,19 @@ export class Conversation {
     this.timestamp = timestamp
     this.messages = messages
     this.model = model
-    this.settings = settings
-    this.hasMemory = settings.enableMemory
-    this.useMemoryManager = settings.enableMemoryManager
+
+    const conversationSettings = {
+      maxTokens: OPEN_AI_RESPONSE_TOKENS,
+      temperature: OPEN_AI_DEFAULT_TEMPERATURE,
+      topP: 1,
+      frequencyPenalty: 0,
+      presencePenalty: 0,
+      ...settings,
+    }
+
+    this.hasMemory = conversationSettings.enableMemory
+    this.useMemoryManager = conversationSettings.enableMemoryManager
+    this.settings = conversationSettings
   }
 
   setHasMemory(hasMemory: boolean): void {

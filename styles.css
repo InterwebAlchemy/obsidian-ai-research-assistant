@@ -27,6 +27,11 @@
   margin-right: var(--size-4-1);
 }
 
+.ai-research-assistant-toolbar > button[disabled] {
+  opacity: var(--icon-opacity);
+  color: var(--text-faint);
+}
+
 .ai-research-assistant-content {
   position: relative;
   display: flex;
@@ -305,6 +310,28 @@
   flex-direction: column;
 }
 
+.ai-research-assistant__input-area__input {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ai-research-assistant__input-area__input--label-top {
+  flex-direction: column;
+}
+
+.ai-research-assistant__input-area__input--label-left {
+  flex-direction: row;
+}
+
+.ai-research-assistant__input-area__input__label {
+  display: flex;
+  position: relative;
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+}
+
 .ai-research-assistant__input-area__toolbar {
   display: flex;
   position: absolute;
@@ -395,6 +422,32 @@
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+
+.ai-research-assistant__chat__conversation-settings {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+  flex-direction: column;
+}
+
+.ai-research-assistant__chat__conversation-settings__row {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+}
+
+.ai-research-assistant__chat__conversation-settings__row
+  .ai-research-assistant__input-area
+  + .ai-research-assistant__input-area {
+  margin-left: 10px;
+}
+
+.ai-research-assistant__chat__conversation-settings__row
+  > .ai-research-assistant__input-area:first-child {
+  margin-left: 0;
 }
 
 .ai-research-assistant__chat__input__send {

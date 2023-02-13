@@ -13,6 +13,8 @@ export interface PluginSettings {
 
   defaultModel: OpenAIModel
   defaultPreamble?: string
+  defaultMaxTokens?: number
+  defaultTokenBuffer?: number
 
   userPrefix: string
   botPrefix: string

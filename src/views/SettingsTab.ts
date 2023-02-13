@@ -93,6 +93,43 @@ export default class SettingsTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
+      .setName('Maximum Tokens')
+      .setDesc(
+        'What is the maximum amount of tokens you want to use for your request? This includes any Context like a Preamble and Memories as well as User and Bot Prefixes and Start and Stop sequences and determines how many tokens the API will use to respond to you. Changing this value will reset any existing chat windows.'
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder(`${this.plugin.settings.defaultMaxTokens ?? 0}`)
+          .onChange(async (value) => {
+            const number = Number(value)
+
+            this.plugin.settings.defaultMaxTokens = !Number.isNaN(number) ? Number(value) : 0
+
+            await this.plugin.saveSettings()
+
+            await this.resetPluginView()
+          })
+      )
+
+    new Setting(containerEl)
+      .setName('Token Buffer')
+      .setDesc(
+        'How many tokens would you like to reserve for the AI to respond to your prompt? Changing this value will reset any existing chat windows.'
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder(`${this.plugin.settings.defaultTokenBuffer ?? 0}`)
+          .onChange(async (value) => {
+            const number = Number(value)
+            this.plugin.settings.defaultTokenBuffer = !Number.isNaN(number) ? Number(value) : 0
+
+            await this.plugin.saveSettings()
+
+            await this.resetPluginView()
+          })
+      )
+
+    new Setting(containerEl)
       .setName('Enable Memories')
       .setDesc(
         'Enable or disable the ability to store messages in memory. Changing this value will reset any existing chat windows.'
@@ -199,7 +236,7 @@ export default class SettingsTab extends PluginSettingTab {
 
     // create Setting text input for user prefix
     new Setting(containerEl)
-      .setName('User Prefix')
+      .setName('Default User Prefix')
       .setDesc(
         'The prefix to use when displaying a user message. Changing this value will reset any existing chat windows.'
       )
@@ -218,7 +255,7 @@ export default class SettingsTab extends PluginSettingTab {
 
     // create Setting text input for bot prefix
     new Setting(containerEl)
-      .setName('Bot Prefix')
+      .setName('Default Bot Prefix')
       .setDesc(
         'The prefix to use when displaying a bot message. Changing this value will reset any existing chat windows.'
       )

@@ -1,9 +1,13 @@
 import { requestUrl as obsidianRequest, type RequestUrlParam } from 'obsidian'
 
-import tokenCounter from '../../utils/tokenCounter'
 import formatInput from '../../utils/formatInput'
 
-import { OPEN_AI_DEFAULT_MODEL, OPEN_AI_RESPONSE_TOKENS, OPEN_AI_BASE_URL } from './constants'
+import {
+  OPEN_AI_DEFAULT_MODEL,
+  OPEN_AI_RESPONSE_TOKENS,
+  OPEN_AI_BASE_URL,
+  OPEN_AI_DEFAULT_TEMPERATURE,
+} from './constants'
 import { PLUGIN_SETTINGS } from '../../constants'
 
 import type { OpenAICompletionRequest, OpenAICompletion } from './types'
@@ -13,8 +17,12 @@ import type { PluginSettings } from '../../types'
 export const openAICompletion = async (
   {
     input,
-    temperature = 0.7,
     model = OPEN_AI_DEFAULT_MODEL,
+    temperature = OPEN_AI_DEFAULT_TEMPERATURE,
+    maxTokens = OPEN_AI_RESPONSE_TOKENS,
+    topP = 1,
+    frequencyPenalty = 0,
+    presencePenalty = 0,
     stream = false,
   }: OpenAICompletionRequest,
   settings: PluginSettings = PLUGIN_SETTINGS
@@ -30,13 +38,6 @@ export const openAICompletion = async (
   }
 
   const prompt = formatInput(input)
-
-  const tokens = tokenCounter(input)
-
-  const maxTokens = Math.min(
-    Math.min(OPEN_AI_RESPONSE_TOKENS + tokens, OPEN_AI_RESPONSE_TOKENS),
-    model.maxTokens
-  )
 
   const stopWords: string[] = []
 
@@ -59,10 +60,9 @@ export const openAICompletion = async (
     temperature,
     max_tokens: maxTokens,
     stop: stopWords,
-    // make these configurable
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
+    top_p: topP,
+    frequency_penalty: frequencyPenalty,
+    presence_penalty: presencePenalty,
   }
 
   const request: RequestUrlParam = {

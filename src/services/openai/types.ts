@@ -21,6 +21,10 @@ export interface OpenAICompletionRequest {
   input: string
   temperature?: number
   model?: ModelDefinition
+  maxTokens?: number
+  topP?: number
+  frequencyPenalty?: number
+  presencePenalty?: number
   stream?: boolean
 }
 

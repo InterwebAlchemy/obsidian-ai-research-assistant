@@ -101,6 +101,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
         onPromptSubmit={handleSubmit}
         preamble={preamble}
         onPreambleChange={setPreamble}
+        conversation={conversation}
         busy={loading}
       />
     </div>

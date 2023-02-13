@@ -4,13 +4,15 @@ import { useLoading, Oval } from '@agney/react-loading'
 
 import InputArea from './InputArea'
 import IconButton from './IconButton'
+import ConversationSettings from './ConversationSettings'
 
-// import 'react-tabs/style/react-tabs.css'
+import type { Conversation } from '../services/conversation'
 
 export interface ChatInputProps {
   prompt: string
   onPromptChange: React.Dispatch<React.SetStateAction<string>>
   onPromptSubmit: (event: React.FormEvent) => void
+  conversation: Conversation | null
   preamble?: string
   onPreambleChange?: React.Dispatch<React.SetStateAction<string>>
   busy?: boolean
@@ -25,6 +27,7 @@ const ChatInput = ({
   prompt = '',
   preamble = '',
   busy = false,
+  conversation,
 }: ChatInputProps): React.ReactElement => {
   const { containerProps, indicatorEl } = useLoading({
     loading: busy,
@@ -48,6 +51,7 @@ const ChatInput = ({
         <TabList>
           <Tab>Prompt</Tab>
           <Tab>Preamble</Tab>
+          <Tab>Settings</Tab>
         </TabList>
 
         <TabPanel>
@@ -78,6 +82,9 @@ const ChatInput = ({
             countPosition="top"
             countAlign="right"
           />
+        </TabPanel>
+        <TabPanel>
+          <ConversationSettings conversation={conversation} />
         </TabPanel>
       </Tabs>
     </form>

@@ -8,15 +8,21 @@ import tokenCounter, { type TokenCounterType } from '../utils/tokenCounter'
 import { DEFAULT_TOKEN_TYPE } from '../constants'
 
 export interface InputAreaProps {
-  value?: string
   type?: 'text' | 'textarea'
+  name?: string
+  id?: string
+  value?: string
+  label?: string
+  a11yLabel?: string
   onChange?: (val: string) => void
   countType?: 'words' | 'characters' | 'tokens' | 'bytes'
   countPosition?: 'top' | 'bottom'
   countAlign?: 'left' | 'right'
+  labelPosition?: 'top' | 'left'
   delay?: number
   maxCount?: number
   required?: boolean
+  disabled?: boolean
 }
 
 const countInput = (
@@ -40,11 +46,17 @@ const countInput = (
 const InputArea = ({
   value = '',
   type = 'textarea',
-  countType = 'characters',
-  countPosition = 'bottom',
-  countAlign = 'left',
+  labelPosition = 'top',
+  countType,
+  countPosition,
+  countAlign,
   delay = 300,
   required = false,
+  disabled = false,
+  name,
+  id,
+  label,
+  a11yLabel,
   maxCount,
   onChange,
 }: InputAreaProps): React.ReactElement => {
@@ -57,6 +69,12 @@ const InputArea = ({
   const [count, setCount] = useState(0)
   const [warning, setWarning] = useState(false)
 
+  if (typeof name !== 'undefined' && typeof id === 'undefined') {
+    id = name
+  } else if (typeof name === 'undefined' && typeof id !== 'undefined') {
+    name = id
+  }
+
   const handleChange = (
     e: React.ChangeEvent<HTMLTextAreaElement> | React.ChangeEvent<HTMLInputElement>
   ): void => {
@@ -68,7 +86,9 @@ const InputArea = ({
   }
 
   const updateCount = (input: string): void => {
-    setCount(countInput(input, countType, chat.model.tokenType))
+    if (typeof countType !== 'undefined') {
+      setCount(countInput(input, countType, chat.model.tokenType))
+    }
   }
 
   // throttle the character count update to every 100ms
@@ -102,7 +122,15 @@ const InputArea = ({
 
     return (
       <div
-        className={`ai-research-assistant__input-area__toolbar ai-research-assistant__input-area__toolbar--${countAlign} ai-research-assistant__input-area__toolbar--${countPosition}`}
+        className={`ai-research-assistant__input-area__toolbar${
+          typeof countAlign !== 'undefined'
+            ? ` ai-research-assistant__input-area__toolbar--${countAlign}`
+            : ''
+        }${
+          typeof countPosition !== 'undefined'
+            ? ` ai-research-assistant__input-area__toolbar--${countPosition}`
+            : ''
+        }`}
         style={{
           flexDirection: countAlign === 'left' ? 'row' : 'row-reverse',
           textAlign: countAlign,
@@ -128,21 +156,44 @@ const InputArea = ({
   return (
     <div className="ai-research-assistant__input-area">
       {countPosition === 'top' ? renderCount() : <></>}
-      {type === 'textarea' ? (
-        <textarea
-          placeholder="Type your message here"
-          onChange={handleChange}
-          value={value}
-          required={required}
-        />
-      ) : (
-        <input
-          placeholder="Type your message here"
-          onChange={handleChange}
-          value={value}
-          required={required}
-        />
-      )}
+      <div
+        className={`ai-research-assistant__input-area__input${
+          typeof label !== 'undefined'
+            ? ` ai-research-assistant__input-area__input--label-${labelPosition}`
+            : ''
+        }`}
+      >
+        {typeof label !== 'undefined' ? (
+          <label className="ai-research-assistant__input-area__input__label" htmlFor={id}>
+            {label}
+          </label>
+        ) : (
+          <></>
+        )}
+        {type === 'textarea' ? (
+          <textarea
+            id={id}
+            name={name}
+            placeholder="Type your message here"
+            onChange={handleChange}
+            value={value}
+            required={required}
+            disabled={disabled}
+            aria-label={a11yLabel}
+          />
+        ) : (
+          <input
+            id={id}
+            name={name}
+            placeholder="Type your message here"
+            onChange={handleChange}
+            value={value}
+            required={required}
+            disabled={disabled}
+            aria-label={a11yLabel}
+          />
+        )}
+      </div>
       {countPosition === 'bottom' ? renderCount() : <></>}
     </div>
   )
