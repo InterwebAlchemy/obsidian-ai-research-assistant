@@ -180,7 +180,7 @@ export default class ChatView extends ItemView {
     this.newConversationButton.onClick(async (): Promise<void> => {
       if (this?.chat?.currentConversation() !== null) {
         this.chat?.start({
-          preamble: '',
+          preamble: this.settings.defaultPreamble ?? '',
           title: DEFAULT_CONVERSATION_TITLE,
           settings: this.settings,
         })
@@ -237,7 +237,7 @@ export default class ChatView extends ItemView {
 
     if (typeof this.chat !== 'undefined' && this.chat?.currentConversation() === null) {
       this.chat?.start({
-        preamble: '',
+        preamble: this.settings.defaultPreamble ?? '',
         title: DEFAULT_CONVERSATION_TITLE,
         settings: this.settings,
       })

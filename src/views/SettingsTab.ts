@@ -15,6 +15,7 @@ import { OPEN_AI_API_KEY_URL } from '../services/openai/constants'
 
 import type ObsidianAIResearchAssistant from '../main'
 import type { OpenAIModel } from '../services/openai/types'
+import AssistantPreamble from 'src/preambles/assistant'
 
 export default class SettingsTab extends PluginSettingTab {
   plugin: ObsidianAIResearchAssistant
@@ -176,6 +177,25 @@ export default class SettingsTab extends PluginSettingTab {
           await this.resetPluginView()
         })
       })
+
+    new Setting(containerEl)
+      .setName('Default Preamble')
+      .setDesc(
+        `The default preamble to use when starting a Conversation. You can edit the Preamble in the Chat interface. Changing this value will reset any existing chat windows.`
+      )
+      .setClass('ai-research-assistant__settings__preamble')
+      .addTextArea((text) =>
+        text
+          .setPlaceholder(AssistantPreamble())
+          .setValue(this.plugin.settings.defaultPreamble ?? '')
+          .onChange(async (value) => {
+            this.plugin.settings.defaultPreamble = value
+
+            await this.plugin.saveSettings()
+
+            await this.resetPluginView()
+          })
+      )
 
     // create Setting text input for user prefix
     new Setting(containerEl)

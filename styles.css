@@ -1,3 +1,12 @@
+.ai-research-assistant__settings__preamble > .setting-item-control {
+  width: 100%;
+}
+
+.ai-research-assistant__settings__preamble > .setting-item-control > textarea {
+  width: 100%;
+  min-height: 140px;
+}
+
 .ai-research-assistant-container {
   display: flex;
   flex-direction: column;

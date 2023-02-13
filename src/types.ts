@@ -12,6 +12,7 @@ export interface PluginSettings {
   apiKeySaved: boolean
 
   defaultModel: OpenAIModel
+  defaultPreamble?: string
 
   userPrefix: string
   botPrefix: string

@@ -59,6 +59,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   useEffect(() => {
     if (typeof chat !== 'undefined' && chat?.currentConversation() !== null) {
       setPrompt('')
+
       setPreamble(conversation?.preamble ?? '')
 
       setConversationId(chat.currentConversationId)
@@ -75,6 +76,12 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
       setConversation(chat.currentConversation())
     }
   }, [chat?.conversations, conversationId])
+
+  useEffect(() => {
+    if (typeof conversation !== 'undefined' && conversation !== null) {
+      setPreamble(conversation.preamble)
+    }
+  }, [conversation?.id])
 
   return (
     <div className="ai-research-assistant-content__container">
