@@ -273,6 +273,17 @@ export default class SettingsTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
+      .setName('Conversation Directory')
+      .setDesc('Where to save conversations.')
+      .addText((text) =>
+        text.setValue(this.plugin.settings.conversationHistoryDirectory).onChange(async (value) => {
+          this.plugin.settings.conversationHistoryDirectory = value
+
+          await this.plugin.saveSettings()
+        })
+      )
+
+    new Setting(containerEl)
       .setName('Autosave Conversations')
       .setDesc(
         `Automatically save conversations to your Vault. You will need to close any open the Chat windows for this change to take effect.`
@@ -284,18 +295,27 @@ export default class SettingsTab extends PluginSettingTab {
           this.plugin.settings.autosaveConversationHistory = value
 
           await this.plugin.saveSettings()
+
+          this.display()
         })
       })
 
-    new Setting(containerEl)
-      .setName('Conversation Directory')
-      .setDesc('Where to save conversations.')
-      .addText((text) =>
-        text.setValue(this.plugin.settings.conversationHistoryDirectory).onChange(async (value) => {
-          this.plugin.settings.conversationHistoryDirectory = value
+    if (this.plugin.settings.autosaveConversationHistory) {
+      new Setting(containerEl)
+        .setName('Autosave Interval')
+        .setDesc(
+          `How many seconds should pass before a conversation is automatically saved to your Vault. You will need to close any open the Chat windows for this change to take effect.`
+        )
+        .addText((text) => {
+          text.setValue(`${this.plugin.settings.autosaveInterval}`)
 
-          await this.plugin.saveSettings()
+          text.onChange(async (value) => {
+            const number = Number(value)
+            this.plugin.settings.autosaveInterval = !Number.isNaN(value) ? number : 15
+
+            await this.plugin.saveSettings()
+          })
         })
-      )
+    }
   }
 }

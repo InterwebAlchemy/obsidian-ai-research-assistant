@@ -26,6 +26,8 @@ const ChatTitle = ({ loading = false }: ChatTitleProps): React.ReactElement => {
 
     setUpdatedTitle(title)
 
+    plugin.pauseAutosaving = true
+
     setEditing(true)
   }
 
@@ -42,6 +44,7 @@ const ChatTitle = ({ loading = false }: ChatTitleProps): React.ReactElement => {
             chat?.currentConversation()?.updateTitle(updatedTitle)
 
             setEditing(false)
+            plugin.pauseAutosaving = false
           } else {
             // eslint-disable-next-line no-new
             new Notice(`${updatedTitle} already exists in ${settings.conversationHistoryDirectory}`)

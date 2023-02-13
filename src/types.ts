@@ -20,6 +20,7 @@ export interface PluginSettings {
   botPrefix: string
 
   autosaveConversationHistory: boolean
+  autosaveInterval: number
   conversationHistoryDirectory: string
 
   enableMemory: boolean

@@ -97,6 +97,18 @@
   overflow-x: hidden;
 }
 
+.ai-research-assistant__conversation__extra {
+  display: flex;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: var(--layer-cover);
+}
+
+.ai-research-assistant__conversation__autosaving-indicator svg {
+  color: var(--color-accent);
+}
+
 .ai-research-assistant__conversation__item {
   position: relative;
   width: 100%;
@@ -150,7 +162,7 @@
 .ai-research-assistant__conversation__item__memory__manager {
   background: var(--background-primary);
   border: var(--border-width) solid var(--background-modifier-border);
-  z-index: 2;
+  z-index: var(--layer-cover);
 }
 
 .ai-research-assistant__conversation__item__memory__manager > button {
@@ -275,7 +287,7 @@
 
   /* make tab overlap textarea border */
   margin-bottom: -1px;
-  z-index: 1;
+  z-index: var(--layer-cover);
 }
 
 .ai-research-assistant__chat-form .react-tabs__tab {

@@ -27,6 +27,8 @@ export const PLUGIN_SETTINGS: PluginSettings = {
   defaultModel: OPEN_AI_DEFAULT_MODEL_NAME,
   defaultPreamble: AssistantPreamble(),
   autosaveConversationHistory: false,
+  // autosave every 15 seconds by default
+  autosaveInterval: 15,
   conversationHistoryDirectory: `${PLUGIN_NAME}/History`,
   userPrefix: USER_PREFIX,
   botPrefix: BOT_PREFIX,

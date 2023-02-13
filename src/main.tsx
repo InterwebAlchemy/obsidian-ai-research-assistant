@@ -20,11 +20,13 @@ export default class ObsidianAIResearchAssistant extends Plugin {
   chat: Chat
   autoSaving: boolean
   logger: Logger
+  pauseAutosaving: boolean
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest)
 
     this.autoSaving = false
+    this.pauseAutosaving = false
   }
 
   async activateView(): Promise<void> {

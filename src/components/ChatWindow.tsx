@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { useLoading, BallTriangle } from '@agney/react-loading'
 
 import ChatBubble from './ChatBubble'
 
+import { useApp } from '../hooks/useApp'
 import { useChatScroll } from '../hooks/useChatScroll'
 
 import type { Conversation } from '../services/conversation'
@@ -17,6 +19,15 @@ const ChatWindow = ({
   hasMemory = false,
   useMemoryManager = false,
 }: ChatWindowProps): React.ReactElement => {
+  const { plugin } = useApp()
+
+  const [autoSaving, setAutoSaving] = useState(false)
+
+  const { containerProps, indicatorEl } = useLoading({
+    loading: autoSaving,
+    indicator: <BallTriangle width="30" />,
+  })
+
   // TODO: include toggleScrolling state change
   const [scrollRef] = useChatScroll(conversation.messages?.length)
 
@@ -33,12 +44,26 @@ const ChatWindow = ({
         ))
       : [<React.Fragment key="no-results"></React.Fragment>]
 
+  useEffect(() => {
+    setAutoSaving(plugin.autoSaving)
+  }, [plugin.autoSaving])
+
+  useEffect(() => {
+    console.log(autoSaving)
+  }, [autoSaving])
+
   return (
     <div
       className="ai-research-assistant__conversation"
       // @ts-expect-error
       ref={scrollRef}
+      {...containerProps}
     >
+      <div className="ai-research-assistant__conversation__extra">
+        <div className="ai-research-assistant__conversation__autosaving-indicator">
+          {indicatorEl}
+        </div>
+      </div>
       {renderConversation()}
     </div>
   )

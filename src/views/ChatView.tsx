@@ -56,47 +56,46 @@ export default class ChatView extends ItemView {
     const conversation = this.chat?.currentConversation()
 
     if (
+      !this.plugin.pauseAutosaving &&
       typeof conversation !== 'undefined' &&
       conversation !== null &&
-      conversation.messages.length > 1 &&
-      conversation.title !== DEFAULT_CONVERSATION_TITLE
+      conversation.messages.length > 1
     ) {
-      const finalMessaggeId = conversation?.messages?.last()?.id
-
-      if (finalMessaggeId !== this.lastSavedMessageId) {
+      if (conversation.title === DEFAULT_CONVERSATION_TITLE) {
         // eslint-disable-next-line no-new
-        new Notice('Autosaving conversation...', 1000)
-
-        this.plugin.logger.debug(`Autosaving conversation ${conversation.id}...`)
-
-        this.plugin.autoSaving = true
-        this.saveButton?.setIcon('loader-2')
-        this.saveButton?.setDisabled(true)
-
-        this.saveConversation(conversation)
-          .then(() => {
-            const lastMessageId = conversation?.messages?.last()?.id
-
-            if (typeof lastMessageId !== 'undefined') {
-              this.lastSavedMessageId = lastMessageId
-            }
-
-            this.plugin.logger.debug('Conversation saved.')
-          })
-          .catch((error) => {
-            if (this.settings.debugMode) {
-              // eslint-disable-next-line no-new
-              new Notice(`Error saving conversation: ${error.message as string}`)
-            }
-
-            this.plugin.logger.error(error)
-          })
-          .finally(() => {
-            this.plugin.autoSaving = false
-            this.saveButton?.setIcon('save')
-          })
+        new Notice(`ERROR: Please rename ${conversation.title} to Autosave...`)
       } else {
-        this.plugin.logger.debug('No changes since last save...')
+        const finalMessaggeId = conversation?.messages?.last()?.id
+
+        if (finalMessaggeId !== this.lastSavedMessageId) {
+          this.plugin.logger.debug(`Autosaving conversation ${conversation.id}...`)
+
+          this.plugin.autoSaving = true
+          this.saveButton?.setDisabled(true)
+
+          this.saveConversation(conversation)
+            .then(() => {
+              const lastMessageId = conversation?.messages?.last()?.id
+
+              if (typeof lastMessageId !== 'undefined') {
+                this.lastSavedMessageId = lastMessageId
+              }
+            })
+            .catch((error) => {
+              if (this.settings.debugMode) {
+                // eslint-disable-next-line no-new
+                new Notice(`Error saving conversation: ${error.message as string}`)
+              }
+
+              this.plugin.logger.error(error)
+            })
+            .finally(() => {
+              this.plugin.autoSaving = false
+              this.saveButton?.setDisabled(false)
+            })
+        } else {
+          this.plugin.logger.debug('No changes since last save...')
+        }
       }
     }
   }
@@ -191,26 +190,27 @@ export default class ChatView extends ItemView {
       }
     })
 
-    if (this.settings.enableMemoryManager) {
-      this.memoryButton = new ButtonComponent(toolbar)
-      this.memoryButton.setButtonText(
-        `${this.chat.hasMemory() ? 'Disable' : 'Enable'} Memory Manager`
-      )
-      this.memoryButton.setTooltip(
-        `Click to turn ${
-          this.chat.hasMemory() ? 'off' : 'on'
-        } the Memory Manager for this conversation`
-      )
-      this.memoryButton.setIcon(`${this.chat.hasMemory() ? 'clipboard-list' : 'clipboard-x'}`)
+    // TODO: Implement Memory Manager button to toggle memory manager for this conversation
+    // if (this.settings.enableMemoryManager) {
+    //   this.memoryButton = new ButtonComponent(toolbar)
+    //   this.memoryButton.setButtonText(
+    //     `${this.chat.hasMemory() ? 'Disable' : 'Enable'} Memory Manager`
+    //   )
+    //   this.memoryButton.setTooltip(
+    //     `Click to turn ${
+    //       this.chat.hasMemory() ? 'off' : 'on'
+    //     } the Memory Manager for this conversation`
+    //   )
+    //   this.memoryButton.setIcon(`${this.chat.hasMemory() ? 'clipboard-list' : 'clipboard-x'}`)
 
-      this.memoryButton.onClick(async (): Promise<void> => {
-        this.chat.hasMemory() ? this.chat.disableMemory() : this.chat.enableMemory()
+    //   this.memoryButton.onClick(async (): Promise<void> => {
+    //     this.chat.hasMemory() ? this.chat.disableMemory() : this.chat.enableMemory()
 
-        await this.renderToolbar()
+    //     await this.renderToolbar()
 
-        await this.renderView()
-      })
-    }
+    //     await this.renderView()
+    //   })
+    // }
   }
 
   async onOpen(): Promise<void> {
@@ -221,7 +221,8 @@ export default class ChatView extends ItemView {
       this.autosaveInterval = this.registerInterval(
         window.setInterval(() => {
           this.autosaveConversation()
-        }, 10000)
+          // convert seconds to milliseconds
+        }, this.settings.autosaveInterval * 1000)
       )
     }
 
