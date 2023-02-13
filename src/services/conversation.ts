@@ -35,7 +35,6 @@ export class Conversation {
   title: ConversationInterface['title']
   timestamp: ConversationInterface['timestamp']
   messages: ConversationInterface['messages']
-  context: string
   model: ModelDefinition
   settings: PluginSettings
   hasMemory: boolean
@@ -55,7 +54,6 @@ export class Conversation {
     this.title = title
     this.timestamp = timestamp
     this.messages = messages
-    this.context = preamble
     this.model = model
     this.settings = settings
     this.hasMemory = settings.enableMemory
@@ -129,7 +127,7 @@ export class Conversation {
     const formattedContextMessages = [...coreMemories, ...contextMessages]
       // because we've added memories of different types to the memory stack at different times
       // we want to sort it chronologically so the final order of the memories will make sense
-      .sort((a, b) => b.message.created - a.message.created)
+      .sort((a, b) => a.message.created - b.message.created)
 
       // get formatted message text
       .map((message) => {
@@ -155,10 +153,12 @@ export class Conversation {
       formattedContextMessages.unshift(this.preamble)
     }
 
+    console.log('formattedContextMessages', formattedContextMessages)
+
     return formatInput(formattedContextMessages.join('\n'))
   }
 
-  formatMessagePart(part: string = '', prefix = true, suffix = false): string {
+  formatMessagePart(part: string = '', prefix = true, suffix = true): string {
     if (typeof part !== 'undefined' && part !== null && part !== '') {
       return `${
         prefix && typeof this?.model?.startWord !== 'undefined' ? this.model.startWord : ''
@@ -176,16 +176,16 @@ export class Conversation {
     }
 
     if (currentMessage.object === USER_MESSAGE_OBJECT_TYPE) {
-      return formatInput(
-        `${this.formatMessagePart(this.preamble)}${this.getContext()}${this.formatMessagePart(
-          `${this.settings.userPrefix}\n${(currentMessage as UserPrompt).prompt}`
-        )}${this.formatMessagePart(`${this.settings.botPrefix}\n`, true)}`
-      )
+      return `${this.formatMessagePart(this.preamble, true, true)}${formatInput(
+        `${this.getContext()}${this.formatMessagePart(
+          `${this.settings.userPrefix}\n${(currentMessage as UserPrompt).prompt}`,
+          true,
+          true
+        )}${this.formatMessagePart(`${this.settings.botPrefix}\n`, true, false)}`
+      )}`
     } else if (currentMessage.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
       return formatInput(
-        `${this.formatMessagePart(
-          `${this.settings.botPrefix}\n${(currentMessage as OpenAICompletion).choices[0].text}`
-        )}`
+        `${this.settings.botPrefix}\n${(currentMessage as OpenAICompletion).choices[0].text}`
       )
     } else {
       return this.formatMessagePart(JSON.stringify(currentMessage))
@@ -208,17 +208,13 @@ export class Conversation {
 
     if (conversationMessage.message.object === USER_MESSAGE_OBJECT_TYPE) {
       const inputText = formatInput(`${(message as UserPrompt).prompt}`)
-      const inputContext = formatInput(this.getContext(true))
-      const fullText = formatInput(this.getFullMessageText(conversationMessage.message))
+      const inputContext = this.getContext(true)
+      const fullText = this.getFullMessageText(conversationMessage.message)
 
       ;(message as UserPrompt).context = inputContext
       ;(message as UserPrompt).prompt = inputText
       ;(message as UserPrompt).fullText = fullText
-
-      this.context = this.getFullMessageText(message as ConversationMessageType)
-    } else if (conversationMessage.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
-      this.context = this.getFullMessageText(message as ConversationMessageType)
-    } else {
+    } else if (conversationMessage.message.object !== OPEN_AI_COMPLETION_OBJECT_TYPE) {
       conversationMessage.memoryState = 'forgotten' as MemoryState
 
       conversationMessage.message = {
@@ -235,10 +231,6 @@ export class Conversation {
 
   updateTitle(title: string): void {
     this.title = title
-  }
-
-  updateContext(context: string): void {
-    this.context = context
   }
 }
 

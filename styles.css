@@ -73,11 +73,14 @@
   display: flex;
   position: relative;
   width: 100%;
-  height: 77%;
+  height: 70%;
+  min-height: 70%;
+  max-height: 70%;
   border: var(--input-border-width) solid var(--background-modifier-border);
   padding: 5px;
   flex-direction: column;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .ai-research-assistant__conversation__item {
@@ -235,13 +238,59 @@
   position: fixed;
   bottom: 30px;
   display: flex;
-  width: 97%;
-  height: 15%;
+  width: 98%;
+  height: 20%;
   flex-direction: column;
+}
+
+.ai-research-assistant__chat-form__tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.ai-research-assistant__chat-form .react-tabs__tab-list {
+  display: flex;
+  position: relative;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  flex-direction: row;
+  font-size: var(--font-smallest);
+
+  /* make tab overlap textarea border */
+  margin-bottom: -1px;
+  z-index: 1;
+}
+
+.ai-research-assistant__chat-form .react-tabs__tab {
+  padding: 5px 5px 2px;
+  border: none;
+  color: var(--interactive-accent);
+}
+
+.ai-research-assistant__chat-form .react-tabs__tab--selected {
+  border: var(--border-width) solid var(--background-modifier-border);
+  border-bottom: none;
+  color: var(--text-muted);
+  background-color: var(--background-modifier-form-field);
+}
+
+.ai-research-assistant__chat-form__tabs .react-tabs__tab-panel {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.ai-research-assistant__chat-form__tabs .react-tabs__tab-panel--selected {
+  display: flex;
 }
 
 .ai-research-assistant__input-area {
   display: flex;
+  position: relative;
   width: 100%;
   height: 100%;
   flex-direction: column;
@@ -249,10 +298,27 @@
 
 .ai-research-assistant__input-area__toolbar {
   display: flex;
-  flex-direction: row;
+  position: absolute;
   width: 100%;
+  flex-direction: row;
   font-size: var(--font-smallest);
   color: var(--text-faint);
+}
+
+.ai-research-assistant__input-area__toolbar--top {
+  bottom: 100%;
+}
+
+.ai-research-assistant__input-area__toolbar--bottom {
+  top: 100%;
+}
+
+.ai-research-assistant__input-area__toolbar--left {
+  left: 5px;
+}
+
+.ai-research-assistant__input-area__toolbar--right {
+  right: 5px;
 }
 
 .ai-research-assistant__input-area__toolbar__counter {
@@ -265,6 +331,8 @@
   resize: none;
   padding: 5px;
   border-radius: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .ai-research-assistant__icon-button {
@@ -322,6 +390,6 @@
 
 .ai-research-assistant__chat__input__send {
   position: absolute;
-  right: 3px;
-  bottom: 3px;
+  right: 20px;
+  bottom: 5px;
 }

@@ -18,7 +18,8 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   const { chat, logger } = plugin
 
   const [conversationId, setConversationId] = useState<string | null>(null)
-  const [input, setInput] = useState('')
+  const [prompt, setPrompt] = useState('')
+  const [preamble, setPreamble] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversation, setConversation] = useState<Conversation | null>(null)
 
@@ -27,9 +28,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
 
     setLoading(true)
 
-    const prompt = input.trim()
-
-    setInput('')
+    setPrompt('')
 
     chat
       ?.send(prompt)
@@ -48,8 +47,19 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   }
 
   useEffect(() => {
+    if (
+      typeof conversation !== 'undefined' &&
+      conversation !== null &&
+      conversation.preamble !== preamble
+    ) {
+      conversation.preamble = preamble
+    }
+  }, [preamble])
+
+  useEffect(() => {
     if (typeof chat !== 'undefined' && chat?.currentConversation() !== null) {
-      setInput('')
+      setPrompt('')
+      setPreamble(conversation?.preamble ?? '')
 
       setConversationId(chat.currentConversationId)
     }
@@ -78,7 +88,14 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
       ) : (
         <></>
       )}
-      <ChatInput input={input} onChange={setInput} onSubmit={handleSubmit} busy={loading} />
+      <ChatInput
+        prompt={prompt}
+        onPromptChange={setPrompt}
+        onPromptSubmit={handleSubmit}
+        preamble={preamble}
+        onPreambleChange={setPreamble}
+        busy={loading}
+      />
     </div>
   )
 }

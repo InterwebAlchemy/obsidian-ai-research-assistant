@@ -102,7 +102,7 @@ const InputArea = ({
 
     return (
       <div
-        className="ai-research-assistant__input-area__toolbar"
+        className={`ai-research-assistant__input-area__toolbar ai-research-assistant__input-area__toolbar--${countAlign} ai-research-assistant__input-area__toolbar--${countPosition}`}
         style={{
           flexDirection: countAlign === 'left' ? 'row' : 'row-reverse',
           textAlign: countAlign,
@@ -116,7 +116,7 @@ const InputArea = ({
             className="ai-research-assistant__input-area__counter__warning"
             style={{ display: warning ? 'block' : 'none' }}
           >
-            TOO MANY TOKENS
+            too many {countType}
           </div>
         ) : (
           <></>
