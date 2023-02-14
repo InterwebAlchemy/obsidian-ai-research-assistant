@@ -7,7 +7,7 @@
 **Note**: This plugin is still in active development and is not considered Stable yet. **This is Beta
 software** and may contain bugs and other weird issues. Please report
 [Issues](https:/github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues) you find and feel
-encouraged to [./docs/CONTRIBUTING.md](contribute) to the project. It has only been tested on Obsidian Desktop so far, but should have Obsidian Mobile support in the near future.
+encouraged to [contribute](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/blob/main/docs/CONTRIBUTING.md) to the project. It has only been tested on Obsidian Desktop so far, but should have Obsidian Mobile support in the near future.
 
 **Table of Contents**:
 
