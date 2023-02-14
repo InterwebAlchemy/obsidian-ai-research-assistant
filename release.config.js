@@ -1,5 +1,6 @@
 module.exports = {
   branches: ['main'],
+  tagFormat: '${version}',
   plugins: [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
@@ -12,7 +13,7 @@ module.exports = {
     [
       '@semantic-release/exec',
       {
-        prepareCmd: 'node scripts/version-bump.mjs && npm run build'
+        prepareCmd: 'node scripts/version-bump.mjs'
       }
     ],
     [
@@ -22,6 +23,18 @@ module.exports = {
           {
             path: 'tmp/obsidian-ai-research-assistant.zip',
             label: 'Obsidian AI Research Assistant Plugin'
+          },
+          {
+            path: 'dist/main.js'
+          },
+          {
+            path: 'dist/manifest.json'
+          },
+          {
+            path: 'dist/versions.json'
+          },
+          {
+            path: 'dist/styles.css'
           }
         ]
       })
