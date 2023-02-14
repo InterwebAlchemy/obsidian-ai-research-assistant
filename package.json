@@ -1,6 +1,6 @@
 {
   "name": "@interwebalchemy/obsidian-ai-research-assistant",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Prompt Engineering research tool integrated into Obsidian.md",
   "license": "MIT",
   "main": "dist/main.js",
