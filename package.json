@@ -30,7 +30,8 @@
     "*.{yaml,yml}": "yamllint"
   },
   "scripts": {
-    "build": "run-s lint build:esbuild",
+    "build": "run-s build:*",
+    "prebuild": "npm run lint",
     "build:esbuild": "node esbuild.config.mjs production",
     "dev": "node esbuild.config.mjs",
     "lint": "run-s lint:*",
@@ -39,7 +40,7 @@
     "lint:ts": "npm run typescript",
     "lint:yml": "yamllint **/*.yml",
     "package:version": "node ./scripts/version-bump.mjs",
-    "package:zip": "node ./scripts/zip-it.sh",
+    "package:zip": "./scripts/zip-it.sh",
     "prepare": "is-ci || husky install",
     "start": "npm run dev",
     "test": "run-s lint test:*",

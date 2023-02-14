@@ -16,7 +16,7 @@ module.exports = {
       {
         assets: [
           {
-            path: 'tmp/obsidian-ai-research-assistant.zip',
+            path: 'release/obsidian-ai-research-assistant.zip',
             label: 'Obsidian AI Research Assistant Plugin'
           },
           {

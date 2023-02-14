@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
-rm -r tmp
+function cleanup_and_zip {
+  # clean anything in the release directory
+  rm -rf release/*
 
-mkdir -p tmp
+  # create the release directory if it doesn't exist
+  mkdir -p release
 
-zip -r -j tmp/obsidian-ai-research-assistant.zip dist
+  # zip the dist directory into our release directory
+  zip -r -j release/obsidian-ai-research-assistant.zip dist
+}
+
+cleanup_and_zip

@@ -13,6 +13,7 @@ node_modules
 main.js
 /dist
 /tmp
+/release
 
 # Exclude sourcemaps
 *.map
