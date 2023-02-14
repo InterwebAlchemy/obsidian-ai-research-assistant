@@ -9,8 +9,11 @@ export const PLUGIN_PREFIX = 'ai-research-assistant'
 
 export const DEFAULT_MODEL = models[OPEN_AI_DEFAULT_MODEL_NAME]
 
-export const DEFAULT_CONVERSATION_TITLE = 'New Conversation'
-export const USER_MESSAGE_OBJECT_TYPE = `${PLUGIN_PREFIX.replace(/-/g, '_')}_user_message`
+export const DEFAULT_CONVERSATION_TITLE = 'New Chat'
+export const USER_MESSAGE_OBJECT_TYPE = `${PLUGIN_PREFIX.replace(
+  /-/g,
+  '_'
+)}_user_message`
 export const USER_PREFIX = 'You:'
 export const BOT_PREFIX = 'AI:'
 export const DEFAULT_TOKEN_TYPE = 'gpt3'
@@ -35,5 +38,5 @@ export const PLUGIN_SETTINGS: PluginSettings = {
   botPrefix: BOT_PREFIX,
   enableMemory: false,
   maxMemoryCount: DEFAULT_MAX_MEMORY_COUNT,
-  enableMemoryManager: false,
+  enableMemoryManager: false
 }
