@@ -1,43 +1,85 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
-	"main": "main.js",
-	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node ./scripts/version-bump.mjs && git add manifest.json versions.json"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "MIT",
-	"devDependencies": {
-		"@types/node": "^16.11.6",
-		"@types/react": "^18.0.27",
-		"@types/react-dom": "^18.0.10",
-		"@types/uuid": "^9.0.0",
-		"@typescript-eslint/eslint-plugin": "^5.50.0",
-		"@typescript-eslint/parser": "5.29.0",
-		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
-		"eslint": "^8.33.0",
-		"eslint-config-prettier": "^8.6.0",
-		"eslint-config-standard-with-typescript": "^34.0.0",
-		"eslint-plugin-import": "^2.27.5",
-		"eslint-plugin-n": "^15.6.1",
-		"eslint-plugin-promise": "^6.1.1",
-		"obsidian": "latest",
-		"prettier": "^2.8.3",
-		"tslib": "2.4.0",
-		"typescript": "^4.7.4"
-	},
-	"dependencies": {
-		"@agney/react-loading": "^0.1.2",
-		"gpt3-tokenizer": "^1.1.5",
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0",
-		"react-tabs": "^6.0.0",
-		"use-debounce": "^9.0.3",
-		"uuid": "^9.0.0"
-	}
+  "name": "@interwebalchemy/obsidian-ai-research-assistant",
+  "version": "1.0.0",
+  "description": "Prompt Engineering research tool integrated into Obsidian.md",
+  "license": "MIT",
+  "main": "dist/main.js",
+  "keywords": [
+    "obsidian plugin",
+    "obsidian-plugin",
+    "prompt engineering",
+    "gpt-3",
+    "ai",
+    "research tool",
+    "openai",
+    "open ai"
+  ],
+  "author": {
+    "name": "Interweb Alchemy",
+    "url": "https://github.com/InterwebAlchemy/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/InterwebAlchemy/obsidian-ai-research-assitant.git"
+  },
+  "prettier": "prettier-config-standard",
+  "lint-staged": {
+    "package.json": "scriptlint --fix",
+    "*.{js,ts,jsx,tsx}": "eslint --fix",
+    "*.{js,ts,jsx,tsx,css,md}": "prettier --write",
+    "*.{yaml,yml}": "yamllint"
+  },
+  "scripts": {
+    "build": "npm run lint && node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs",
+    "lint": "npm run lint:package && npm run lint:ts && npm run lint:js && npm run lint:yml",
+    "lint:js": "eslint src/**/*",
+    "lint:package": "scriptlint",
+    "lint:ts": "typescript",
+    "lint:yml": "yamllint **/*.yml",
+    "prepare": "is-ci || husky install",
+    "version": "node ./scripts/version-bump.mjs && git add manifest.json versions.json",
+    "typescript": "tsc -noEmit -skipLibCheck"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.4.3",
+    "@commitlint/config-conventional": "^17.4.3",
+    "@commitlint/prompt-cli": "^17.4.3",
+    "@semantic-release/changelog": "^6.0.2",
+    "@semantic-release/git": "^10.0.1",
+    "@types/node": "^16.11.6",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@types/uuid": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "@typescript-eslint/parser": "5.29.0",
+    "builtin-modules": "3.3.0",
+    "esbuild": "0.17.3",
+    "esbuild-plugin-copy": "^2.0.2",
+    "eslint": "^8.33.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-config-standard-with-typescript": "^34.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.3",
+    "is-ci": "^3.0.1",
+    "obsidian": "latest",
+    "prettier": "^2.8.3",
+    "scriptlint": "^2.2.0",
+    "semantic-release": "^20.1.0",
+    "tslib": "2.4.0",
+    "typescript": "^4.7.4",
+    "yaml-lint": "^1.7.0"
+  },
+  "dependencies": {
+    "@agney/react-loading": "^0.1.2",
+    "gpt3-tokenizer": "^1.1.5",
+    "prettier-config-standard": "^5.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-tabs": "^6.0.0",
+    "use-debounce": "^9.0.3",
+    "uuid": "^9.0.0"
+  }
 }

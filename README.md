@@ -1,32 +1,62 @@
 # Obsidian AI Research Assistant
 
+![Forgetting a previous message](./docs/assets/forget-memory.png)
+
 > Build better Prompts and AI integrations with this advanced research tool for Prompt Engineering.
 
-![Basic Interface and Conversation Summary](./docs/assets/basic-view.png)
+**Note**: This plugin is still in active development and is not considered Stable yet. This is Beta
+software and may contain bugs and other weird issues. Please report
+[Issues](https:/github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues) you find and feel
+encouraged to [./docs/CONTRIBUTING.md](contribute) to the project.
+
+## Installation
+
+This plugin is not yet available in the Obsidian Community Plugins directory, so you will need to
+install it manually.
+
+1. Download the latest
+   [release](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/releases)
+2. Unzip the release into your Obsidian vault's `plugins` folder.
+3. Enable the plugin in Obsidian's Community Plugins settings.
+4. Configure `AI Research Assistant` in Obsidian's Settings.
+
+## Currently Supported Models
+
+- [OpenAI GPT-3](https://platform.openai.com/docs/models/gpt-3)
+  - `text-davinci-003`
+
+## Upcoming Model Support
+
+- [OpenAI GPT-3](https://platform.openai.com/docs/models/gpt-3)
+  - `text-curie-001`
+- [OpenAPI Codex](https://platform.openai.com/docs/models/codex)
+  - `code-davinci-002`
+  - `code-cushman-001`
+- [Cohere AI Models](https://docs.cohere.ai/reference/generate)
 
 This plugin integrates tools for Prompt Engineering and researching AI tools and language models
 like OpenAI's GPT-3 into Obsidian.
 
+![Basic interface and conversation summary](./docs/assets/basic-view.png)
+
 It allows you to manually or automatically save your conversations with AI models, and then use
 Obsidian's powerful search and tagging features to organize and analyze them.
+
+![View the Preamble for the conversation](./docs/assets/preamble-summary.png)
 
 If you enable the experimental Memory Manager, you can also live edit the conversational memories
 that are used to provide context to each prompt.
 
-![Basic Interface and Conversation Summary](./docs/assets/core-memory.png)
-
-![Basic Interface and Conversation Summary](./docs/assets/forget-memory.png)
+![Marking a previous message as a Core Memory](./docs/assets/core-memory.png)
 
 It allows you to review, search, tag, and link your conversations in Obsidian, and view a summary of
 the conversation details its raw inputs and outputs.
 
-![Basic Interface and Conversation Summary](./docs/assets/preamble-summary.png)
+![View the conversational exchange](./docs/assets/conversation-view.png)
 
-![Basic Interface and Conversation Summary](./docs/assets/conversation-view.png)
+![View the actual input sent to the API for requests](./docs/assets/raw-user-input.png)
 
-![Basic Interface and Conversation Summary](./docs/assets/raw-user-input.png)
-
-![Basic Interface and Conversation Summary](./docs/assets/raw-response.png)
+![View the raw JSON from the API for responses](./docs/assets/raw-response.png)
 
 ## Naming Conventions
 

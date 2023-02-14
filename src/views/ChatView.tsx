@@ -250,6 +250,10 @@ export default class ChatView extends ItemView {
   }
 
   async onClose(): Promise<void> {
+    if (typeof this.autosaveInterval !== 'undefined' && this.autosaveInterval !== null) {
+      window.clearInterval(this.autosaveInterval)
+    }
+
     ReactDOM.unmountComponentAtNode(this.containerEl.children[1])
   }
 }

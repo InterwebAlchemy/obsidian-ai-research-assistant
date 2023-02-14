@@ -17,6 +17,7 @@ export const DEFAULT_TOKEN_TYPE = 'gpt3'
 export const DEFAULT_MAX_MEMORY_COUNT = 10
 export const DEFAULT_MAX_TOKENS = DEFAULT_MODEL.maxTokens
 export const DEFAULT_TOKEN_BUFFER = Math.floor(DEFAULT_MAX_TOKENS / 4)
+export const DEFAULT_AUTO_SAVE_INTERVAL = 60
 
 export const PLUGIN_SETTINGS: PluginSettings = {
   debugMode: false,
@@ -28,7 +29,7 @@ export const PLUGIN_SETTINGS: PluginSettings = {
   defaultPreamble: AssistantPreamble(),
   autosaveConversationHistory: false,
   // autosave every 15 seconds by default
-  autosaveInterval: 15,
+  autosaveInterval: 60,
   conversationHistoryDirectory: `${PLUGIN_NAME}/History`,
   userPrefix: USER_PREFIX,
   botPrefix: BOT_PREFIX,

@@ -56,9 +56,7 @@ export default class SettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('DEBUG MODE')
-      .setDesc(
-        `(Coming Soon) Display extra debugging info like, a breakdown of tokens and tokens used.`
-      )
+      .setDesc(`(Coming Soon) Display extra debugging info in the UI and Developer Console.`)
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.debugMode)
 
@@ -73,7 +71,7 @@ export default class SettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('OpenAI API Key')
       .setDesc(
-        'Your API Key will only be shown when you update it. Once you navigate away from this screen it will be stored, but not dispayed. Changing this value will reset any existing chat windows.'
+        'Your API Key will be used to make requests when you submit a message in the Chat Window. Changing this value will reset any existing chat windows.'
       )
       .addText((text) =>
         text
@@ -114,10 +112,11 @@ export default class SettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Token Buffer')
       .setDesc(
-        'How many tokens would you like to reserve for the AI to respond to your prompt? Changing this value will reset any existing chat windows.'
+        '(Coming Soon) How many tokens would you like to reserve for the AI to respond to your prompt? Changing this value will reset any existing chat windows.'
       )
       .addText((text) =>
         text
+          .setDisabled(true)
           .setPlaceholder(`${this.plugin.settings.defaultTokenBuffer ?? 0}`)
           .onChange(async (value) => {
             const number = Number(value)
