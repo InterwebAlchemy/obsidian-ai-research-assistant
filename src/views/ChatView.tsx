@@ -1,7 +1,6 @@
 import { ButtonComponent, ItemView, type WorkspaceLeaf, Notice } from 'obsidian'
 
 import React from 'react'
-import ReactDOM from 'react-dom'
 import { createRoot, type Root } from 'react-dom/client'
 
 import { AppContext } from '../contexts/AppContext'
@@ -10,7 +9,11 @@ import SidebarView from '../components/SidebarView'
 import type Chat from '../services/chat'
 import type { Conversation } from '../services/conversation'
 
-import { DEFAULT_CONVERSATION_TITLE, PLUGIN_NAME, PLUGIN_PREFIX } from '../constants'
+import {
+  DEFAULT_CONVERSATION_TITLE,
+  PLUGIN_NAME,
+  PLUGIN_PREFIX
+} from '../constants'
 
 import type ObsidianAIResearchAssistant from '../main'
 import type { PluginSettings } from '../types'
@@ -68,7 +71,9 @@ export default class ChatView extends ItemView {
         const finalMessaggeId = conversation?.messages?.last()?.id
 
         if (finalMessaggeId !== this.lastSavedMessageId) {
-          this.plugin.logger.debug(`Autosaving conversation ${conversation.id}...`)
+          this.plugin.logger.debug(
+            `Autosaving conversation ${conversation.id}...`
+          )
 
           this.plugin.autoSaving = true
           this.saveButton?.setDisabled(true)
@@ -84,7 +89,9 @@ export default class ChatView extends ItemView {
             .catch((error) => {
               if (this.settings.debugMode) {
                 // eslint-disable-next-line no-new
-                new Notice(`Error saving conversation: ${error.message as string}`)
+                new Notice(
+                  `Error saving conversation: ${error.message as string}`
+                )
               }
 
               this.plugin.logger.error(error)
@@ -166,7 +173,9 @@ export default class ChatView extends ItemView {
 
     this.saveButton.onClick(async (): Promise<void> => {
       if (this?.chat?.currentConversation() !== null) {
-        await this.saveConversation(this.chat.currentConversation() as Conversation)
+        await this.saveConversation(
+          this.chat.currentConversation() as Conversation
+        )
       }
     })
 
@@ -181,7 +190,7 @@ export default class ChatView extends ItemView {
         this.chat?.start({
           preamble: this.settings.defaultPreamble ?? '',
           title: DEFAULT_CONVERSATION_TITLE,
-          settings: this.settings,
+          settings: this.settings
         })
 
         await this.renderToolbar()
@@ -236,11 +245,14 @@ export default class ChatView extends ItemView {
 
     this.root = createRoot(rootElement)
 
-    if (typeof this.chat !== 'undefined' && this.chat?.currentConversation() === null) {
+    if (
+      typeof this.chat !== 'undefined' &&
+      this.chat?.currentConversation() === null
+    ) {
       this.chat?.start({
         preamble: this.settings.defaultPreamble ?? '',
         title: DEFAULT_CONVERSATION_TITLE,
-        settings: this.settings,
+        settings: this.settings
       })
     }
 
@@ -250,10 +262,13 @@ export default class ChatView extends ItemView {
   }
 
   async onClose(): Promise<void> {
-    if (typeof this.autosaveInterval !== 'undefined' && this.autosaveInterval !== null) {
+    if (
+      typeof this.autosaveInterval !== 'undefined' &&
+      this.autosaveInterval !== null
+    ) {
       window.clearInterval(this.autosaveInterval)
     }
 
-    ReactDOM.unmountComponentAtNode(this.containerEl.children[1])
+    this.root?.unmount()
   }
 }

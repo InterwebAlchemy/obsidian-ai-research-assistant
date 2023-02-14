@@ -17,7 +17,7 @@ export interface ChatWindowProps {
 const ChatWindow = ({
   conversation,
   hasMemory = false,
-  useMemoryManager = false,
+  useMemoryManager = false
 }: ChatWindowProps): React.ReactElement => {
   const { plugin } = useApp()
 
@@ -25,7 +25,7 @@ const ChatWindow = ({
 
   const { containerProps, indicatorEl } = useLoading({
     loading: autoSaving,
-    indicator: <BallTriangle width="30" />,
+    indicator: <BallTriangle width="30" />
   })
 
   // TODO: include toggleScrolling state change
@@ -48,17 +48,12 @@ const ChatWindow = ({
     setAutoSaving(plugin.autoSaving)
   }, [plugin.autoSaving])
 
-  useEffect(() => {
-    console.log(autoSaving)
-  }, [autoSaving])
-
   return (
     <div
       className="ai-research-assistant__conversation"
       // @ts-expect-error
       ref={scrollRef}
-      {...containerProps}
-    >
+      {...containerProps}>
       <div className="ai-research-assistant__conversation__extra">
         <div className="ai-research-assistant__conversation__autosaving-indicator">
           {indicatorEl}

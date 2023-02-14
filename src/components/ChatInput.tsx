@@ -27,11 +27,11 @@ const ChatInput = ({
   prompt = '',
   preamble = '',
   busy = false,
-  conversation,
+  conversation
 }: ChatInputProps): React.ReactElement => {
   const { containerProps, indicatorEl } = useLoading({
     loading: busy,
-    indicator: <Oval width="20" />,
+    indicator: <Oval width="20" />
   })
 
   return (
@@ -39,15 +39,8 @@ const ChatInput = ({
       className="ai-research-assistant__chat-form"
       onSubmit={onPromptSubmit}
       autoCapitalize="off"
-      noValidate
-    >
-      <Tabs
-        className="ai-research-assistant__chat-form__tabs"
-        defaultIndex={0}
-        onSelect={(index) => {
-          console.log(index)
-        }}
-      >
+      noValidate>
+      <Tabs className="ai-research-assistant__chat-form__tabs" defaultIndex={0}>
         <TabList>
           <Tab>Prompt</Tab>
           <Tab>Preamble</Tab>
@@ -69,8 +62,7 @@ const ChatInput = ({
             type="submit"
             className="ai-research-assistant__chat__input__send"
             disabled={busy}
-            {...containerProps}
-          >
+            {...containerProps}>
             {indicatorEl}
           </IconButton>
         </TabPanel>

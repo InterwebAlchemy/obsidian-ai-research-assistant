@@ -35,11 +35,13 @@ export default class ObsidianAIResearchAssistant extends Plugin {
     if (existingView.length === 0) {
       await this.app.workspace.getRightLeaf(false).setViewState({
         type: PLUGIN_PREFIX,
-        active: true,
+        active: true
       })
     }
 
-    this.app.workspace.revealLeaf(this.app.workspace.getLeavesOfType(PLUGIN_PREFIX)[0])
+    this.app.workspace.revealLeaf(
+      this.app.workspace.getLeavesOfType(PLUGIN_PREFIX)[0]
+    )
   }
 
   async initializeChatService(): Promise<void> {
@@ -53,7 +55,7 @@ export default class ObsidianAIResearchAssistant extends Plugin {
       if (typeof model !== 'undefined') {
         this.chat = new Chat({
           apiKey: this.settings.openApiKey,
-          model,
+          model
         })
       }
     }
@@ -65,9 +67,13 @@ export default class ObsidianAIResearchAssistant extends Plugin {
       this.settings.openApiKey !== '' &&
       this.settings.openApiKey !== null
     ) {
-      this.addRibbonIcon('message-square', PLUGIN_NAME, async (): Promise<void> => {
-        await this.activateView()
-      })
+      this.addRibbonIcon(
+        'message-square',
+        PLUGIN_NAME,
+        async (): Promise<void> => {
+          await this.activateView()
+        }
+      )
 
       this.registerView(PLUGIN_PREFIX, (leaf) => new ChatView(leaf, this))
     }
@@ -80,6 +86,8 @@ export default class ObsidianAIResearchAssistant extends Plugin {
   }
 
   async onload(): Promise<void> {
+    console.log(`Loading ${PLUGIN_NAME} plugin...`)
+
     await this.loadSettings()
 
     // This adds a settings tab so the user can configure various aspects of the plugin
@@ -137,7 +145,10 @@ export default class ObsidianAIResearchAssistant extends Plugin {
     }
 
     if (canSave) {
-      const file = `${filePath}/${conversation.title.replace(/[\\:/]/g, '_')}.md`
+      const file = `${filePath}/${conversation.title.replace(
+        /[\\:/]/g,
+        '_'
+      )}.md`
 
       const existingFile = this.app.vault.getAbstractFileByPath(file)
 

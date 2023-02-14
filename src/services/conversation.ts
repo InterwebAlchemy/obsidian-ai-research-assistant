@@ -7,13 +7,13 @@ import {
   PLUGIN_SETTINGS,
   DEFAULT_CONVERSATION_TITLE,
   USER_MESSAGE_OBJECT_TYPE,
-  DEFAULT_MAX_MEMORY_COUNT,
+  DEFAULT_MAX_MEMORY_COUNT
 } from '../constants'
 import {
   OPEN_AI_DEFAULT_MODEL,
   OPEN_AI_COMPLETION_OBJECT_TYPE,
   OPEN_AI_DEFAULT_TEMPERATURE,
-  OPEN_AI_RESPONSE_TOKENS,
+  OPEN_AI_RESPONSE_TOKENS
 } from './openai/constants'
 import type { ModelDefinition, OpenAICompletion } from './openai/types'
 import type {
@@ -21,7 +21,7 @@ import type {
   ConversationMessageType,
   ConversationMessage,
   PluginSettings,
-  MemoryState,
+  MemoryState
 } from '../types'
 
 export interface ConversationSettings extends PluginSettings {
@@ -61,7 +61,7 @@ export class Conversation {
     id = uuidv4(),
     messages = [],
     model = OPEN_AI_DEFAULT_MODEL,
-    settings = PLUGIN_SETTINGS,
+    settings = PLUGIN_SETTINGS
   }: Partial<ConversationInterface>) {
     this.id = id
     this.preamble = preamble
@@ -76,7 +76,7 @@ export class Conversation {
       topP: 1,
       frequencyPenalty: 0,
       presencePenalty: 0,
-      ...settings,
+      ...settings
     }
 
     this.hasMemory = conversationSettings.enableMemory
@@ -103,8 +103,8 @@ export class Conversation {
     const comparison = (memoryState: MemoryState): boolean =>
       Array.isArray(state) ? state.includes(memoryState) : memoryState === state
 
-    return (typeof messages !== 'undefined' ? messages : this.messages).filter((message) =>
-      comparison(message.memoryState)
+    return (typeof messages !== 'undefined' ? messages : this.messages).filter(
+      (message) => comparison(message.memoryState)
     )
   }
 
@@ -115,7 +115,8 @@ export class Conversation {
     const coreMemories = []
 
     if (this.settings.enableMemory) {
-      const maxMemories = this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
+      const maxMemories =
+        this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
 
       // get all memories that haven't been forgotten
       const memories = this.getMemories(['default', 'remembered', 'core'])
@@ -157,13 +158,17 @@ export class Conversation {
       .map((message) => {
         if (message.message.object === USER_MESSAGE_OBJECT_TYPE) {
           return this.formatMessagePart(
-            `${this.settings.userPrefix}\n${(message.message as UserPrompt).prompt}`,
+            `${this.settings.userPrefix}\n${
+              (message.message as UserPrompt).prompt
+            }`,
             true,
             true
           )
         } else if (message.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
           return this.formatMessagePart(
-            `${this.settings.botPrefix}\n${(message.message as OpenAICompletion).choices[0].text}`,
+            `${this.settings.botPrefix}\n${
+              (message.message as OpenAICompletion).choices[0].text
+            }`,
             true,
             true
           )
@@ -177,22 +182,28 @@ export class Conversation {
       formattedContextMessages.unshift(this.preamble)
     }
 
-    console.log('formattedContextMessages', formattedContextMessages)
-
     return formatInput(formattedContextMessages.join('\n'))
   }
 
   formatMessagePart(part: string = '', prefix = true, suffix = true): string {
     if (typeof part !== 'undefined' && part !== null && part !== '') {
       return `${
-        prefix && typeof this?.model?.startWord !== 'undefined' ? this.model.startWord : ''
-      }${part}${suffix && typeof this?.model?.stopWord !== 'undefined' ? this.model.stopWord : ''}`
+        prefix && typeof this?.model?.startWord !== 'undefined'
+          ? this.model.startWord
+          : ''
+      }${part}${
+        suffix && typeof this?.model?.stopWord !== 'undefined'
+          ? this.model.stopWord
+          : ''
+      }`
     } else {
       return ''
     }
   }
 
-  getFullMessageText(message: ConversationMessage | ConversationMessage['message']): string {
+  getFullMessageText(
+    message: ConversationMessage | ConversationMessage['message']
+  ): string {
     let currentMessage = message as ConversationMessageType
 
     if (typeof (message as ConversationMessage)?.message !== 'undefined') {
@@ -202,14 +213,22 @@ export class Conversation {
     if (currentMessage.object === USER_MESSAGE_OBJECT_TYPE) {
       return `${this.formatMessagePart(this.preamble, true, true)}${formatInput(
         `${this.getContext()}${this.formatMessagePart(
-          `${this.settings.userPrefix}\n${(currentMessage as UserPrompt).prompt}`,
+          `${this.settings.userPrefix}\n${
+            (currentMessage as UserPrompt).prompt
+          }`,
           true,
           true
-        )}${this.formatMessagePart(`${this.settings.botPrefix}\n`, true, false)}`
+        )}${this.formatMessagePart(
+          `${this.settings.botPrefix}\n`,
+          true,
+          false
+        )}`
       )}`
     } else if (currentMessage.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
       return formatInput(
-        `${this.settings.botPrefix}\n${(currentMessage as OpenAICompletion).choices[0].text}`
+        `${this.settings.botPrefix}\n${
+          (currentMessage as OpenAICompletion).choices[0].text
+        }`
       )
     } else {
       return this.formatMessagePart(JSON.stringify(currentMessage))
@@ -223,7 +242,7 @@ export class Conversation {
           ? (message as OpenAICompletion).id
           : uuidv4(),
       memoryState: 'default' as MemoryState,
-      message: message as ConversationMessage['message'],
+      message: message as ConversationMessage['message']
     }
 
     if (typeof conversationMessage?.message?.created === 'undefined') {
@@ -238,13 +257,15 @@ export class Conversation {
       ;(message as UserPrompt).context = inputContext
       ;(message as UserPrompt).prompt = inputText
       ;(message as UserPrompt).fullText = fullText
-    } else if (conversationMessage.message.object !== OPEN_AI_COMPLETION_OBJECT_TYPE) {
+    } else if (
+      conversationMessage.message.object !== OPEN_AI_COMPLETION_OBJECT_TYPE
+    ) {
       conversationMessage.memoryState = 'forgotten' as MemoryState
 
       conversationMessage.message = {
         object: 'system_message',
         created: getUnixTimestamp(),
-        output: JSON.stringify(message),
+        output: JSON.stringify(message)
       }
     }
 
@@ -270,11 +291,15 @@ export class ConversationManager {
     this.conversations = {}
   }
 
-  startConversation({ preamble, title, settings }: Partial<Conversation>): Conversation {
+  startConversation({
+    preamble,
+    title,
+    settings
+  }: Partial<Conversation>): Conversation {
     const conversation = new Conversation({
       preamble,
       title,
-      settings,
+      settings
     })
 
     this.conversations[conversation.id] = conversation

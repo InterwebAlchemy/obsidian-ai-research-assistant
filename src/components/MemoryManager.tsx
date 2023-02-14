@@ -12,8 +12,12 @@ export interface MemoryManagerProps {
   conversation?: Conversation
 }
 
-const MemoryManager = ({ message, conversation }: MemoryManagerProps): React.ReactElement => {
-  const isBotMessage = message?.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE
+const MemoryManager = ({
+  message,
+  conversation
+}: MemoryManagerProps): React.ReactElement => {
+  const isBotMessage =
+    message?.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE
 
   const [memoryState, setMemoryState] = useState<MemoryState>('default')
   const [isEditingMemory, setIsEditingMemory] = useState(false)
@@ -88,7 +92,7 @@ const MemoryManager = ({ message, conversation }: MemoryManagerProps): React.Rea
     ) {
       setMemoryState(message.memoryState)
     }
-  }, [message.memoryState])
+  }, [])
 
   useEffect(() => {
     if (message.memoryState !== memoryState) {
@@ -100,8 +104,7 @@ const MemoryManager = ({ message, conversation }: MemoryManagerProps): React.Rea
     <div
       className={`ai-research-assistant__conversation__item__memory ai-research-assistant__conversation__item__memory--${
         isBotMessage ? 'bot' : 'user'
-      }`}
-    >
+      }`}>
       {isEditingMemory ? (
         <div className="ai-research-assistant__conversation__item__memory__manager">
           <IconButton
@@ -109,8 +112,7 @@ const MemoryManager = ({ message, conversation }: MemoryManagerProps): React.Rea
             a11yText="Remove memory alterations"
             onClick={makeDefaultMemory}
             buttonVariant="iconOnly"
-            buttonStyle={getMemoryIconColor('default')}
-          >
+            buttonStyle={getMemoryIconColor('default')}>
             Default
             {typeof conversation !== 'undefined'
               ? ` (${conversation?.getNumberofMemoriesForState('default')})`
@@ -121,8 +123,7 @@ const MemoryManager = ({ message, conversation }: MemoryManagerProps): React.Rea
             a11yText="Make Core Memory"
             onClick={makeCoreMemory}
             buttonVariant="iconOnly"
-            buttonStyle={getMemoryIconColor('core')}
-          >
+            buttonStyle={getMemoryIconColor('core')}>
             Core
             {typeof conversation !== 'undefined'
               ? ` (${conversation?.getNumberofMemoriesForState('core')})`
@@ -133,8 +134,7 @@ const MemoryManager = ({ message, conversation }: MemoryManagerProps): React.Rea
             a11yText="Remember this message"
             onClick={makeRememberedMemory}
             buttonVariant="iconOnly"
-            buttonStyle={getMemoryIconColor('remembered')}
-          >
+            buttonStyle={getMemoryIconColor('remembered')}>
             Remember
             {typeof conversation !== 'undefined'
               ? ` (${conversation?.getNumberofMemoriesForState('remembered')})`
@@ -145,8 +145,7 @@ const MemoryManager = ({ message, conversation }: MemoryManagerProps): React.Rea
             a11yText="Forget this message"
             onClick={makeForgottenMemory}
             buttonVariant="iconOnly"
-            buttonStyle={getMemoryIconColor('forgotten')}
-          >
+            buttonStyle={getMemoryIconColor('forgotten')}>
             Forget
             {typeof conversation !== 'undefined'
               ? ` (${conversation?.getNumberofMemoriesForState('forgotten')})`

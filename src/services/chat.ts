@@ -37,11 +37,15 @@ class Chat {
   async send(prompt: string): Promise<void> {
     const conversation = this.currentConversation()
 
-    if (typeof prompt !== 'undefined' && prompt !== '' && conversation !== null) {
+    if (
+      typeof prompt !== 'undefined' &&
+      prompt !== '' &&
+      conversation !== null
+    ) {
       const message = conversation.addMessage({
         prompt,
         object: USER_MESSAGE_OBJECT_TYPE,
-        model: this.model,
+        model: this.model
       })
 
       switch (this.model.adapter) {
@@ -55,13 +59,15 @@ class Chat {
                 maxTokens: conversation.settings.maxTokens,
                 topP: conversation.settings.topP,
                 presencePenalty: conversation.settings.presencePenalty,
-                frequencyPenalty: conversation.settings.frequencyPenalty,
+                frequencyPenalty: conversation.settings.frequencyPenalty
               },
               this.currentConversation()?.settings
             )
 
             conversation.addMessage(response)
           } catch (error) {
+            conversation.addMessage(error.message)
+
             console.error(error)
           }
 
@@ -71,16 +77,26 @@ class Chat {
   }
 
   start({ preamble, title, settings }: Partial<Conversation>): void {
-    const conversation = this.conversations.startConversation({ preamble, title, settings })
+    const conversation = this.conversations.startConversation({
+      preamble,
+      title,
+      settings
+    })
 
     this.currentConversationId = conversation.id
   }
 
-  updateConversationTitle(title: string, id = this.currentConversationId): void {
+  updateConversationTitle(
+    title: string,
+    id = this.currentConversationId
+  ): void {
     if (id !== null) {
       this.conversations.updateConversationTitle(id, title)
     } else if (this.currentConversationId !== null) {
-      this.conversations.updateConversationTitle(this.currentConversationId, title)
+      this.conversations.updateConversationTitle(
+        this.currentConversationId,
+        title
+      )
     }
   }
 
