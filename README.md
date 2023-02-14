@@ -4,21 +4,31 @@
 
 > Build better Prompts and AI integrations with this advanced research tool for Prompt Engineering.
 
-**Note**: This plugin is still in active development and is not considered Stable yet. This is Beta
-software and may contain bugs and other weird issues. Please report
+**Note**: This plugin is still in active development and is not considered Stable yet. **This is Beta
+software** and may contain bugs and other weird issues. Please report
 [Issues](https:/github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues) you find and feel
 encouraged to [./docs/CONTRIBUTING.md](contribute) to the project. It has only been tested on Obsidian Desktop so far, but should have Obsidian Mobile support in the near future.
 
 ## Installation
 
 This plugin is not yet available in the Obsidian Community Plugins directory, so you will need to
-install it manually.
+[install it manually](#manual-installation) or [install it via the Beta Reviewer's Auto-update Tool (BRAT)](#brat-installation)
+
+### BRAT Installation
+
+1. Install [BRAT](https://github.com/TfTHacker/obsidian42-brat)
+2. Click the `Add Beta Plugin` button in BRAT's settings
+3. Enter this repository's URL: `https://github.com/InterwebAlchemy/obsidian-ai-research-assistant`
+4. Enable the plugin in Obsidian's Community Plugins settings
+5. Configure `AI Research Assistant` in Obsidian's Settings
+
+### Manual Installation
 
 1. Download the latest
    [release](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/releases)
-2. Unzip the release into your Obsidian vault's `plugins` folder.
-3. Enable the plugin in Obsidian's Community Plugins settings.
-4. Configure `AI Research Assistant` in Obsidian's Settings.
+2. Unzip the release into your Obsidian vault's `plugins` folder
+3. Enable the plugin in Obsidian's Community Plugins settings
+4. Configure `AI Research Assistant` in Obsidian's Settings
 
 ## Currently Supported Models
 
