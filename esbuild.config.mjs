@@ -13,7 +13,7 @@ const prod = process.argv[2] === 'production'
 
 const context = await esbuild.context({
   banner: {
-    js: banner,
+    js: banner
   },
   entryPoints: ['src/main.tsx'],
   bundle: true,
@@ -31,7 +31,7 @@ const context = await esbuild.context({
     '@lezer/common',
     '@lezer/highlight',
     '@lezer/lr',
-    ...builtins,
+    ...builtins
   ],
   format: 'cjs',
   target: 'es2018',
@@ -43,11 +43,29 @@ const context = await esbuild.context({
     prod
       ? copy({
           resolveFrom: 'cwd',
-          assets: ['manifest.json', 'styles.css', 'versions.json'],
-          verbose: true,
+          assets: [
+            {
+              from: 'manifest.json',
+              to: 'dist/manifest.json'
+            },
+            {
+              from: 'versions.json',
+              to: 'dist/versions.json'
+            },
+            {
+              from: 'src/styles.css',
+              to: 'dist/styles.css'
+            }
+          ]
         })
-      : {},
-  ],
+      : copy({
+          resolveFrom: 'cwd',
+          assets: {
+            from: 'src/styles.css',
+            to: 'styles.css'
+          }
+        })
+  ]
 })
 
 if (prod) {

@@ -30,16 +30,21 @@
     "*.{yaml,yml}": "yamllint"
   },
   "scripts": {
-    "build": "npm run lint && node esbuild.config.mjs production",
+    "build": "run-s lint build:esbuild",
+    "build:esbuild": "node esbuild.config.mjs production",
     "dev": "node esbuild.config.mjs",
-    "lint": "npm run lint:package && npm run lint:ts && npm run lint:js && npm run lint:yml",
+    "lint": "run-s lint:*",
     "lint:js": "eslint src/**/*",
     "lint:package": "scriptlint",
-    "lint:ts": "typescript",
+    "lint:ts": "npm run typescript",
     "lint:yml": "yamllint **/*.yml",
     "prepare": "is-ci || husky install",
-    "version": "node ./scripts/version-bump.mjs && git add manifest.json versions.json",
-    "typescript": "tsc -noEmit -skipLibCheck"
+    "start": "npm run dev",
+    "test": "run-s lint test:*",
+    "test:echo": "echo 'Coming soon...'",
+    "typescript": "tsc -noEmit -skipLibCheck",
+    "version:update": "node ./scripts/version-bump.mjs",
+    "postversion": "version:update"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.3",
@@ -64,6 +69,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "husky": "^8.0.3",
     "is-ci": "^3.0.1",
+    "npm-run-all": "^4.1.5",
     "obsidian": "latest",
     "prettier": "^2.8.3",
     "scriptlint": "^2.2.0",

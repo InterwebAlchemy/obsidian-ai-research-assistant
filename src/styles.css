@@ -79,7 +79,8 @@
   right: 5px;
 }
 
-.ai-research-assistant__conversation__header__edit > .ai-research-assistant__icon-button {
+.ai-research-assistant__conversation__header__edit
+  > .ai-research-assistant__icon-button {
   padding: 0;
 }
 
@@ -144,7 +145,8 @@
   justify-content: center;
 }
 
-.ai-research-assistant__conversation__item--bot .ai-research-assistant__conversation__item__action {
+.ai-research-assistant__conversation__item--bot
+  .ai-research-assistant__conversation__item__action {
   margin-left: 5px;
 }
 
@@ -217,7 +219,8 @@
   align-self: flex-start;
 }
 
-.ai-research-assistant__conversation__item--bot .ai-research-assistant__conversation__item__text {
+.ai-research-assistant__conversation__item--bot
+  .ai-research-assistant__conversation__item__text {
   border: 1px solid var(--text-normal);
   border-bottom-left-radius: 0;
 }
@@ -232,7 +235,8 @@
   align-self: flex-end;
 }
 
-.ai-research-assistant__conversation__item--user .ai-research-assistant__conversation__item__text {
+.ai-research-assistant__conversation__item--user
+  .ai-research-assistant__conversation__item__text {
   border: 1px solid var(--text-accent);
   border-bottom-right-radius: 0;
 }
