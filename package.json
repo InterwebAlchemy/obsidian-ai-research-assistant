@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/InterwebAlchemy/obsidian-ai-research-assitant.git"
+    "url": "https://github.com/InterwebAlchemy/obsidian-ai-research-assistant.git"
   },
   "prettier": "prettier-config-standard",
   "lint-staged": {
