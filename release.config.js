@@ -10,12 +10,6 @@ module.exports = {
       }
     ],
     [
-      '@semantic-release/exec',
-      {
-        prepareCmd: 'node scripts/version-bump.mjs'
-      }
-    ],
-    [
       ('@semantic-release/github',
       {
         assets: [
