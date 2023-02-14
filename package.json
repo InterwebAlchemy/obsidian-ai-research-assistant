@@ -44,7 +44,7 @@
     "test:echo": "echo 'Coming soon...'",
     "typescript": "tsc -noEmit -skipLibCheck",
     "version:update": "node ./scripts/version-bump.mjs",
-    "postversion": "version:update"
+    "postversion": "npm run version:update"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.3",
