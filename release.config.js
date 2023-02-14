@@ -1,5 +1,7 @@
 module.exports = {
   branches: ['main'],
+  // eslint-disable-next-line no-template-curly-in-string
+  tagFormat: '${version}',
   plugins: [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
@@ -10,7 +12,7 @@ module.exports = {
       }
     ],
     [
-      ('@semantic-release/github',
+      '@semantic-release/github',
       {
         assets: [
           {
@@ -30,7 +32,7 @@ module.exports = {
             path: 'dist/styles.css'
           }
         ]
-      })
+      }
     ],
     [
       '@semantic-release/git',
@@ -42,6 +44,7 @@ module.exports = {
           'versions.json'
         ],
         message:
+          // eslint-disable-next-line no-template-curly-in-string
           'chore(release): updating to ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}'
       }
     ]

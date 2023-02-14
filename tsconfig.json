@@ -15,6 +15,6 @@
     "jsx": "react",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["*.config.js", "*.config.mjs", "node_modules", "dist"]
+  "include": ["src/**/*", "scripts/**/*", "*.config.js"],
+  "exclude": ["node_modules", "dist"]
 }
