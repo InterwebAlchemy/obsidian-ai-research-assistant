@@ -6,7 +6,7 @@ module.exports = {
     [
       '@semantic-release/github',
       {
-        assets: ['dist/**']
+        assets: [{ path: 'dist/**/*', label: 'Obsidian AI Research Assistant' }]
       }
     ],
     '@semantic-release/git'
