@@ -9,6 +9,21 @@ software** and may contain bugs and other weird issues. Please report
 [Issues](https:/github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues) you find and feel
 encouraged to [./docs/CONTRIBUTING.md](contribute) to the project. It has only been tested on Obsidian Desktop so far, but should have Obsidian Mobile support in the near future.
 
+**Table of Contents**:
+
+- [Obsidian AI Research Assistant](#obsidian-ai-research-assistant)
+  - [Installation](#installation)
+    - [BRAT Installation](#brat-installation)
+    - [Manual Installation](#manual-installation)
+  - [Currently Supported Models](#currently-supported-models)
+  - [Upcoming Model Support](#upcoming-model-support)
+  - [Summary](#summary)
+  - [Features](#features)
+  - [Roadmap](#roadmap)
+  - [Naming Conventions](#naming-conventions)
+  - [Memories](#memories)
+    - [Memory States](#memory-states)
+
 ## Installation
 
 This plugin is not yet available in the Obsidian Community Plugins directory, so you will need to
@@ -44,6 +59,8 @@ This plugin is not yet available in the Obsidian Community Plugins directory, so
   - `code-cushman-001`
 - [Cohere AI Models](https://docs.cohere.ai/reference/generate)
 
+## Summary
+
 This plugin integrates tools for Prompt Engineering and researching AI tools and language models
 like OpenAI's GPT-3 into Obsidian.
 
@@ -67,6 +84,32 @@ the conversation details its raw inputs and outputs.
 ![View the actual input sent to the API for requests](./docs/assets/raw-user-input.png)
 
 ![View the raw JSON from the API for responses](./docs/assets/raw-response.png)
+
+## Features
+
+- Save (automatically or manually) conversations with AI models to Obsidian notes
+  - Conversations become searchable, taggagle, and linkable in Obsidian
+- Live edit which previous messages are used as Context for each Prompt
+  - Mark a message as a Core Memory to make sure it's always in the Context
+  - Mark a message as a Forgotten to make sure it's never in the Context
+  - Mark a message as Remembered to prioritize it's inclusion in the Context
+- Live edit the Preamble that is used for each Conversation
+- Live edit the Prompt that is used for each Conversation
+- View the raw JSON from the API for each response
+- View the prompt and context that was sent to the API for each request
+
+## Roadmap
+
+- **Resume Conversations** Load conversations from Obsidian notes to pick up where you left off
+- **Annotate Conversations**: Incrementally update notes on save (instead of overwriting the whole note on each save)
+- **Models & APIs**: [More models](#upcoming-model-support)
+- **Token-aware Memories**: Memory will be constructed within the desired amount of tokens
+- **Configurable Response Token Buffer**: Ensure that the API has enough tokens to respond to your prompts
+- **Title Generator**: Automatically generate a title based on the conversation (like ChatGPT)
+- **Mobile Support**: Use AI Research Assistant on your mobile devices, too
+- **Conversation Presets**: Save and Load preset configurations of Prefix, Model, Preamble, Context, etc. to make it easier to explore different research threads
+- **LangChain Support**: Integrate with [LangChain](https://langchain.readthedocs.io/) via [langchan.js](https://github.com/hwchase17/langchainjs)
+- **Features You Want**: [Request a Feature](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BRequest%5D%3A+)
 
 ## Naming Conventions
 
