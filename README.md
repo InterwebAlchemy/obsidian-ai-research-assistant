@@ -2,6 +2,8 @@
 
 > Build better Prompts and AI integrations with this advanced research tool for Prompt Engineering.
 
+![Basic Interface and Conversation Summary](./docs/assets/basic-view.png)
+
 This plugin integrates tools for Prompt Engineering and researching AI tools and language models
 like OpenAI's GPT-3 into Obsidian.
 
@@ -10,6 +12,21 @@ Obsidian's powerful search and tagging features to organize and analyze them.
 
 If you enable the experimental Memory Manager, you can also live edit the conversational memories
 that are used to provide context to each prompt.
+
+![Basic Interface and Conversation Summary](./docs/assets/core-memory.png)
+
+![Basic Interface and Conversation Summary](./docs/assets/forget-memory.png)
+
+It allows you to review, search, tag, and link your conversations in Obsidian, and view a summary of
+the conversation details its raw inputs and outputs.
+
+![Basic Interface and Conversation Summary](./docs/assets/preamble-summary.png)
+
+![Basic Interface and Conversation Summary](./docs/assets/conversation-view.png)
+
+![Basic Interface and Conversation Summary](./docs/assets/raw-user-input.png)
+
+![Basic Interface and Conversation Summary](./docs/assets/raw-response.png)
 
 ## Naming Conventions
 
