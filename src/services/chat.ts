@@ -48,12 +48,15 @@ class Chat {
         model: this.model
       })
 
-      switch (this.model.adapter) {
+      switch (this.model.adapter.name) {
         case 'openai':
           try {
             const response = await openAICompletion(
               {
-                input: conversation.getFullMessageText(message),
+                input:
+                  this.model.adapter.engine === 'chat'
+                    ? conversation
+                    : conversation.getFullMessageText(message),
                 model: this.model,
                 temperature: conversation.settings.temperature,
                 maxTokens: conversation.settings.maxTokens,

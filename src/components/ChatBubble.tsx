@@ -1,5 +1,7 @@
 import React from 'react'
 
+import type { CreateChatCompletionResponse } from 'openai'
+
 import MemoryManager from './MemoryManager'
 
 import { useApp } from '../hooks/useApp'
@@ -7,7 +9,10 @@ import { useApp } from '../hooks/useApp'
 import converstUnixTimestampToISODate from 'src/utils/getISODate'
 
 import { USER_MESSAGE_OBJECT_TYPE } from '../constants'
-import { OPEN_AI_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
+import {
+  OPEN_AI_COMPLETION_OBJECT_TYPE,
+  OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
+} from '../services/openai/constants'
 
 import type { OpenAICompletion } from '../services/openai/types'
 import type { Conversation } from '../services/conversation'
@@ -23,21 +28,29 @@ export interface ChatBubbleProps {
 const ChatBubble = ({
   message,
   conversation,
-  useMemoryManager = false,
+  useMemoryManager = false
 }: ChatBubbleProps): React.ReactElement => {
   const { plugin } = useApp()
 
   const { settings } = plugin
 
   const isUserMessage = message?.message.object === USER_MESSAGE_OBJECT_TYPE
-  const isBotMessage = message?.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE
+  const isBotMessage =
+    message?.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE ||
+    message?.message.object === OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
 
   let messageContent = ''
 
   if (isUserMessage) {
     messageContent = (message.message as UserPrompt).prompt
   } else if (isBotMessage) {
-    messageContent = (message.message as OpenAICompletion).choices[0].text
+    if (conversation?.model.adapter.engine === 'chat') {
+      messageContent =
+        (message.message as CreateChatCompletionResponse).choices[0].message
+          ?.content ?? ''
+    } else {
+      messageContent = (message.message as OpenAICompletion).choices[0].text
+    }
   } else {
     messageContent = JSON.stringify(message)
   }
@@ -46,8 +59,7 @@ const ChatBubble = ({
     <div
       className={`ai-research-assistant__conversation__item ai-research-assistant__conversation__item${
         isUserMessage ? '--user' : '--bot'
-      }`}
-    >
+      }`}>
       <div className="ai-research-assistant__conversation__item__container">
         {useMemoryManager && (isUserMessage || isBotMessage) ? (
           <div className="ai-research-assistant__conversation__item__action">
@@ -63,7 +75,7 @@ const ChatBubble = ({
       <div className="ai-research-assistant__conversation__item__footer">
         {isBotMessage || isUserMessage ? (
           <div className="ai-research-assistant__conversation__item__speaker">
-            {isUserMessage ? settings.userPrefix : settings.botPrefix}
+            {isUserMessage ? settings.userHandle : settings.botHandle}
           </div>
         ) : (
           <></>

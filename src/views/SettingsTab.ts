@@ -5,11 +5,11 @@ import OpenAIModels from '../services/openai/models'
 import obfuscateApiKey from '../utils/obfuscateApiKey'
 
 import {
-  BOT_PREFIX,
+  BOT_HANDLE,
   DEFAULT_MAX_MEMORY_COUNT,
   PLUGIN_NAME,
   PLUGIN_PREFIX,
-  USER_PREFIX,
+  USER_HANDLE
 } from '../constants'
 import { OPEN_AI_API_KEY_URL } from '../services/openai/constants'
 
@@ -42,21 +42,23 @@ export default class SettingsTab extends PluginSettingTab {
     const settingsDescContainer = containerEl.createEl('div')
 
     settingsDescContainer.createEl('p', {
-      text: `${PLUGIN_NAME} is a plugin that facilitates Researchers and Prompt Engineers studying how conversational AIs respond to various prompts. We currently only support OpenAI's GPT-3 API with the following models: text-davinci-003`,
+      text: `${PLUGIN_NAME} is a plugin that facilitates Researchers and Prompt Engineers studying how conversational AIs respond to various prompts. We currently only support OpenAI's GPT-3 API with the following models: text-davinci-003`
     })
 
     const helpText = settingsDescContainer.createEl('p', {
-      text: 'You can get your API Key here: ',
+      text: 'You can get your API Key here: '
     })
 
     helpText.createEl('a', {
       text: OPEN_AI_API_KEY_URL,
-      href: OPEN_AI_API_KEY_URL,
+      href: OPEN_AI_API_KEY_URL
     })
 
     new Setting(containerEl)
       .setName('DEBUG MODE')
-      .setDesc(`(Coming Soon) Display extra debugging info in the UI and Developer Console.`)
+      .setDesc(
+        `(Coming Soon) Display extra debugging info in the UI and Developer Console.`
+      )
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.debugMode)
 
@@ -101,7 +103,9 @@ export default class SettingsTab extends PluginSettingTab {
           .onChange(async (value) => {
             const number = Number(value)
 
-            this.plugin.settings.defaultMaxTokens = !Number.isNaN(number) ? Number(value) : 0
+            this.plugin.settings.defaultMaxTokens = !Number.isNaN(number)
+              ? Number(value)
+              : 0
 
             await this.plugin.saveSettings()
 
@@ -120,7 +124,9 @@ export default class SettingsTab extends PluginSettingTab {
           .setPlaceholder(`${this.plugin.settings.defaultTokenBuffer ?? 0}`)
           .onChange(async (value) => {
             const number = Number(value)
-            this.plugin.settings.defaultTokenBuffer = !Number.isNaN(number) ? Number(value) : 0
+            this.plugin.settings.defaultTokenBuffer = !Number.isNaN(number)
+              ? Number(value)
+              : 0
 
             await this.plugin.saveSettings()
 
@@ -180,7 +186,9 @@ export default class SettingsTab extends PluginSettingTab {
           slider
             .setDynamicTooltip()
             .setLimits(0, 20, 1)
-            .setValue(this.plugin.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT)
+            .setValue(
+              this.plugin.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
+            )
             .onChange(async (value) => {
               this.plugin.settings.maxMemoryCount = value
 
@@ -194,14 +202,12 @@ export default class SettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Default Model')
       .setDesc(
-        `(Coming Soon) The default model to use when sending a message. Changing this value will reset any existing chat windows.`
+        `The default model to use when sending a message. Changing this value will reset any existing chat windows.`
       )
       .addDropdown((dropdown) => {
         Object.keys(OpenAIModels).forEach((model) => {
           dropdown.addOption(model, model)
         })
-
-        dropdown.setDisabled(true)
 
         dropdown.setValue(this.plugin.settings.defaultModel)
 
@@ -241,10 +247,10 @@ export default class SettingsTab extends PluginSettingTab {
       )
       .addText((text) =>
         text
-          .setPlaceholder(USER_PREFIX)
-          .setValue(this.plugin.settings.userPrefix)
+          .setPlaceholder(USER_HANDLE)
+          .setValue(this.plugin.settings.userHandle)
           .onChange(async (value) => {
-            this.plugin.settings.userPrefix = value
+            this.plugin.settings.userHandle = value
 
             await this.plugin.saveSettings()
 
@@ -260,10 +266,10 @@ export default class SettingsTab extends PluginSettingTab {
       )
       .addText((text) =>
         text
-          .setPlaceholder(BOT_PREFIX)
-          .setValue(this.plugin.settings.botPrefix)
+          .setPlaceholder(BOT_HANDLE)
+          .setValue(this.plugin.settings.botHandle)
           .onChange(async (value) => {
-            this.plugin.settings.botPrefix = value
+            this.plugin.settings.botHandle = value
 
             await this.plugin.saveSettings()
 
@@ -275,11 +281,13 @@ export default class SettingsTab extends PluginSettingTab {
       .setName('Conversation Directory')
       .setDesc('Where to save conversations.')
       .addText((text) =>
-        text.setValue(this.plugin.settings.conversationHistoryDirectory).onChange(async (value) => {
-          this.plugin.settings.conversationHistoryDirectory = value
+        text
+          .setValue(this.plugin.settings.conversationHistoryDirectory)
+          .onChange(async (value) => {
+            this.plugin.settings.conversationHistoryDirectory = value
 
-          await this.plugin.saveSettings()
-        })
+            await this.plugin.saveSettings()
+          })
       )
 
     new Setting(containerEl)
@@ -310,7 +318,9 @@ export default class SettingsTab extends PluginSettingTab {
 
           text.onChange(async (value) => {
             const number = Number(value)
-            this.plugin.settings.autosaveInterval = !Number.isNaN(value) ? number : 15
+            this.plugin.settings.autosaveInterval = !Number.isNaN(value)
+              ? number
+              : 15
 
             await this.plugin.saveSettings()
           })

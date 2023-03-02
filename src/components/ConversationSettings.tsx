@@ -11,13 +11,15 @@ export interface ConversationSettingsProps {
   conversation: Conversation | null
 }
 
-const ConversationSettings = ({ conversation }: ConversationSettingsProps): React.ReactElement => {
+const ConversationSettings = ({
+  conversation
+}: ConversationSettingsProps): React.ReactElement => {
   const { plugin } = useApp()
 
   const { settings } = plugin
 
-  const [userPrefix, setUserPrefix] = useState('')
-  const [botPrefix, setBotPrefix] = useState('')
+  const [userHandle, setUserHandle] = useState('')
+  const [botHandle, setBotHandle] = useState('')
   const [maxTokens, setMaxTokens] = useState(0)
   const [temperature, setTemperature] = useState(0)
 
@@ -31,15 +33,17 @@ const ConversationSettings = ({ conversation }: ConversationSettingsProps): Reac
 
   useEffect(() => {
     if (typeof settings !== 'undefined') {
-      setUserPrefix(settings.userPrefix)
-      setBotPrefix(settings.botPrefix)
+      setUserHandle(settings.userHandle)
+      setBotHandle(settings.botHandle)
       setMaxTokens(settings.defaultMaxTokens ?? 0)
     }
   }, [settings])
 
   useEffect(() => {
     if (typeof conversation !== 'undefined' && conversation !== null) {
-      setTemperature(conversation.settings.temperature ?? OPEN_AI_DEFAULT_TEMPERATURE)
+      setTemperature(
+        conversation.settings.temperature ?? OPEN_AI_DEFAULT_TEMPERATURE
+      )
     }
   }, [conversation])
 
@@ -47,21 +51,21 @@ const ConversationSettings = ({ conversation }: ConversationSettingsProps): Reac
     if (
       typeof conversation !== 'undefined' &&
       conversation !== null &&
-      userPrefix !== conversation?.settings.userPrefix
+      userHandle !== conversation?.settings.userHandle
     ) {
-      conversation.settings.userPrefix = userPrefix
+      conversation.settings.userHandle = userHandle
     }
-  }, [userPrefix])
+  }, [userHandle])
 
   useEffect(() => {
     if (
       typeof conversation !== 'undefined' &&
       conversation !== null &&
-      botPrefix !== conversation?.settings.botPrefix
+      botHandle !== conversation?.settings.botHandle
     ) {
-      conversation.settings.botPrefix = botPrefix
+      conversation.settings.botHandle = botHandle
     }
-  }, [botPrefix])
+  }, [botHandle])
 
   useEffect(() => {
     if (
@@ -86,8 +90,18 @@ const ConversationSettings = ({ conversation }: ConversationSettingsProps): Reac
   return (
     <div className="ai-research-assistant__chat__conversation-settings">
       <div className="ai-research-assistant__chat__conversation-settings__row">
-        <InputArea type="text" label="User Prefix" value={userPrefix} onChange={setUserPrefix} />
-        <InputArea type="text" label="Bot Prefix" value={botPrefix} onChange={setBotPrefix} />
+        <InputArea
+          type="text"
+          label="User Handle"
+          value={userHandle}
+          onChange={setUserHandle}
+        />
+        <InputArea
+          type="text"
+          label="Bot Handle"
+          value={botHandle}
+          onChange={setBotHandle}
+        />
       </div>
       <div className="ai-research-assistant__chat__conversation-settings__row">
         <InputArea

@@ -1,9 +1,14 @@
+import type { Conversation } from '../conversation'
+
 import type { ChatAdapter } from '../../types'
 
 import type { TokenCounterType } from '../../utils/tokenCounter'
 
-// TODO: add other models: 'code-cushman-001' | 'text-curie-001' | 'text-babbage-001' | 'text-ada-001'
-export type OpenAIModel = 'text-davinci-003' | 'code-davinci-002'
+// TODO: add other models
+export type OpenAIModel =
+  | 'gpt-3.5-turbo'
+  | 'text-davinci-003'
+  | 'code-davinci-002'
 
 // TODO: find out what other valid object values are
 export type OpenAICompletionObject = 'text_completion'
@@ -18,7 +23,7 @@ export interface ModelDefinition {
 }
 
 export interface OpenAICompletionRequest {
-  input: string
+  input: string | Conversation
   temperature?: number
   model?: ModelDefinition
   maxTokens?: number
