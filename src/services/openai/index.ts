@@ -1,4 +1,11 @@
 import { requestUrl as obsidianRequest, type RequestUrlParam } from 'obsidian'
+import {
+  Configuration,
+  OpenAIApi,
+  type CreateChatCompletionResponse
+} from 'openai'
+
+import formatChat from './utils/formatChat'
 
 import formatInput from '../../utils/formatInput'
 
@@ -6,12 +13,13 @@ import {
   OPEN_AI_DEFAULT_MODEL,
   OPEN_AI_RESPONSE_TOKENS,
   OPEN_AI_BASE_URL,
-  OPEN_AI_DEFAULT_TEMPERATURE,
+  OPEN_AI_DEFAULT_TEMPERATURE
 } from './constants'
+
 import { PLUGIN_SETTINGS } from '../../constants'
 
 import type { OpenAICompletionRequest, OpenAICompletion } from './types'
-
+import type { Conversation } from '../conversation'
 import type { PluginSettings } from '../../types'
 
 export const openAICompletion = async (
@@ -23,77 +31,104 @@ export const openAICompletion = async (
     topP = 1,
     frequencyPenalty = 0,
     presencePenalty = 0,
-    stream = false,
+    stream = false
   }: OpenAICompletionRequest,
   settings: PluginSettings = PLUGIN_SETTINGS
-): Promise<OpenAICompletion> => {
-  const requestUrl = new URL('/v1/completions', OPEN_AI_BASE_URL)
+): Promise<OpenAICompletion | CreateChatCompletionResponse> => {
+  const { userHandle, botHandle, debugMode, openApiKey } = settings
 
-  const { userPrefix, botPrefix, debugMode, openApiKey } = settings
+  // using the openai JavaScript library since the release of the new ChatGPT model
+  if (model.adapter?.engine === 'chat') {
+    try {
+      const config = new Configuration({
+        apiKey: openApiKey
+      })
 
-  const requestHeaders = {
-    Authorization: `Bearer ${openApiKey}`,
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  }
+      const openai = new OpenAIApi(config)
 
-  const prompt = formatInput(input)
+      const completion = await openai.createChatCompletion({
+        model: model.model,
+        messages: formatChat(input as Conversation)
+      })
 
-  const stopWords: string[] = []
+      return completion.data
+    } catch (error) {
+      if (typeof error?.response !== 'undefined') {
+        console.log(error.response.status)
+        console.log(error.response.data)
+      } else {
+        console.log(error.message)
+      }
 
-  if (typeof model.stopWord !== 'undefined' && model.stopWord !== '') {
-    stopWords.push(model.stopWord)
-  }
+      throw error
+    }
+  } else {
+    const requestUrl = new URL('/v1/completions', OPEN_AI_BASE_URL)
 
-  if (typeof userPrefix !== 'undefined' && userPrefix !== '') {
-    stopWords.push(userPrefix)
-  }
+    const requestHeaders = {
+      Authorization: `Bearer ${openApiKey}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    }
 
-  if (typeof botPrefix !== 'undefined' && botPrefix !== '') {
-    stopWords.push(botPrefix)
-  }
+    const prompt = formatInput(input as string)
 
-  const requestBody = {
-    prompt,
-    model: model.model,
-    stream,
-    temperature,
-    max_tokens: maxTokens,
-    stop: stopWords,
-    top_p: topP,
-    frequency_penalty: frequencyPenalty,
-    presence_penalty: presencePenalty,
-  }
+    const stopWords: string[] = []
 
-  const request: RequestUrlParam = {
-    url: requestUrl.toString(),
-    headers: requestHeaders,
-    method: 'POST',
-    body: JSON.stringify(requestBody),
-    throw: false,
-  }
+    if (typeof model.stopWord !== 'undefined' && model.stopWord !== '') {
+      stopWords.push(model.stopWord)
+    }
 
-  if (debugMode) {
-    console.debug('REQUEST:', request)
-  }
+    if (typeof userHandle !== 'undefined' && userHandle !== '') {
+      stopWords.push(userHandle)
+    }
 
-  try {
-    const response = await obsidianRequest(request)
+    if (typeof botHandle !== 'undefined' && botHandle !== '') {
+      stopWords.push(botHandle)
+    }
+
+    const requestBody = {
+      prompt,
+      model: model.model,
+      stream,
+      temperature,
+      max_tokens: maxTokens,
+      stop: stopWords,
+      top_p: topP,
+      frequency_penalty: frequencyPenalty,
+      presence_penalty: presencePenalty
+    }
+
+    const request: RequestUrlParam = {
+      url: requestUrl.toString(),
+      headers: requestHeaders,
+      method: 'POST',
+      body: JSON.stringify(requestBody),
+      throw: false
+    }
 
     if (debugMode) {
-      console.debug('RESPONSE:', response)
+      console.debug('REQUEST:', request)
     }
 
-    if (response.status < 400) {
-      return response.json
-    } else {
-      console.error(response)
+    try {
+      const response = await obsidianRequest(request)
 
-      throw new Error(response.text)
+      if (debugMode) {
+        console.debug('RESPONSE:', response)
+      }
+
+      if (response.status < 400) {
+        return response.json
+      } else {
+        console.error(response)
+
+        throw new Error(response.text)
+      }
+    } catch (error) {
+      console.error(error)
+
+      throw error
     }
-  } catch (error) {
-    console.error(error)
-
-    throw error
   }
 }

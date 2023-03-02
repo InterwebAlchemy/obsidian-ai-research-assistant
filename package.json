@@ -84,6 +84,7 @@
   "dependencies": {
     "@agney/react-loading": "^0.1.2",
     "gpt3-tokenizer": "^1.1.5",
+    "openai": "^3.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-tabs": "^6.0.0",

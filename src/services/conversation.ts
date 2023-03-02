@@ -1,17 +1,21 @@
 import { v4 as uuidv4 } from 'uuid'
 
+import type { CreateChatCompletionResponse } from 'openai'
+
 import formatInput from '../utils/formatInput'
 import getUnixTimestamp from 'src/utils/getUnixTimestamp'
 
 import {
   PLUGIN_SETTINGS,
   DEFAULT_CONVERSATION_TITLE,
+  SYSTEM_MESSAGE_OBJECT_TYPE,
   USER_MESSAGE_OBJECT_TYPE,
   DEFAULT_MAX_MEMORY_COUNT
 } from '../constants'
 import {
   OPEN_AI_DEFAULT_MODEL,
   OPEN_AI_COMPLETION_OBJECT_TYPE,
+  OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE,
   OPEN_AI_DEFAULT_TEMPERATURE,
   OPEN_AI_RESPONSE_TOKENS
 } from './openai/constants'
@@ -158,15 +162,26 @@ export class Conversation {
       .map((message) => {
         if (message.message.object === USER_MESSAGE_OBJECT_TYPE) {
           return this.formatMessagePart(
-            `${this.settings.userPrefix}\n${
+            `${this.settings.userHandle}\n${
               (message.message as UserPrompt).prompt
+            }`,
+            true,
+            true
+          )
+        } else if (
+          message.message.object === OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
+        ) {
+          return this.formatMessagePart(
+            `${this.settings.botHandle}\n${
+              (message.message as CreateChatCompletionResponse).choices[0]
+                .message?.content ?? ''
             }`,
             true,
             true
           )
         } else if (message.message.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
           return this.formatMessagePart(
-            `${this.settings.botPrefix}\n${
+            `${this.settings.botHandle}\n${
               (message.message as OpenAICompletion).choices[0].text
             }`,
             true,
@@ -213,26 +228,86 @@ export class Conversation {
     if (currentMessage.object === USER_MESSAGE_OBJECT_TYPE) {
       return `${this.formatMessagePart(this.preamble, true, true)}${formatInput(
         `${this.getContext()}${this.formatMessagePart(
-          `${this.settings.userPrefix}\n${
+          `${this.settings.userHandle}\n${
             (currentMessage as UserPrompt).prompt
           }`,
           true,
           true
         )}${this.formatMessagePart(
-          `${this.settings.botPrefix}\n`,
+          `${this.settings.botHandle}\n`,
           true,
           false
         )}`
       )}`
+    } else if (currentMessage.object === OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE) {
+      return formatInput(
+        `${this.settings.botHandle}\n${
+          (currentMessage as CreateChatCompletionResponse).choices[0].message
+            ?.content ?? ''
+        }`
+      )
     } else if (currentMessage.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
       return formatInput(
-        `${this.settings.botPrefix}\n${
+        `${this.settings.botHandle}\n${
           (currentMessage as OpenAICompletion).choices[0].text
         }`
       )
     } else {
       return this.formatMessagePart(JSON.stringify(currentMessage))
     }
+  }
+
+  getConversationMessages(): ConversationMessage[] {
+    // TODO: summarize the prompt (or maybe the response from OpenAI) and add it to the context
+    // instead of just appending the message
+    const contextMessages = []
+
+    if (this.settings.enableMemory) {
+      const maxMemories =
+        this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
+
+      // get all memories that haven't been forgotten
+      const memories = this.getMemories(['default', 'remembered', 'core'])
+
+      // core memories take precedence
+      // and we don't limit how many we include
+      contextMessages.push(...this.getMemories('core', memories))
+
+      // if we still need more memories, add remembered memories
+      if (contextMessages.length < maxMemories) {
+        // specific memories come next
+        contextMessages.push(
+          ...this.getMemories('remembered', memories)
+            // grab the most recent memories that we can fit
+            // borrowed from: https://stackoverflow.com/a/6473869/656011
+            .slice(Math.max(contextMessages.length - maxMemories, 0))
+        )
+      }
+
+      // if we still need more memories, add latest messages that weren't forgotten
+      if (contextMessages.length < maxMemories) {
+        // most recent mesages come last
+        contextMessages.push(
+          // make sure we're looking at the default memories
+          ...this.getMemories('default', memories)
+            // grab the most recent number of messages we can fit
+            // borrowed from: https://stackoverflow.com/a/6473869/656011
+            .slice(Math.max(contextMessages.length - maxMemories, 0))
+        )
+      }
+    }
+
+    contextMessages.unshift({
+      id: '0',
+      memoryState: 'system' as MemoryState,
+      message: {
+        object: SYSTEM_MESSAGE_OBJECT_TYPE,
+        created: this.timestamp,
+        output: this.preamble
+      }
+    })
+
+    return contextMessages
   }
 
   addMessage(message: Partial<ConversationMessageType>): ConversationMessage {
@@ -258,12 +333,13 @@ export class Conversation {
       ;(message as UserPrompt).prompt = inputText
       ;(message as UserPrompt).fullText = fullText
     } else if (
-      conversationMessage.message.object !== OPEN_AI_COMPLETION_OBJECT_TYPE
+      conversationMessage.message.object !== OPEN_AI_COMPLETION_OBJECT_TYPE &&
+      conversationMessage.message.object !== OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
     ) {
       conversationMessage.memoryState = 'forgotten' as MemoryState
 
       conversationMessage.message = {
-        object: 'system_message',
+        object: SYSTEM_MESSAGE_OBJECT_TYPE,
         created: getUnixTimestamp(),
         output: JSON.stringify(message)
       }

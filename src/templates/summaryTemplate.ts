@@ -1,3 +1,5 @@
+import type { CreateChatCompletionResponse } from 'openai'
+
 import converstUnixTimestampToISODate from '../utils/getISODate'
 import tokenCounter from '../utils/tokenCounter'
 import formatInput from '../utils/formatInput'
@@ -20,12 +22,26 @@ export const summaryTemplate = (conversation: Conversation): string =>
 ---
 conversationId: ${conversation.id}
 model: ${conversation.model.model}
-adapter: ${conversation.model.adapter}
 timestamp: ${conversation.timestamp}
 datetime: ${converstUnixTimestampToISODate(conversation.timestamp)}
+adapter: ${conversation.model.adapter.name}
+${
+  typeof conversation.model.adapter?.engine !== 'undefined'
+    ? `engine: ${conversation.model.adapter?.engine}`
+    : ''
+}
+${
+  typeof conversation.model.adapter?.endpoint !== 'undefined'
+    ? `endpoint: ${conversation.model.adapter?.endpoint}`
+    : ''
+}
 ---
 
-${typeof conversation?.model !== 'undefined' ? `**Model**: \`${conversation.model.model}\`` : ''}
+${
+  typeof conversation?.model !== 'undefined'
+    ? `**Model**: \`${conversation.model.model}\``
+    : ''
+}
 
 ${
   typeof conversation?.preamble !== 'undefined' &&
@@ -53,17 +69,22 @@ ${conversation.messages
   .map((item) => {
     const speaker =
       item.message.object === USER_MESSAGE_OBJECT_TYPE
-        ? conversation.settings.userPrefix
-        : conversation.settings.botPrefix
+        ? conversation.settings.userHandle
+        : conversation.settings.botHandle
 
     const message =
       item.message.object === USER_MESSAGE_OBJECT_TYPE
         ? (item.message as UserPrompt).prompt
-        : (item.message as OpenAICompletion).choices[0].text
+        : item.message.object === USER_MESSAGE_OBJECT_TYPE
+        ? (item.message as OpenAICompletion).choices[0].text
+        : (item.message as CreateChatCompletionResponse).choices[0].message
+            ?.content ?? ''
 
     return `> **${speaker}** ${formatInput(message).replace(/\n/g, '\n> ')}\n${
       item.memoryState !== 'default'
-        ? `    _(${item.memoryState[0].toUpperCase()}${item.memoryState.slice(1)} Memory)_`
+        ? `    _(${item.memoryState[0].toUpperCase()}${item.memoryState.slice(
+            1
+          )} Memory)_`
         : ''
     }`
   })
@@ -88,8 +109,8 @@ ${conversation.messages
         message: {
           ...item.message,
           tokens: tokenCounter((item.message as UserPrompt).prompt),
-          totalTokens,
-        },
+          totalTokens
+        }
       }
     }
 
@@ -97,7 +118,10 @@ ${conversation.messages
   })
   .map(
     (item: ConversationMessage) =>
-      `\`\`\`json\n${JSON.stringify(item, null, '\t').replace(/`/g, '\\`')}\n\`\`\``
+      `\`\`\`json\n${JSON.stringify(item, null, '\t').replace(
+        /`/g,
+        '\\`'
+      )}\n\`\`\``
   )
   .join('\n\n')}
 `
