@@ -42,7 +42,7 @@ export default class SettingsTab extends PluginSettingTab {
     const settingsDescContainer = containerEl.createEl('div')
 
     settingsDescContainer.createEl('p', {
-      text: `${PLUGIN_NAME} is a plugin that facilitates Researchers and Prompt Engineers studying how conversational AIs respond to various prompts. We currently only support OpenAI's GPT-3 API with the following models: text-davinci-003`
+      text: `${PLUGIN_NAME} is a plugin that facilitates Researchers and Prompt Engineers studying how conversational AIs respond to various prompts. We currently only support OpenAI's API with the following models: gpt-3.5-turbo, text-davinci-003`
     })
 
     const helpText = settingsDescContainer.createEl('p', {
@@ -85,6 +85,48 @@ export default class SettingsTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.openApiKey = value
             this.plugin.settings.apiKeySaved = true
+
+            await this.plugin.saveSettings()
+
+            await this.resetPluginView()
+
+            await this.plugin.initializeChatInterface()
+          })
+      )
+
+    new Setting(containerEl)
+      .setName('Default Model')
+      .setDesc(
+        `The default model to use when sending a message. Changing this value will reset any existing chat windows.`
+      )
+      .addDropdown((dropdown) => {
+        Object.keys(OpenAIModels).forEach((model) => {
+          dropdown.addOption(model, model)
+        })
+
+        dropdown.setValue(this.plugin.settings.defaultModel)
+
+        dropdown.onChange(async (value) => {
+          this.plugin.settings.defaultModel = value as OpenAIModel
+
+          await this.plugin.saveSettings()
+
+          await this.resetPluginView()
+        })
+      })
+
+    new Setting(containerEl)
+      .setName('Default Preamble')
+      .setDesc(
+        `The default preamble to use when starting a Conversation. You can edit the Preamble in the Chat interface. Changing this value will reset any existing chat windows.`
+      )
+      .setClass('ai-research-assistant__settings__preamble')
+      .addTextArea((text) =>
+        text
+          .setPlaceholder(AssistantPreamble())
+          .setValue(this.plugin.settings.defaultPreamble ?? '')
+          .onChange(async (value) => {
+            this.plugin.settings.defaultPreamble = value
 
             await this.plugin.saveSettings()
 
@@ -135,115 +177,33 @@ export default class SettingsTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Enable Memories')
+      .setName('Maximum Memory Count')
       .setDesc(
-        'Enable or disable the ability to store messages in memory. Changing this value will reset any existing chat windows.'
+        `The number of messages that should be stored in conversation memory. Set to 0 for no limit.
+          
+          Note: Core Memories will always be included when the Experimental Memory Manager is enabled, but if there are more Core Memories than this limit, no other memories will be included.`
       )
-      .addToggle((toggle) => {
-        toggle.setValue(this.plugin.settings.enableMemory)
-
-        toggle.onChange(async (value) => {
-          this.plugin.settings.enableMemory = value
-
-          await this.plugin.saveSettings()
-
-          await this.resetPluginView()
-
-          this.display()
-        })
-      })
-
-    new Setting(containerEl)
-      .setName('Enable Memory Manager')
-      .setDesc(
-        '(EXPERIMENTAL) Enable or disable the ability to change which messages are used as memories when adding context to the given prompt. Core memories will always be included. Remembered messages will be included if there is more room for memories. Forgotten messages will never be included. By default, the most recent messages up to the Maximum Memory Count are included. Changing this value will reset any existing chat windows.'
-      )
-      .addToggle((toggle) => {
-        toggle.setValue(this.plugin.settings.enableMemoryManager)
-
-        toggle.onChange(async (value) => {
-          this.plugin.settings.enableMemoryManager = value
-
-          await this.plugin.saveSettings()
-
-          await this.resetPluginView()
-
-          this.display()
-        })
-      })
-
-    if (this.plugin.settings.enableMemory) {
-      new Setting(containerEl)
-        .setName('Maximum Memory Count')
-        .setDesc(
-          `The number of messages that should be stored in conversation memory. Set to 0 for no limit.${
-            this.plugin.settings.enableMemoryManager
-              ? ' Note: Core Memories will always be included when the Experimental Memory Manager is enabled, but if there are more Core Memories than this limit, no other memories will be included.'
-              : ''
-          }`
-        )
-        .addSlider((slider) => {
-          slider
-            .setDynamicTooltip()
-            .setLimits(0, 20, 1)
-            .setValue(
-              this.plugin.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
-            )
-            .onChange(async (value) => {
-              this.plugin.settings.maxMemoryCount = value
-
-              await this.plugin.saveSettings()
-
-              await this.resetPluginView()
-            })
-        })
-    }
-
-    new Setting(containerEl)
-      .setName('Default Model')
-      .setDesc(
-        `The default model to use when sending a message. Changing this value will reset any existing chat windows.`
-      )
-      .addDropdown((dropdown) => {
-        Object.keys(OpenAIModels).forEach((model) => {
-          dropdown.addOption(model, model)
-        })
-
-        dropdown.setValue(this.plugin.settings.defaultModel)
-
-        dropdown.onChange(async (value) => {
-          this.plugin.settings.defaultModel = value as OpenAIModel
-
-          await this.plugin.saveSettings()
-
-          await this.resetPluginView()
-        })
-      })
-
-    new Setting(containerEl)
-      .setName('Default Preamble')
-      .setDesc(
-        `The default preamble to use when starting a Conversation. You can edit the Preamble in the Chat interface. Changing this value will reset any existing chat windows.`
-      )
-      .setClass('ai-research-assistant__settings__preamble')
-      .addTextArea((text) =>
-        text
-          .setPlaceholder(AssistantPreamble())
-          .setValue(this.plugin.settings.defaultPreamble ?? '')
+      .addSlider((slider) => {
+        slider
+          .setDynamicTooltip()
+          .setLimits(0, 20, 1)
+          .setValue(
+            this.plugin.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
+          )
           .onChange(async (value) => {
-            this.plugin.settings.defaultPreamble = value
+            this.plugin.settings.maxMemoryCount = value
 
             await this.plugin.saveSettings()
 
             await this.resetPluginView()
           })
-      )
+      })
 
     // create Setting text input for user prefix
     new Setting(containerEl)
-      .setName('Default User Prefix')
+      .setName('Default User Handle')
       .setDesc(
-        'The prefix to use when displaying a user message. Changing this value will reset any existing chat windows.'
+        'The handle to use when displaying a user message. Changing this value will reset any existing chat windows.'
       )
       .addText((text) =>
         text
@@ -260,9 +220,9 @@ export default class SettingsTab extends PluginSettingTab {
 
     // create Setting text input for bot prefix
     new Setting(containerEl)
-      .setName('Default Bot Prefix')
+      .setName('Default Bot Handle')
       .setDesc(
-        'The prefix to use when displaying a bot message. Changing this value will reset any existing chat windows.'
+        'The handle to use when displaying a bot message. Changing this value will reset any existing chat windows.'
       )
       .addText((text) =>
         text

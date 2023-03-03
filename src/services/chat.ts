@@ -10,20 +10,25 @@ import { OPEN_AI_DEFAULT_MODEL } from './openai/constants'
 
 import type { ModelDefinition } from './openai/types'
 
+import type Logger from './logger'
+
 export interface ChatInterface {
   apiKey: string
   model?: ModelDefinition
+  logger: Logger
 }
 
 class Chat {
   model: ModelDefinition
   currentConversationId: string | null = null
   conversations: typeof Conversations
+  logger: Logger
 
-  constructor({ model = OPEN_AI_DEFAULT_MODEL }: ChatInterface) {
+  constructor({ model = OPEN_AI_DEFAULT_MODEL, logger }: ChatInterface) {
     this.currentConversationId = null
     this.model = model
     this.conversations = Conversations
+    this.logger = logger
   }
 
   currentConversation(): Conversation | null {
@@ -64,7 +69,8 @@ class Chat {
                 presencePenalty: conversation.settings.presencePenalty,
                 frequencyPenalty: conversation.settings.frequencyPenalty
               },
-              this.currentConversation()?.settings
+              this.currentConversation()?.settings,
+              this.logger
             )
 
             conversation.addMessage(response)
@@ -100,32 +106,6 @@ class Chat {
         this.currentConversationId,
         title
       )
-    }
-  }
-
-  hasMemory(): boolean {
-    const conversation = this.currentConversation()
-
-    if (conversation !== null) {
-      return conversation.hasMemory
-    }
-
-    return false
-  }
-
-  enableMemory(): void {
-    const conversation = this.currentConversation()
-
-    if (conversation !== null) {
-      conversation.setHasMemory(true)
-    }
-  }
-
-  disableMemory(): void {
-    const conversation = this.currentConversation()
-
-    if (conversation !== null) {
-      conversation.setHasMemory(false)
     }
   }
 }

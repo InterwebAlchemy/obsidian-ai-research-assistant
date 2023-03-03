@@ -55,34 +55,40 @@ export default class ObsidianAIResearchAssistant extends Plugin {
       if (typeof model !== 'undefined') {
         this.chat = new Chat({
           apiKey: this.settings.openApiKey,
-          model
+          model,
+          logger: this.logger
         })
       }
     }
   }
 
   async initializeChatInterface(): Promise<void> {
-    if (
-      typeof this.settings.openApiKey !== 'undefined' &&
-      this.settings.openApiKey !== '' &&
-      this.settings.openApiKey !== null
-    ) {
-      this.addRibbonIcon(
-        'message-square',
-        PLUGIN_NAME,
-        async (): Promise<void> => {
+    this.addRibbonIcon(
+      'message-square',
+      PLUGIN_NAME,
+      async (): Promise<void> => {
+        if (
+          typeof this.settings.openApiKey !== 'undefined' &&
+          this.settings.openApiKey !== '' &&
+          this.settings.openApiKey !== null
+        ) {
           await this.activateView()
+        } else {
+          // eslint-disable-next-line no-new
+          new Notice(
+            `Please configure your OpenAI API key in the ${PLUGIN_NAME} settings.`
+          )
         }
-      )
+      }
+    )
 
-      this.registerView(PLUGIN_PREFIX, (leaf) => new ChatView(leaf, this))
-    }
+    this.registerView(PLUGIN_PREFIX, (leaf) => new ChatView(leaf, this))
   }
 
-  async initializeLogger(): Promise<void> {
+  initializeLogger(): void {
     this.logger = new Logger({ settings: this.settings })
 
-    this.logger.debug('Plugin initialized')
+    this.logger.debug('Logger initialized...')
   }
 
   async onload(): Promise<void> {
@@ -90,10 +96,10 @@ export default class ObsidianAIResearchAssistant extends Plugin {
 
     await this.loadSettings()
 
+    this.initializeLogger()
+
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new SettingsTab(this.app, this))
-
-    await this.initializeLogger()
 
     await this.initializeChatService()
 

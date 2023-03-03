@@ -55,4 +55,4 @@ via `npx commit` if you want help formatting your commit messages properly.
 
 ## Releasing New Versions
 
-Releases are automatically generated when code is pushed to `main`
+Releases are automatically generated via [`semantic-release`](https://github.com/semantic-release/semantic-release) when code is pushed to `main`

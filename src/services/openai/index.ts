@@ -21,6 +21,7 @@ import { PLUGIN_SETTINGS } from '../../constants'
 import type { OpenAICompletionRequest, OpenAICompletion } from './types'
 import type { Conversation } from '../conversation'
 import type { PluginSettings } from '../../types'
+import type Logger from '../logger'
 
 export const openAICompletion = async (
   {
@@ -33,7 +34,8 @@ export const openAICompletion = async (
     presencePenalty = 0,
     stream = false
   }: OpenAICompletionRequest,
-  settings: PluginSettings = PLUGIN_SETTINGS
+  settings: PluginSettings = PLUGIN_SETTINGS,
+  logger: Logger
 ): Promise<OpenAICompletion | CreateChatCompletionResponse> => {
   const { userHandle, botHandle, debugMode, openApiKey } = settings
 
@@ -46,10 +48,18 @@ export const openAICompletion = async (
 
       const openai = new OpenAIApi(config)
 
+      const messages = formatChat(input as Conversation)
+
+      console.log(messages)
+
+      logger.log('messages', messages)
+
       const completion = await openai.createChatCompletion({
         model: model.model,
-        messages: formatChat(input as Conversation)
+        messages
       })
+
+      console.log(completion)
 
       return completion.data
     } catch (error) {

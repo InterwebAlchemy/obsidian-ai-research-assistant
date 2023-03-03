@@ -27,6 +27,7 @@ import type {
   PluginSettings,
   MemoryState
 } from '../types'
+import formatChat from './openai/utils/formatChat'
 
 export interface ConversationSettings extends PluginSettings {
   temperature?: number
@@ -54,8 +55,6 @@ export class Conversation {
   messages: ConversationInterface['messages']
   model: ModelDefinition
   settings: ConversationSettings
-  hasMemory: boolean
-  useMemoryManager: boolean
   temperature: number
 
   constructor({
@@ -83,13 +82,7 @@ export class Conversation {
       ...settings
     }
 
-    this.hasMemory = conversationSettings.enableMemory
-    this.useMemoryManager = conversationSettings.enableMemoryManager
     this.settings = conversationSettings
-  }
-
-  setHasMemory(hasMemory: boolean): void {
-    this.hasMemory = hasMemory
   }
 
   getNumberofMemoriesForState(state: MemoryState): number {
@@ -118,39 +111,36 @@ export class Conversation {
     const contextMessages = []
     const coreMemories = []
 
-    if (this.settings.enableMemory) {
-      const maxMemories =
-        this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
+    const maxMemories = this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
 
-      // get all memories that haven't been forgotten
-      const memories = this.getMemories(['default', 'remembered', 'core'])
+    // get all memories that haven't been forgotten
+    const memories = this.getMemories(['default', 'remembered', 'core'])
 
-      // core memories take precedence
-      // and we don't limit how many we include
-      coreMemories.push(...this.getMemories('core', memories))
+    // core memories take precedence
+    // and we don't limit how many we include
+    coreMemories.push(...this.getMemories('core', memories))
 
-      // if we still need more memories, add remembered memories
-      if (contextMessages.length < maxMemories) {
-        // specific memories come next
-        contextMessages.push(
-          ...this.getMemories('remembered', memories)
-            // grab the most recent memories that we can fit
-            // borrowed from: https://stackoverflow.com/a/6473869/656011
-            .slice(Math.max(contextMessages.length - maxMemories, 0))
-        )
-      }
+    // if we still need more memories, add remembered memories
+    if (contextMessages.length < maxMemories) {
+      // specific memories come next
+      contextMessages.push(
+        ...this.getMemories('remembered', memories)
+          // grab the most recent memories that we can fit
+          // borrowed from: https://stackoverflow.com/a/6473869/656011
+          .slice(Math.max(contextMessages.length - maxMemories, 0))
+      )
+    }
 
-      // if we still need more memories, add latest messages that weren't forgotten
-      if (contextMessages.length < maxMemories) {
-        // most recent mesages come last
-        contextMessages.push(
-          // make sure we're looking at the default memories
-          ...this.getMemories('default', memories)
-            // grab the most recent number of messages we can fit
-            // borrowed from: https://stackoverflow.com/a/6473869/656011
-            .slice(Math.max(contextMessages.length - maxMemories, 0))
-        )
-      }
+    // if we still need more memories, add latest messages that weren't forgotten
+    if (contextMessages.length < maxMemories) {
+      // most recent mesages come last
+      contextMessages.push(
+        // make sure we're looking at the default memories
+        ...this.getMemories('default', memories)
+          // grab the most recent number of messages we can fit
+          // borrowed from: https://stackoverflow.com/a/6473869/656011
+          .slice(Math.max(contextMessages.length - maxMemories, 0))
+      )
     }
 
     const formattedContextMessages = [...coreMemories, ...contextMessages]
@@ -173,8 +163,8 @@ export class Conversation {
         ) {
           return this.formatMessagePart(
             `${this.settings.botHandle}\n${
-              (message.message as CreateChatCompletionResponse).choices[0]
-                .message?.content ?? ''
+              ((message.message as CreateChatCompletionResponse).choices[0]
+                .message?.content as string) ?? ''
             }`,
             true,
             true
@@ -219,6 +209,7 @@ export class Conversation {
   getFullMessageText(
     message: ConversationMessage | ConversationMessage['message']
   ): string {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     let currentMessage = message as ConversationMessageType
 
     if (typeof (message as ConversationMessage)?.message !== 'undefined') {
@@ -242,8 +233,8 @@ export class Conversation {
     } else if (currentMessage.object === OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE) {
       return formatInput(
         `${this.settings.botHandle}\n${
-          (currentMessage as CreateChatCompletionResponse).choices[0].message
-            ?.content ?? ''
+          ((currentMessage as CreateChatCompletionResponse).choices[0].message
+            ?.content as string) ?? ''
         }`
       )
     } else if (currentMessage.object === OPEN_AI_COMPLETION_OBJECT_TYPE) {
@@ -262,39 +253,36 @@ export class Conversation {
     // instead of just appending the message
     const contextMessages = []
 
-    if (this.settings.enableMemory) {
-      const maxMemories =
-        this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
+    const maxMemories = this.settings.maxMemoryCount ?? DEFAULT_MAX_MEMORY_COUNT
 
-      // get all memories that haven't been forgotten
-      const memories = this.getMemories(['default', 'remembered', 'core'])
+    // get all memories that haven't been forgotten
+    const memories = this.getMemories(['default', 'remembered', 'core'])
 
-      // core memories take precedence
-      // and we don't limit how many we include
-      contextMessages.push(...this.getMemories('core', memories))
+    // core memories take precedence
+    // and we don't limit how many we include
+    contextMessages.push(...this.getMemories('core', memories))
 
-      // if we still need more memories, add remembered memories
-      if (contextMessages.length < maxMemories) {
-        // specific memories come next
-        contextMessages.push(
-          ...this.getMemories('remembered', memories)
-            // grab the most recent memories that we can fit
-            // borrowed from: https://stackoverflow.com/a/6473869/656011
-            .slice(Math.max(contextMessages.length - maxMemories, 0))
-        )
-      }
+    // if we still need more memories, add remembered memories
+    if (contextMessages.length < maxMemories) {
+      // specific memories come next
+      contextMessages.push(
+        ...this.getMemories('remembered', memories)
+          // grab the most recent memories that we can fit
+          // borrowed from: https://stackoverflow.com/a/6473869/656011
+          .slice(Math.max(contextMessages.length - maxMemories, 0))
+      )
+    }
 
-      // if we still need more memories, add latest messages that weren't forgotten
-      if (contextMessages.length < maxMemories) {
-        // most recent mesages come last
-        contextMessages.push(
-          // make sure we're looking at the default memories
-          ...this.getMemories('default', memories)
-            // grab the most recent number of messages we can fit
-            // borrowed from: https://stackoverflow.com/a/6473869/656011
-            .slice(Math.max(contextMessages.length - maxMemories, 0))
-        )
-      }
+    // if we still need more memories, add latest messages that weren't forgotten
+    if (contextMessages.length < maxMemories) {
+      // most recent mesages come last
+      contextMessages.push(
+        // make sure we're looking at the default memories
+        ...this.getMemories('default', memories)
+          // grab the most recent number of messages we can fit
+          // borrowed from: https://stackoverflow.com/a/6473869/656011
+          .slice(Math.max(contextMessages.length - maxMemories, 0))
+      )
     }
 
     contextMessages.unshift({
@@ -326,12 +314,15 @@ export class Conversation {
 
     if (conversationMessage.message.object === USER_MESSAGE_OBJECT_TYPE) {
       const inputText = formatInput(`${(message as UserPrompt).prompt}`)
-      const inputContext = this.getContext(true)
-      const fullText = this.getFullMessageText(conversationMessage.message)
 
-      ;(message as UserPrompt).context = inputContext
-      ;(message as UserPrompt).prompt = inputText
-      ;(message as UserPrompt).fullText = fullText
+      if (this.model.adapter.engine !== 'chat') {
+        const inputContext = this.getContext(true)
+        const fullText = this.getFullMessageText(conversationMessage.message)
+
+        ;(message as UserPrompt).context = inputContext
+        ;(message as UserPrompt).prompt = inputText
+        ;(message as UserPrompt).fullText = fullText
+      }
     } else if (
       conversationMessage.message.object !== OPEN_AI_COMPLETION_OBJECT_TYPE &&
       conversationMessage.message.object !== OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
@@ -346,6 +337,17 @@ export class Conversation {
     }
 
     this.messages.push(conversationMessage)
+
+    if (
+      conversationMessage.message.object === USER_MESSAGE_OBJECT_TYPE &&
+      this.model.adapter.engine === 'chat'
+    ) {
+      const lastMessage = this.messages.last()
+
+      if (typeof lastMessage !== 'undefined') {
+        ;(lastMessage.message as UserPrompt).messages = formatChat(this)
+      }
+    }
 
     return conversationMessage
   }

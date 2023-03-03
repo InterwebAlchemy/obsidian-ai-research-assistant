@@ -5,7 +5,7 @@
 > Build better Prompts and AI integrations with this advanced research tool for Prompt Engineering.
 
 **Note**: This plugin is still in active development and is not considered Stable yet. **This is Beta
-software** and may contain bugs and other weird issues. Please report
+software** and may contain bugs and unexpected behaviors. Please report
 [Issues](https:/github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues) you find and feel
 encouraged to [contribute](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/blob/main/docs/CONTRIBUTING.md) to the project. It has only been tested on Obsidian Desktop so far, but should have Obsidian Mobile support in the near future.
 
@@ -48,6 +48,7 @@ This plugin is not yet available in the Obsidian Community Plugins directory, so
 ## Currently Supported Models
 
 - [OpenAI GPT-3](https://platform.openai.com/docs/models/gpt-3)
+  - `gpt-3.5-turbo`
   - `text-davinci-003`
 
 ## Upcoming Model Support
@@ -62,7 +63,7 @@ This plugin is not yet available in the Obsidian Community Plugins directory, so
 ## Summary
 
 This plugin integrates tools for Prompt Engineering and researching AI tools and language models
-like OpenAI's GPT-3 into Obsidian.
+like OpenAI's ChatGPT into Obsidian.
 
 ![Basic interface and conversation summary](./docs/assets/basic-view.png)
 
@@ -71,8 +72,7 @@ Obsidian's powerful search and tagging features to organize and analyze them.
 
 ![View the Preamble for the conversation](./docs/assets/preamble-summary.png)
 
-If you enable the experimental Memory Manager, you can also live edit the conversational memories
-that are used to provide context to each prompt.
+The embedded Memory Manager allows you to edit which messages are included in the conversation's context.
 
 ![Marking a previous message as a Core Memory](./docs/assets/core-memory.png)
 
@@ -90,9 +90,10 @@ the conversation details its raw inputs and outputs.
 - Save (automatically or manually) conversations with AI models to Obsidian notes
   - Conversations become searchable, taggagle, and linkable in Obsidian
 - Live edit which previous messages are used as Context for each Prompt
-  - Mark a message as a Core Memory to make sure it's always in the Context
-  - Mark a message as a Forgotten to make sure it's never in the Context
-  - Mark a message as Remembered to prioritize it's inclusion in the Context
+  - Mark a message as a **Core Memory** to make sure it's always in the Context
+  - Mark a message as **Forgotten** to make sure it's never in the Context
+  - Mark a message as **Remembered** to prioritize it's inclusion in the Context
+  - By default the most recent messages are more likely to be remembered and older messages are forgotten as the conversation nears the memory and token limits
 - Live edit the Preamble that is used for each Conversation
 - Live edit the Prompt that is used for each Conversation
 - View the raw JSON from the API for each response
@@ -100,11 +101,11 @@ the conversation details its raw inputs and outputs.
 
 ## Roadmap
 
-- **Resume Conversations** Load conversations from Obsidian notes to pick up where you left off
-- **Annotate Conversations**: Incrementally update notes on save (instead of overwriting the whole note on each save)
-- **Models & APIs**: [More models](#upcoming-model-support)
 - **Token-aware Memories**: Memory will be constructed within the desired amount of tokens
 - **Configurable Response Token Buffer**: Ensure that the API has enough tokens to respond to your prompts
+- **Models & APIs**: [More models](#upcoming-model-support)
+- **Resume Conversations** Load conversations from Obsidian notes to pick up where you left off
+- **Annotate Conversations**: Incrementally update notes on save (instead of overwriting the whole note on each save)
 - **Title Generator**: Automatically generate a title based on the conversation (like ChatGPT)
 - **Mobile Support**: Use AI Research Assistant on your mobile devices, too
 - **Conversation Presets**: Save and Load preset configurations of Prefix, Model, Preamble, Context, etc. to make it easier to explore different research threads

@@ -27,7 +27,6 @@ export default class ChatView extends ItemView {
   saveButton: ButtonComponent
   debugButton: ButtonComponent
   newConversationButton: ButtonComponent
-  memoryButton: ButtonComponent
   autosaveInterval: number | null
   lastSavedMessageId: string | null
   root: Root | null
@@ -198,28 +197,6 @@ export default class ChatView extends ItemView {
         await this.renderView()
       }
     })
-
-    // TODO: Implement Memory Manager button to toggle memory manager for this conversation
-    // if (this.settings.enableMemoryManager) {
-    //   this.memoryButton = new ButtonComponent(toolbar)
-    //   this.memoryButton.setButtonText(
-    //     `${this.chat.hasMemory() ? 'Disable' : 'Enable'} Memory Manager`
-    //   )
-    //   this.memoryButton.setTooltip(
-    //     `Click to turn ${
-    //       this.chat.hasMemory() ? 'off' : 'on'
-    //     } the Memory Manager for this conversation`
-    //   )
-    //   this.memoryButton.setIcon(`${this.chat.hasMemory() ? 'clipboard-list' : 'clipboard-x'}`)
-
-    //   this.memoryButton.onClick(async (): Promise<void> => {
-    //     this.chat.hasMemory() ? this.chat.disableMemory() : this.chat.enableMemory()
-
-    //     await this.renderToolbar()
-
-    //     await this.renderView()
-    //   })
-    // }
   }
 
   async onOpen(): Promise<void> {
