@@ -97,19 +97,24 @@ The raw data for this conversation is:
 ${conversation.messages
   .map((item: ConversationMessage) => {
     if (item.message.object === USER_MESSAGE_OBJECT_TYPE) {
-      const fullText = (item.message as UserPrompt).fullText
-      let totalTokens = null
+      if (conversation.model.adapter.engine === 'chat') {
+        return item
+      } else {
+        const fullText = (item.message as UserPrompt).fullText
 
-      if (typeof fullText !== 'undefined') {
-        totalTokens = tokenCounter(fullText)
-      }
+        let totalTokens = null
 
-      return {
-        ...item,
-        message: {
-          ...item.message,
-          tokens: tokenCounter((item.message as UserPrompt).prompt),
-          totalTokens
+        if (typeof fullText !== 'undefined') {
+          totalTokens = tokenCounter(fullText)
+        }
+
+        return {
+          ...item,
+          message: {
+            ...item.message,
+            tokens: tokenCounter((item.message as UserPrompt).prompt),
+            totalTokens
+          }
         }
       }
     }

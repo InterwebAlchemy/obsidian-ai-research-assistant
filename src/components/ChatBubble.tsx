@@ -21,14 +21,11 @@ import type { ConversationMessage, UserPrompt } from '../types'
 export interface ChatBubbleProps {
   message: ConversationMessage
   conversation?: Conversation
-  hasMemory?: boolean
-  useMemoryManager?: boolean
 }
 
 const ChatBubble = ({
   message,
-  conversation,
-  useMemoryManager = false
+  conversation
 }: ChatBubbleProps): React.ReactElement => {
   const { plugin } = useApp()
 
@@ -61,7 +58,7 @@ const ChatBubble = ({
         isUserMessage ? '--user' : '--bot'
       }`}>
       <div className="ai-research-assistant__conversation__item__container">
-        {useMemoryManager && (isUserMessage || isBotMessage) ? (
+        {isUserMessage || isBotMessage ? (
           <div className="ai-research-assistant__conversation__item__action">
             <MemoryManager message={message} conversation={conversation} />
           </div>

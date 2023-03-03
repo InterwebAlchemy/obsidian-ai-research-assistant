@@ -1,4 +1,7 @@
-import type { CreateChatCompletionResponse } from 'openai'
+import type {
+  CreateChatCompletionResponse,
+  ChatCompletionRequestMessage
+} from 'openai'
 
 import type {
   ModelDefinition,
@@ -42,9 +45,7 @@ export interface PluginSettings {
   autosaveInterval: number
   conversationHistoryDirectory: string
 
-  enableMemory: boolean
   maxMemoryCount?: number
-  enableMemoryManager: boolean
 }
 
 export interface UserPrompt {
@@ -54,6 +55,7 @@ export interface UserPrompt {
   context?: string
   fullText?: string
   model?: ModelDefinition
+  messages?: ChatCompletionRequestMessage[]
 }
 
 export interface SystemMessage {

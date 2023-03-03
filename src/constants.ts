@@ -39,7 +39,5 @@ export const PLUGIN_SETTINGS: PluginSettings = {
   conversationHistoryDirectory: `${PLUGIN_NAME}/History`,
   userHandle: USER_HANDLE,
   botHandle: BOT_HANDLE,
-  enableMemory: false,
-  maxMemoryCount: DEFAULT_MAX_MEMORY_COUNT,
-  enableMemoryManager: false
+  maxMemoryCount: DEFAULT_MAX_MEMORY_COUNT
 }

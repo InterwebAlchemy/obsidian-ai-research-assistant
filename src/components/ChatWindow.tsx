@@ -10,15 +10,9 @@ import type { Conversation } from '../services/conversation'
 
 export interface ChatWindowProps {
   conversation: Conversation
-  hasMemory?: boolean
-  useMemoryManager?: boolean
 }
 
-const ChatWindow = ({
-  conversation,
-  hasMemory = false,
-  useMemoryManager = false
-}: ChatWindowProps): React.ReactElement => {
+const ChatWindow = ({ conversation }: ChatWindowProps): React.ReactElement => {
   const { plugin } = useApp()
 
   const [autoSaving, setAutoSaving] = useState(false)
@@ -38,8 +32,6 @@ const ChatWindow = ({
             key={message.id ?? `message-${index}`}
             message={message}
             conversation={conversation}
-            hasMemory={hasMemory}
-            useMemoryManager={useMemoryManager}
           />
         ))
       : [<React.Fragment key="no-results"></React.Fragment>]
