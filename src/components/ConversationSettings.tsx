@@ -88,34 +88,36 @@ const ConversationSettings = ({
   }, [temperature])
 
   return (
-    <div className="ai-research-assistant__chat__conversation-settings">
-      <div className="ai-research-assistant__chat__conversation-settings__row">
-        <InputArea
-          type="text"
-          label="User Handle"
-          value={userHandle}
-          onChange={setUserHandle}
-        />
-        <InputArea
-          type="text"
-          label="Bot Handle"
-          value={botHandle}
-          onChange={setBotHandle}
-        />
-      </div>
-      <div className="ai-research-assistant__chat__conversation-settings__row">
-        <InputArea
-          type="text"
-          label="Maximum Tokens"
-          value={`${maxTokens}`}
-          onChange={changeMaxTokens}
-        />
-        <InputArea
-          type="text"
-          label="Temperature"
-          value={`${temperature}`}
-          onChange={changeTemperature}
-        />
+    <div className="ai-research-assistant__chat__conversation-settings__container">
+      <div className="ai-research-assistant__chat__conversation-settings">
+        <div className="ai-research-assistant__chat__conversation-settings__row">
+          <InputArea
+            type="text"
+            label="User Handle"
+            value={userHandle}
+            onChange={setUserHandle}
+          />
+          <InputArea
+            type="text"
+            label="Bot Handle"
+            value={botHandle}
+            onChange={setBotHandle}
+          />
+        </div>
+        <div className="ai-research-assistant__chat__conversation-settings__row">
+          <InputArea
+            type="text"
+            label="Maximum Tokens"
+            value={`${maxTokens}`}
+            onChange={changeMaxTokens}
+          />
+          <InputArea
+            type="text"
+            label="Temperature"
+            value={`${temperature}`}
+            onChange={changeTemperature}
+          />
+        </div>
       </div>
     </div>
   )
