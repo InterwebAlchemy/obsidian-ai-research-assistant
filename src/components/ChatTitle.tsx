@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Notice } from 'obsidian'
 
 import IconButton from './IconButton'
@@ -20,6 +20,8 @@ const ChatTitle = ({ loading = false }: ChatTitleProps): React.ReactElement => {
   const [updatedTitle, setUpdatedTitle] = useState('')
 
   const [editing, setEditing] = useState(false)
+
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const onEdit = (event: React.FormEvent): void => {
     event.preventDefault()
@@ -44,10 +46,13 @@ const ChatTitle = ({ loading = false }: ChatTitleProps): React.ReactElement => {
             chat?.currentConversation()?.updateTitle(updatedTitle)
 
             setEditing(false)
+
             plugin.pauseAutosaving = false
           } else {
             // eslint-disable-next-line no-new
-            new Notice(`${updatedTitle} already exists in ${settings.conversationHistoryDirectory}`)
+            new Notice(
+              `${updatedTitle} already exists in ${settings.conversationHistoryDirectory}`
+            )
           }
         })
         .catch((error) => {
@@ -66,15 +71,53 @@ const ChatTitle = ({ loading = false }: ChatTitleProps): React.ReactElement => {
     }
   }, [title])
 
+  useEffect(() => {
+    if (
+      editing &&
+      settings.autosaveConversationHistory &&
+      inputRef.current !== null
+    ) {
+      inputRef.current.focus()
+    }
+  }, [editing, inputRef.current, settings.autosaveConversationHistory])
+
+  useEffect(() => {
+    if (settings.autosaveConversationHistory) {
+      plugin.pauseAutosaving = true
+
+      setEditing(true)
+    }
+  }, [settings.autosaveConversationHistory])
+
   return (
     <form
       className="ai-research-assistant__conversation__header"
-      onSubmit={editing ? onSave : onEdit}
-    >
+      onSubmit={editing ? onSave : onEdit}>
       {!editing ? (
-        <div className="ai-research-assistant__conversation__header__title">{title}</div>
+        <div className="ai-research-assistant__conversation__header__title">
+          {title}
+        </div>
       ) : (
-        <input type="text" defaultValue={title} onChange={onChange} />
+        <>
+          <label
+            htmlFor=""
+            className="ai-research-assistant__conversation__header__title__label">
+            Title
+          </label>
+          <input
+            type="text"
+            id="ai-research-assistant__conversation__title"
+            name="ai-research-assistant__conversation__title"
+            defaultValue={
+              settings.autosaveConversationHistory &&
+              title === DEFAULT_CONVERSATION_TITLE
+                ? ''
+                : title
+            }
+            onChange={onChange}
+            ref={inputRef}
+          />
+        </>
       )}
       <div className="ai-research-assistant__conversation__header__edit">
         <IconButton

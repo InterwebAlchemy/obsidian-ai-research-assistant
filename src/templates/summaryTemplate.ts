@@ -47,17 +47,13 @@ ${
   typeof conversation?.preamble !== 'undefined' &&
   conversation.preamble !== '' &&
   conversation.preamble !== null
-    ? `
-
-## Preamble
+    ? `## Preamble
 
 The initial preamble used for this conversation was:
 
 \`\`\`
 ${conversation.preamble}
-\`\`\`
-
-`
+\`\`\``
     : ''
 }
 
