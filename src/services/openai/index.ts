@@ -1,4 +1,5 @@
 import { requestUrl as obsidianRequest, type RequestUrlParam } from 'obsidian'
+
 import {
   Configuration,
   OpenAIApi,
@@ -23,6 +24,13 @@ import type { Conversation } from '../conversation'
 import type { PluginSettings } from '../../types'
 import type Logger from '../logger'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Electron = require('electron')
+
+const {
+  remote: { safeStorage }
+} = Electron
+
 export const openAICompletion = async (
   {
     input,
@@ -39,11 +47,24 @@ export const openAICompletion = async (
 ): Promise<OpenAICompletion | CreateChatCompletionResponse> => {
   const { userHandle, botHandle, debugMode, openApiKey } = settings
 
+  let apiKey = openApiKey
+
+  if (safeStorage.isEncryptionAvailable() === true) {
+    console.log(apiKey)
+    console.log(Buffer.from(apiKey))
+    apiKey = safeStorage.decryptString(
+      Buffer.from(apiKey),
+      'OpenAI API Key',
+      'Obsidian AI Research Assistant'
+    )
+    console.log(apiKey)
+  }
+
   // using the openai JavaScript library since the release of the new ChatGPT model
   if (model.adapter?.engine === 'chat') {
     try {
       const config = new Configuration({
-        apiKey: openApiKey
+        apiKey
       })
 
       const openai = new OpenAIApi(config)

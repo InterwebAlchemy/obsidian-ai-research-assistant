@@ -15,6 +15,8 @@ import type { Conversation } from './services/conversation'
 
 import type { PluginSettings } from './types'
 
+import unpatchSafeStorage from './utils/patchedSafeStorage'
+
 export default class ObsidianAIResearchAssistant extends Plugin {
   settings: PluginSettings
   chat: Chat
@@ -108,6 +110,7 @@ export default class ObsidianAIResearchAssistant extends Plugin {
 
   onunload(): void {
     this.app.workspace.detachLeavesOfType(PLUGIN_PREFIX)
+    unpatchSafeStorage()
   }
 
   async loadSettings(): Promise<void> {

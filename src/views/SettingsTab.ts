@@ -17,6 +17,13 @@ import type ObsidianAIResearchAssistant from '../main'
 import type { OpenAIModel } from '../services/openai/types'
 import AssistantPreamble from 'src/preambles/assistant'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Electron = require('electron')
+
+const {
+  remote: { safeStorage }
+} = Electron
+
 export default class SettingsTab extends PluginSettingTab {
   plugin: ObsidianAIResearchAssistant
 
@@ -83,7 +90,14 @@ export default class SettingsTab extends PluginSettingTab {
               : 'Set your API key'
           )
           .onChange(async (value) => {
-            this.plugin.settings.openApiKey = value
+            if (safeStorage.isEncryptionAvailable() === true) {
+              const val = safeStorage.encryptString(value).toString()
+
+              this.plugin.settings.openApiKey = val
+            } else {
+              this.plugin.settings.openApiKey = value
+            }
+
             this.plugin.settings.apiKeySaved = true
 
             await this.plugin.saveSettings()
@@ -180,7 +194,7 @@ export default class SettingsTab extends PluginSettingTab {
       .setName('Maximum Memory Count')
       .setDesc(
         `The number of messages that should be stored in conversation memory. Set to 0 for no limit.
-          
+
           Note: Core Memories will always be included when the Experimental Memory Manager is enabled, but if there are more Core Memories than this limit, no other memories will be included.`
       )
       .addSlider((slider) => {
