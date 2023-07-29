@@ -2,12 +2,12 @@
 
 ![Forgetting a previous message](./docs/assets/forget-memory.png)
 
-> Build better Prompts and AI integrations with this advanced research tool for Prompt Engineering.
+> Build better Prompts and AI integrations with this advanced research tool for Prompt Engineering with the ChatGPT API.
 
-**Note**: This plugin is still in active development and is not considered Stable yet. **This is Beta
+**Note**: This plugin is still in development and is not considered fully stable yet. **This is Beta
 software** and may contain bugs and unexpected behaviors. Please report
 [Issues](https:/github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues) you find and feel
-encouraged to [contribute](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/blob/main/docs/CONTRIBUTING.md) to the project. It has only been tested on Obsidian Desktop so far, but should have Obsidian Mobile support in the near future.
+encouraged to [contribute](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/blob/main/docs/CONTRIBUTING.md) to the project.
 
 **Table of Contents**:
 
@@ -49,16 +49,14 @@ This plugin is not yet available in the Obsidian Community Plugins directory, so
 
 - [OpenAI GPT-3](https://platform.openai.com/docs/models/gpt-3)
   - `gpt-3.5-turbo`
-  - `text-davinci-003`
 
 ## Upcoming Model Support
 
-- [OpenAI GPT-3](https://platform.openai.com/docs/models/gpt-3)
-  - `text-curie-001`
-- [OpenAPI Codex](https://platform.openai.com/docs/models/codex)
-  - `code-davinci-002`
-  - `code-cushman-001`
-- [Cohere AI Models](https://docs.cohere.ai/reference/generate)
+- [OpenAI GPT-4](https://platform.openai.com/docs/models/gpt-4)
+  - `gpt-4`
+- [OpenAI Legacy Completions API](https://platform.openai.com/docs/deprecations/instructgpt-models)
+  - `gpt-3.5-turbo-instruct`
+  - **Note**: This plugin was originally built when only the completions API was available and was built to support the `text-davinci-003` model, but with recent changes in the OpenAI API, it is now recommended to use the `gpt-3.5-turbo` model instead and `text-daivinci-003` is being deprecated, so that functionality has been temporarily disabled in this plugin.
 
 ## Summary
 
@@ -132,7 +130,7 @@ between what you might be editing when you click on an `Edit Prompt` button.
 - **Prompt**: Prompts are the questions that the model is asked to answer. They are usually a single
   sentence or a short paragraph.
   - **Notable Examples**:
-    - [Emergent Mind](https://www.emergentmind.com/)
+    - [ShareGPT](https://sharegpt.com/)
     - [OpenAI Examples](https://platform.openai.com/examples/)
 - **Context**: Context is the memory that the model uses to generate its response. It usually
   consists of the Preamble and some previous messages (or summaries them), and older messages are

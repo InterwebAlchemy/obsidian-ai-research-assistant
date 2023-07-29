@@ -5,7 +5,7 @@ import type { ChatAdapter } from '../../types'
 import type { TokenCounterType } from '../../utils/tokenCounter'
 
 // TODO: add other models
-export type OpenAIModel = 'gpt-3.5-turbo' | 'text-davinci-003'
+export type OpenAIModel = 'gpt-3.5-turbo'
 // | 'code-davinci-002'
 
 // TODO: find out what other valid object values are

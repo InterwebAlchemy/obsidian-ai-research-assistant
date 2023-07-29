@@ -30,7 +30,7 @@ export interface ChatAdapter {
 export interface PluginSettings {
   debugMode: boolean
 
-  openApiKey: string
+  openAiApiKey: string
   apiKeySaved: boolean
 
   defaultModel: OpenAIModel

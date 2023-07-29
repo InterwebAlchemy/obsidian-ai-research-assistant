@@ -17,6 +17,13 @@ import type ObsidianAIResearchAssistant from '../main'
 import type { OpenAIModel } from '../services/openai/types'
 import AssistantPreamble from 'src/preambles/assistant'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Electron = require('electron')
+
+const {
+  remote: { safeStorage }
+} = Electron
+
 export default class SettingsTab extends PluginSettingTab {
   plugin: ObsidianAIResearchAssistant
 
@@ -54,45 +61,84 @@ export default class SettingsTab extends PluginSettingTab {
       href: OPEN_AI_API_KEY_URL
     })
 
-    new Setting(containerEl)
-      .setName('DEBUG MODE')
-      .setDesc(
-        `(Coming Soon) Display extra debugging info in the UI and Developer Console.`
-      )
-      .addToggle((toggle) => {
-        toggle.setValue(this.plugin.settings.debugMode)
+    let temporaryOpenAiApiKey = ''
 
-        toggle.setDisabled(true)
+    if (
+      typeof this.plugin.settings.openAiApiKey === 'undefined' ||
+      this.plugin.settings.openAiApiKey === ''
+    ) {
+      this.plugin.settings.apiKeySaved = false
+    }
 
-        toggle.onChange(async (value) => {
-          this.plugin.settings.debugMode = value
+    if (!this.plugin.settings.apiKeySaved) {
+      const apiKeySetting = new Setting(containerEl)
+        .setName('OpenAI API Key')
+        .setDesc(
+          'Your API Key will be used to make requests when you submit a message in the Chat Window. Changing this value will reset any existing chat windows.'
+        )
+        .addText((text) =>
+          text.setPlaceholder('Set your API key').onChange(async (value) => {
+            if (safeStorage.isEncryptionAvailable() === true) {
+              temporaryOpenAiApiKey = safeStorage.encryptString(value)
+            } else {
+              temporaryOpenAiApiKey = value
+            }
+          })
+        )
+
+      apiKeySetting.addButton((button) => {
+        button.setButtonText('Save API Key').onClick(async () => {
+          this.plugin.settings.openAiApiKey = temporaryOpenAiApiKey
+          temporaryOpenAiApiKey = ''
+
+          this.plugin.settings.apiKeySaved = true
+
           await this.plugin.saveSettings()
+
+          await this.resetPluginView()
+
+          this.display()
         })
       })
-
-    new Setting(containerEl)
-      .setName('OpenAI API Key')
-      .setDesc(
-        'Your API Key will be used to make requests when you submit a message in the Chat Window. Changing this value will reset any existing chat windows.'
+    } else {
+      console.log(
+        'API Key:',
+        this.plugin.settings.openAiApiKey,
+        typeof this.plugin.settings.openAiApiKey
       )
-      .addText((text) =>
-        text
-          .setPlaceholder(
-            this.plugin.settings.apiKeySaved
-              ? `${obfuscateApiKey(this.plugin.settings.openApiKey)}`
-              : 'Set your API key'
-          )
-          .onChange(async (value) => {
-            this.plugin.settings.openApiKey = value
-            this.plugin.settings.apiKeySaved = true
 
-            await this.plugin.saveSettings()
+      const apiKeySetting = new Setting(containerEl)
+        .setName('OpenAI API Key')
+        .setDesc(
+          'Your API Key will be used to make requests when you submit a message in the Chat Window. Changing this value will reset any existing chat windows.'
+        )
+        .addText((text) => {
+          let apiKey = this.plugin.settings.openAiApiKey
 
-            await this.resetPluginView()
+          if (safeStorage.isEncryptionAvailable() === true) {
+            apiKey = safeStorage.decryptString(Buffer.from(apiKey))
+          }
 
-            await this.plugin.initializeChatInterface()
-          })
-      )
+          text.setPlaceholder(obfuscateApiKey(apiKey))
+        })
+        .setDisabled(true)
+
+      apiKeySetting.addButton((button) => {
+        button.setButtonText('Remove API Key').onClick(async () => {
+          console.log('removing api key...')
+
+          this.plugin.settings.openAiApiKey = ''
+
+          this.plugin.settings.apiKeySaved = false
+
+          await this.plugin.saveSettings()
+
+          await this.resetPluginView()
+
+          this.display()
+        })
+      })
+    }
 
     new Setting(containerEl)
       .setName('Default Model')
@@ -114,6 +160,7 @@ export default class SettingsTab extends PluginSettingTab {
           await this.resetPluginView()
         })
       })
+      .setDisabled(true)
 
     new Setting(containerEl)
       .setName('Default Preamble')
@@ -135,53 +182,11 @@ export default class SettingsTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Maximum Tokens')
-      .setDesc(
-        'What is the maximum amount of tokens you want to use for your request? This includes any Context like a Preamble and Memories as well as User and Bot Prefixes and Start and Stop sequences and determines how many tokens the API will use to respond to you. Changing this value will reset any existing chat windows.'
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder(`${this.plugin.settings.defaultMaxTokens ?? 0}`)
-          .onChange(async (value) => {
-            const number = Number(value)
-
-            this.plugin.settings.defaultMaxTokens = !Number.isNaN(number)
-              ? Number(value)
-              : 0
-
-            await this.plugin.saveSettings()
-
-            await this.resetPluginView()
-          })
-      )
-
-    new Setting(containerEl)
-      .setName('Token Buffer')
-      .setDesc(
-        '(Coming Soon) How many tokens would you like to reserve for the AI to respond to your prompt? Changing this value will reset any existing chat windows.'
-      )
-      .addText((text) =>
-        text
-          .setDisabled(true)
-          .setPlaceholder(`${this.plugin.settings.defaultTokenBuffer ?? 0}`)
-          .onChange(async (value) => {
-            const number = Number(value)
-            this.plugin.settings.defaultTokenBuffer = !Number.isNaN(number)
-              ? Number(value)
-              : 0
-
-            await this.plugin.saveSettings()
-
-            await this.resetPluginView()
-          })
-      )
-
-    new Setting(containerEl)
       .setName('Maximum Memory Count')
       .setDesc(
         `The number of messages that should be stored in conversation memory. Set to 0 for no limit.
           
-          Note: Core Memories will always be included when the Experimental Memory Manager is enabled, but if there are more Core Memories than this limit, no other memories will be included.`
+          Note: Core Memories will always be included, but if there are more Core Memories than this limit, no other memories will be included.`
       )
       .addSlider((slider) => {
         slider
