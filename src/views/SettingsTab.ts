@@ -49,7 +49,7 @@ export default class SettingsTab extends PluginSettingTab {
     const settingsDescContainer = containerEl.createEl('div')
 
     settingsDescContainer.createEl('p', {
-      text: `${PLUGIN_NAME} is a plugin that facilitates Researchers and Prompt Engineers studying how conversational AIs respond to various prompts. We currently only support OpenAI's API with the following models: gpt-3.5-turbo, text-davinci-003`
+      text: `${PLUGIN_NAME} is a plugin that facilitates Researchers and Prompt Engineers studying how conversational AIs respond to various prompts. We currently only support OpenAI's API with the following models: gpt-3.5-turbo`
     })
 
     const helpText = settingsDescContainer.createEl('p', {
