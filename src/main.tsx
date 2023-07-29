@@ -46,15 +46,15 @@ export default class ObsidianAIResearchAssistant extends Plugin {
 
   async initializeChatService(): Promise<void> {
     if (
-      typeof this.settings.openApiKey !== 'undefined' &&
-      this.settings.openApiKey !== '' &&
-      this.settings.openApiKey !== null
+      typeof this.settings.openAiApiKey !== 'undefined' &&
+      this.settings.openAiApiKey !== '' &&
+      this.settings.openAiApiKey !== null
     ) {
       const model = OpenAIModels[this.settings.defaultModel]
 
       if (typeof model !== 'undefined') {
         this.chat = new Chat({
-          apiKey: this.settings.openApiKey,
+          apiKey: this.settings.openAiApiKey,
           model,
           logger: this.logger
         })
@@ -68,9 +68,9 @@ export default class ObsidianAIResearchAssistant extends Plugin {
       PLUGIN_NAME,
       async (): Promise<void> => {
         if (
-          typeof this.settings.openApiKey !== 'undefined' &&
-          this.settings.openApiKey !== '' &&
-          this.settings.openApiKey !== null
+          typeof this.settings.openAiApiKey !== 'undefined' &&
+          this.settings.openAiApiKey !== '' &&
+          this.settings.openAiApiKey !== null
         ) {
           await this.activateView()
         } else {
@@ -125,11 +125,7 @@ export default class ObsidianAIResearchAssistant extends Plugin {
 
     const existingFile = this.app.vault.getAbstractFileByPath(file)
 
-    if (existingFile !== null) {
-      return true
-    }
-
-    return false
+    return existingFile instanceof TFile
   }
 
   async saveConversation(conversation: Conversation): Promise<void> {
@@ -160,8 +156,8 @@ export default class ObsidianAIResearchAssistant extends Plugin {
 
       const fileContent = summaryTemplate(conversation)
 
-      if (existingFile !== null) {
-        await this.app.vault.modify(existingFile as TFile, fileContent)
+      if (existingFile instanceof TFile) {
+        await this.app.vault.modify(existingFile, fileContent)
       } else {
         await this.app.vault.create(file, fileContent)
       }

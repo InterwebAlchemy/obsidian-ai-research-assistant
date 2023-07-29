@@ -1,4 +1,5 @@
 import { requestUrl as obsidianRequest, type RequestUrlParam } from 'obsidian'
+
 import {
   Configuration,
   OpenAIApi,
@@ -23,6 +24,13 @@ import type { Conversation } from '../conversation'
 import type { PluginSettings } from '../../types'
 import type Logger from '../logger'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Electron = require('electron')
+
+const {
+  remote: { safeStorage }
+} = Electron
+
 export const openAICompletion = async (
   {
     input,
@@ -37,13 +45,19 @@ export const openAICompletion = async (
   settings: PluginSettings = PLUGIN_SETTINGS,
   logger: Logger
 ): Promise<OpenAICompletion | CreateChatCompletionResponse> => {
-  const { userHandle, botHandle, debugMode, openApiKey } = settings
+  const { userHandle, botHandle, debugMode, openAiApiKey } = settings
+
+  let apiKey = openAiApiKey
+
+  if (safeStorage.isEncryptionAvailable() === true) {
+    apiKey = await safeStorage.decryptString(Buffer.from(apiKey))
+  }
 
   // using the openai JavaScript library since the release of the new ChatGPT model
   if (model.adapter?.engine === 'chat') {
     try {
       const config = new Configuration({
-        apiKey: openApiKey
+        apiKey
       })
 
       const openai = new OpenAIApi(config)
@@ -73,10 +87,11 @@ export const openAICompletion = async (
       throw error
     }
   } else {
+    // TODO: remove this now that non-chat models are being deprecated
     const requestUrl = new URL('/v1/completions', OPEN_AI_BASE_URL)
 
     const requestHeaders = {
-      Authorization: `Bearer ${openApiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       Accept: 'application/json'
     }
