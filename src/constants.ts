@@ -27,7 +27,7 @@ export const DEFAULT_AUTO_SAVE_INTERVAL = 60
 
 export const PLUGIN_SETTINGS: PluginSettings = {
   debugMode: false,
-  openApiKey: '',
+  openAiApiKey: '',
   apiKeySaved: false,
   defaultTokenBuffer: DEFAULT_TOKEN_BUFFER,
   defaultMaxTokens: DEFAULT_MAX_TOKENS,
