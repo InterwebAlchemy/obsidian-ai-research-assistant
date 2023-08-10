@@ -1,4 +1,4 @@
-import { type App, PluginSettingTab, Setting } from 'obsidian'
+import { type App, PluginSettingTab, Setting, normalizePath } from 'obsidian'
 
 import OpenAIModels from '../services/openai/models'
 
@@ -247,7 +247,8 @@ export default class SettingsTab extends PluginSettingTab {
         text
           .setValue(this.plugin.settings.conversationHistoryDirectory)
           .onChange(async (value) => {
-            this.plugin.settings.conversationHistoryDirectory = value
+            this.plugin.settings.conversationHistoryDirectory =
+              normalizePath(value)
 
             await this.plugin.saveSettings()
           })
@@ -256,7 +257,7 @@ export default class SettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Autosave conversations')
       .setDesc(
-        `Automatically save conversations to your Vault. You will need to close any open the Chat windows for this change to take effect.`
+        `Automatically save conversations to your Vault after they have been given a title. You will need to close any open the Chat windows for this change to take effect.`
       )
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.autosaveConversationHistory)
