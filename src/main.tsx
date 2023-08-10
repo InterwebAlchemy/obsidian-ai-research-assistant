@@ -106,10 +106,6 @@ export default class ObsidianAIResearchAssistant extends Plugin {
     await this.initializeChatInterface()
   }
 
-  onunload(): void {
-    this.app.workspace.detachLeavesOfType(PLUGIN_PREFIX)
-  }
-
   async loadSettings(): Promise<void> {
     this.settings = Object.assign({}, PLUGIN_SETTINGS, await this.loadData())
   }
