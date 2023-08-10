@@ -12,7 +12,7 @@ const GPT35Turbo: ModelDefinition = {
   adapter: GPT35TurboAdapter,
   model: 'gpt-3.5-turbo',
   maxTokens: 4000,
-  tokenType: 'gpt3'
+  tokenType: 'gpt4'
 }
 
 export default GPT35Turbo

@@ -45,7 +45,7 @@ export const openAICompletion = async (
   settings: PluginSettings = PLUGIN_SETTINGS,
   logger: Logger
 ): Promise<OpenAICompletion | CreateChatCompletionResponse> => {
-  const { userHandle, botHandle, debugMode, openAiApiKey } = settings
+  const { userHandle, botHandle, openAiApiKey } = settings
 
   let apiKey = openAiApiKey
 
@@ -64,24 +64,17 @@ export const openAICompletion = async (
 
       const messages = formatChat(input as Conversation)
 
-      console.log(messages)
-
-      logger.log('messages', messages)
-
       const completion = await openai.createChatCompletion({
         model: model.model,
         messages
       })
 
-      console.log(completion)
-
       return completion.data
     } catch (error) {
       if (typeof error?.response !== 'undefined') {
-        console.log(error.response.status)
-        console.log(error.response.data)
+        logger.error(error.response.status, error.response.data)
       } else {
-        console.log(error.message)
+        logger.error(error.message)
       }
 
       throw error
@@ -132,21 +125,13 @@ export const openAICompletion = async (
       throw: false
     }
 
-    if (debugMode) {
-      console.debug('REQUEST:', request)
-    }
-
     try {
       const response = await obsidianRequest(request)
-
-      if (debugMode) {
-        console.debug('RESPONSE:', response)
-      }
 
       if (response.status < 400) {
         return response.json
       } else {
-        console.error(response)
+        logger.error(response)
 
         throw new Error(response.text)
       }

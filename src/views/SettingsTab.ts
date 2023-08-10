@@ -1,4 +1,4 @@
-import { type App, PluginSettingTab, Setting } from 'obsidian'
+import { type App, PluginSettingTab, Setting, normalizePath } from 'obsidian'
 
 import OpenAIModels from '../services/openai/models'
 
@@ -44,8 +44,6 @@ export default class SettingsTab extends PluginSettingTab {
 
     containerEl.empty()
 
-    containerEl.createEl('h2', { text: `${PLUGIN_NAME} Settings` })
-
     const settingsDescContainer = containerEl.createEl('div')
 
     settingsDescContainer.createEl('p', {
@@ -72,7 +70,7 @@ export default class SettingsTab extends PluginSettingTab {
 
     if (!this.plugin.settings.apiKeySaved) {
       const apiKeySetting = new Setting(containerEl)
-        .setName('OpenAI API Key')
+        .setName('OpenAI API key')
         .setDesc(
           'Your API Key will be used to make requests when you submit a message in the Chat Window. Changing this value will reset any existing chat windows.'
         )
@@ -101,14 +99,8 @@ export default class SettingsTab extends PluginSettingTab {
         })
       })
     } else {
-      console.log(
-        'API Key:',
-        this.plugin.settings.openAiApiKey,
-        typeof this.plugin.settings.openAiApiKey
-      )
-
       const apiKeySetting = new Setting(containerEl)
-        .setName('OpenAI API Key')
+        .setName('OpenAI API key')
         .setDesc(
           'Your API Key will be used to make requests when you submit a message in the Chat Window. Changing this value will reset any existing chat windows.'
         )
@@ -125,8 +117,6 @@ export default class SettingsTab extends PluginSettingTab {
 
       apiKeySetting.addButton((button) => {
         button.setButtonText('Remove API Key').onClick(async () => {
-          console.log('removing api key...')
-
           this.plugin.settings.openAiApiKey = ''
 
           this.plugin.settings.apiKeySaved = false
@@ -141,7 +131,7 @@ export default class SettingsTab extends PluginSettingTab {
     }
 
     new Setting(containerEl)
-      .setName('Default Model')
+      .setName('Default model')
       .setDesc(
         `The default model to use when sending a message. Changing this value will reset any existing chat windows.`
       )
@@ -163,7 +153,7 @@ export default class SettingsTab extends PluginSettingTab {
       .setDisabled(true)
 
     new Setting(containerEl)
-      .setName('Default Preamble')
+      .setName('Default preamble')
       .setDesc(
         `The default preamble to use when starting a Conversation. You can edit the Preamble in the Chat interface. Changing this value will reset any existing chat windows.`
       )
@@ -182,7 +172,7 @@ export default class SettingsTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Maximum Memory Count')
+      .setName('Maximum memory count')
       .setDesc(
         `The number of messages that should be stored in conversation memory. Set to 0 for no limit.
           
@@ -206,7 +196,7 @@ export default class SettingsTab extends PluginSettingTab {
 
     // create Setting text input for user prefix
     new Setting(containerEl)
-      .setName('Default User Handle')
+      .setName('Default user handle')
       .setDesc(
         'The handle to use when displaying a user message. Changing this value will reset any existing chat windows.'
       )
@@ -225,7 +215,7 @@ export default class SettingsTab extends PluginSettingTab {
 
     // create Setting text input for bot prefix
     new Setting(containerEl)
-      .setName('Default Bot Handle')
+      .setName('Default bot handle')
       .setDesc(
         'The handle to use when displaying a bot message. Changing this value will reset any existing chat windows.'
       )
@@ -243,22 +233,23 @@ export default class SettingsTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
-      .setName('Conversation Directory')
+      .setName('Conversation directory')
       .setDesc('Where to save conversations.')
       .addText((text) =>
         text
           .setValue(this.plugin.settings.conversationHistoryDirectory)
           .onChange(async (value) => {
-            this.plugin.settings.conversationHistoryDirectory = value
+            this.plugin.settings.conversationHistoryDirectory =
+              normalizePath(value)
 
             await this.plugin.saveSettings()
           })
       )
 
     new Setting(containerEl)
-      .setName('Autosave Conversations')
+      .setName('Autosave conversations')
       .setDesc(
-        `Automatically save conversations to your Vault. You will need to close any open the Chat windows for this change to take effect.`
+        `Automatically save conversations to your Vault after they have been given a title. You will need to close any open the Chat windows for this change to take effect.`
       )
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.autosaveConversationHistory)
@@ -274,7 +265,7 @@ export default class SettingsTab extends PluginSettingTab {
 
     if (this.plugin.settings.autosaveConversationHistory) {
       new Setting(containerEl)
-        .setName('Autosave Interval')
+        .setName('Autosave interval')
         .setDesc(
           `How many seconds should pass before a conversation is automatically saved to your Vault. You will need to close any open the Chat windows for this change to take effect.`
         )

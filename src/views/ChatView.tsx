@@ -157,7 +157,7 @@ export default class ChatView extends ItemView {
 
     this.debugButton = new ButtonComponent(toolbar)
     this.debugButton.setButtonText('Debug')
-    this.debugButton.setTooltip('Log Conversation to this.plugin.logger')
+    this.debugButton.setTooltip('Log Conversation to DevTools')
     this.debugButton.setIcon('curly-braces')
 
     if (

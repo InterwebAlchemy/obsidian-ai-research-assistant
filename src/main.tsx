@@ -1,4 +1,11 @@
-import { type App, Plugin, type PluginManifest, TFile, Notice } from 'obsidian'
+import {
+  type App,
+  Plugin,
+  type PluginManifest,
+  TFile,
+  Notice,
+  normalizePath
+} from 'obsidian'
 
 import ChatView from './views/ChatView'
 import SettingsTab from './views/SettingsTab'
@@ -88,7 +95,7 @@ export default class ObsidianAIResearchAssistant extends Plugin {
   initializeLogger(): void {
     this.logger = new Logger({ settings: this.settings })
 
-    this.logger.debug('Logger initialized...')
+    this.logger.debug(`${PLUGIN_NAME} Logger initialized...`)
   }
 
   async onload(): Promise<void> {
@@ -106,10 +113,6 @@ export default class ObsidianAIResearchAssistant extends Plugin {
     await this.initializeChatInterface()
   }
 
-  onunload(): void {
-    this.app.workspace.detachLeavesOfType(PLUGIN_PREFIX)
-  }
-
   async loadSettings(): Promise<void> {
     this.settings = Object.assign({}, PLUGIN_SETTINGS, await this.loadData())
   }
@@ -121,7 +124,9 @@ export default class ObsidianAIResearchAssistant extends Plugin {
   async checkForExistingFile(title: string): Promise<boolean> {
     const filePath = this.settings.conversationHistoryDirectory
 
-    const file = `${filePath}/${title.replace(/[\\:/]/g, '_')}.md`
+    const file = normalizePath(
+      `${filePath}/${title.replace(/[\\:/]/g, '_')}.md`
+    )
 
     const existingFile = this.app.vault.getAbstractFileByPath(file)
 
@@ -131,7 +136,8 @@ export default class ObsidianAIResearchAssistant extends Plugin {
   async saveConversation(conversation: Conversation): Promise<void> {
     let canSave = true
 
-    const filePath = this.settings.conversationHistoryDirectory
+    // NOTE: we normalize the path when we save the settings, so we may not need to normalize it here as well
+    const filePath = normalizePath(this.settings.conversationHistoryDirectory)
 
     const existingDirectory = this.app.vault.getAbstractFileByPath(filePath)
 
@@ -147,10 +153,9 @@ export default class ObsidianAIResearchAssistant extends Plugin {
     }
 
     if (canSave) {
-      const file = `${filePath}/${conversation.title.replace(
-        /[\\:/]/g,
-        '_'
-      )}.md`
+      const file = normalizePath(
+        `${filePath}/${conversation.title.replace(/[\\:/]/g, '_')}.md`
+      )
 
       const existingFile = this.app.vault.getAbstractFileByPath(file)
 

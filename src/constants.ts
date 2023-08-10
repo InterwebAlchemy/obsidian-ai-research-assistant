@@ -19,7 +19,7 @@ export const USER_MESSAGE_OBJECT_TYPE = `${PLUGIN_PREFIX.replace(
 )}_user_message`
 export const USER_HANDLE = 'You:'
 export const BOT_HANDLE = 'ChatGPT:'
-export const DEFAULT_TOKEN_TYPE = 'gpt3'
+export const DEFAULT_TOKEN_TYPE = 'gpt4'
 export const DEFAULT_MAX_MEMORY_COUNT = 10
 export const DEFAULT_MAX_TOKENS = DEFAULT_MODEL.maxTokens
 export const DEFAULT_TOKEN_BUFFER = Math.floor(DEFAULT_MAX_TOKENS / 4)
