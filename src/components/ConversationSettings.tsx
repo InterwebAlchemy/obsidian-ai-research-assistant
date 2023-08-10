@@ -21,10 +21,12 @@ const ConversationSettings = ({
   const [userHandle, setUserHandle] = useState('')
   const [botHandle, setBotHandle] = useState('')
   const [maxTokens, setMaxTokens] = useState(0)
-  const [temperature, setTemperature] = useState(0)
+  const [temperature, setTemperature] = useState(
+    `${OPEN_AI_DEFAULT_TEMPERATURE}`
+  )
 
   const changeTemperature = (temperatureString: string): void => {
-    setTemperature(Number(temperatureString))
+    setTemperature(temperatureString)
   }
 
   const changeMaxTokens = (maxTokensString: string): void => {
@@ -42,7 +44,7 @@ const ConversationSettings = ({
   useEffect(() => {
     if (typeof conversation !== 'undefined' && conversation !== null) {
       setTemperature(
-        conversation.settings.temperature ?? OPEN_AI_DEFAULT_TEMPERATURE
+        `${conversation.settings.temperature ?? OPEN_AI_DEFAULT_TEMPERATURE}`
       )
     }
   }, [conversation])
@@ -81,9 +83,16 @@ const ConversationSettings = ({
     if (
       typeof conversation !== 'undefined' &&
       conversation !== null &&
-      temperature !== conversation?.settings.temperature
+      Number(temperature) !== conversation?.settings.temperature
     ) {
-      conversation.settings.temperature = temperature
+      const temp = Number(temperature)
+
+      // make sure temperature is valid value
+      if (temp >= 0 && temp <= 1) {
+        conversation.settings.temperature = temp
+      } else {
+        conversation.settings.temperature = OPEN_AI_DEFAULT_TEMPERATURE
+      }
     }
   }, [temperature])
 

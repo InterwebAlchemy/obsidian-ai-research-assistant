@@ -99,12 +99,6 @@ export default class SettingsTab extends PluginSettingTab {
         })
       })
     } else {
-      console.log(
-        'API Key:',
-        this.plugin.settings.openAiApiKey,
-        typeof this.plugin.settings.openAiApiKey
-      )
-
       const apiKeySetting = new Setting(containerEl)
         .setName('OpenAI API key')
         .setDesc(
@@ -123,8 +117,6 @@ export default class SettingsTab extends PluginSettingTab {
 
       apiKeySetting.addButton((button) => {
         button.setButtonText('Remove API Key').onClick(async () => {
-          console.log('removing api key...')
-
           this.plugin.settings.openAiApiKey = ''
 
           this.plugin.settings.apiKeySaved = false
