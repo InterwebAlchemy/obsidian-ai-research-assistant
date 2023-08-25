@@ -150,7 +150,6 @@ export default class SettingsTab extends PluginSettingTab {
           await this.resetPluginView()
         })
       })
-      .setDisabled(true)
 
     new Setting(containerEl)
       .setName('Default preamble')
