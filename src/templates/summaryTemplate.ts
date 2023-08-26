@@ -1,6 +1,6 @@
 import type { CreateChatCompletionResponse } from 'openai'
 
-import converstUnixTimestampToISODate from '../utils/getISODate'
+import convertUnixTimestampToISODate from '../utils/getISODate'
 import tokenCounter from '../utils/tokenCounter'
 import formatInput from '../utils/formatInput'
 
@@ -23,7 +23,7 @@ export const summaryTemplate = (conversation: Conversation): string =>
 conversationId: ${conversation.id}
 model: ${conversation.model.model}
 timestamp: ${conversation.timestamp}
-datetime: ${converstUnixTimestampToISODate(conversation.timestamp)}
+datetime: ${convertUnixTimestampToISODate(conversation.timestamp)}
 adapter: ${conversation.model.adapter.name}
 ${
   typeof conversation.model.adapter?.engine !== 'undefined'

@@ -5,13 +5,14 @@ import type { ChatAdapter } from '../../types'
 import type { TokenCounterType } from '../../utils/tokenCounter'
 
 // TODO: add other models
-export type OpenAIModel = 'gpt-3.5-turbo'
+export type OpenAIModel = 'gpt-3.5-turbo' | 'gpt-4'
 // | 'code-davinci-002'
 
 // TODO: find out what other valid object values are
 export type OpenAICompletionObject = 'text_completion'
 
 export interface ModelDefinition {
+  name: string
   adapter: ChatAdapter
   model: OpenAIModel
   maxTokens: number

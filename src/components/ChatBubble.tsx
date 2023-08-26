@@ -2,11 +2,14 @@ import React from 'react'
 
 import type { CreateChatCompletionResponse } from 'openai'
 
+import ReactMarkdown from 'react-markdown'
+import rehypeHighlight from 'rehype-highlight'
+
 import MemoryManager from './MemoryManager'
 
 import { useApp } from '../hooks/useApp'
 
-import converstUnixTimestampToISODate from 'src/utils/getISODate'
+import relativeDate from 'src/utils/relativeDate'
 
 import { USER_MESSAGE_OBJECT_TYPE } from '../constants'
 import {
@@ -66,19 +69,25 @@ const ChatBubble = ({
           <></>
         )}
         <div className="ai-research-assistant__conversation__item__text">
-          {messageContent.trim()}
+          <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+            {messageContent.trim()}
+          </ReactMarkdown>
         </div>
       </div>
       <div className="ai-research-assistant__conversation__item__footer">
         {isBotMessage || isUserMessage ? (
           <div className="ai-research-assistant__conversation__item__speaker">
-            {isUserMessage ? settings.userHandle : settings.botHandle}
+            {isUserMessage
+              ? settings.userHandle
+              : `${settings.botHandle} (${
+                  (message.message as CreateChatCompletionResponse).model
+                })`}
           </div>
         ) : (
           <></>
         )}
         <div className="ai-research-assistant__conversation__item__timestamp">
-          {converstUnixTimestampToISODate(message.message.created)}
+          {relativeDate(message.message.created)}
         </div>
       </div>
     </div>

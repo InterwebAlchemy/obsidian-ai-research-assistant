@@ -1,8 +1,9 @@
 import GPT35Turbo from './gpt-3.5-turbo'
+import GPT4 from './gpt-4'
 
 const models = {
+  'gpt-4': GPT4,
   'gpt-3.5-turbo': GPT35Turbo
-  // TODO: connect to OpenAI API and get available models
 }
 
 export default models

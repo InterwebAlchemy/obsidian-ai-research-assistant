@@ -54,6 +54,7 @@
     "@commitlint/prompt-cli": "^17.4.3",
     "@semantic-release/changelog": "^6.0.2",
     "@semantic-release/git": "^10.0.1",
+    "@types/luxon": "^3.3.1",
     "@types/node": "^16.11.6",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
@@ -85,10 +86,13 @@
   "dependencies": {
     "@agney/react-loading": "^0.1.2",
     "gpt-tokenizer": "^2.1.1",
+    "luxon": "^3.4.1",
     "openai": "^3.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^8.0.7",
     "react-tabs": "^6.0.0",
+    "rehype-highlight": "^6.0.0",
     "use-debounce": "^9.0.3",
     "uuid": "^9.0.0"
   }

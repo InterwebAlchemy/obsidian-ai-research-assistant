@@ -12,51 +12,19 @@ encouraged to [contribute](https://github.com/InterwebAlchemy/obsidian-ai-resear
 **Table of Contents**:
 
 - [Obsidian AI Research Assistant](#obsidian-ai-research-assistant)
-  - [Installation](#installation)
-    - [BRAT Installation](#brat-installation)
-    - [Manual Installation](#manual-installation)
-  - [Currently Supported Models](#currently-supported-models)
-  - [Upcoming Model Support](#upcoming-model-support)
   - [Summary](#summary)
   - [Features](#features)
   - [Roadmap](#roadmap)
+    - [Probably Not on the Roadmap](#probably-not-on-the-roadmap)
+  - [Installation](#installation)
+    - [Other Installation Methods](#other-installation-methods)
+    - [BRAT Installation](#brat-installation)
+    - [Manual Installation](#manual-installation)
+  - [Currently Supported Models](#currently-supported-models)
+    - [Upcoming Model Support](#upcoming-model-support)
   - [Naming Conventions](#naming-conventions)
   - [Memories](#memories)
     - [Memory States](#memory-states)
-
-## Installation
-
-This plugin is not yet available in the Obsidian Community Plugins directory, so you will need to
-[install it manually](#manual-installation) or [install it via the Beta Reviewer's Auto-update Tool (BRAT)](#brat-installation)
-
-### BRAT Installation
-
-1. Install [BRAT](https://github.com/TfTHacker/obsidian42-brat)
-2. Click the `Add Beta Plugin` button in BRAT's settings
-3. Enter this repository's URL: `https://github.com/InterwebAlchemy/obsidian-ai-research-assistant`
-4. Enable the plugin in Obsidian's Community Plugins settings
-5. Configure `AI Research Assistant` in Obsidian's Settings
-
-### Manual Installation
-
-1. Download the latest
-   [release](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/releases)
-2. Unzip the release into your Obsidian vault's `plugins` folder
-3. Enable the plugin in Obsidian's Community Plugins settings
-4. Configure `AI Research Assistant` in Obsidian's Settings
-
-## Currently Supported Models
-
-- [OpenAI GPT-3](https://platform.openai.com/docs/models/gpt-3)
-  - `gpt-3.5-turbo`
-
-## Upcoming Model Support
-
-- [OpenAI GPT-4](https://platform.openai.com/docs/models/gpt-4)
-  - `gpt-4`
-- [OpenAI Legacy Completions API](https://platform.openai.com/docs/deprecations/instructgpt-models)
-  - `gpt-3.5-turbo-instruct`
-  - **Note**: This plugin was originally built when only the completions API was available and was built to support the `text-davinci-003` model, but with recent changes in the OpenAI API, it is now recommended to use the `gpt-3.5-turbo` model instead and `text-daivinci-003` is being deprecated, so that functionality has been temporarily disabled in this plugin.
 
 ## Summary
 
@@ -70,7 +38,7 @@ Obsidian's powerful search and tagging features to organize and analyze them.
 
 ![View the Preamble for the conversation](./docs/assets/preamble-summary.png)
 
-The embedded Memory Manager allows you to edit which messages are included in the conversation's context.
+The embedded Memory Manager allows you to edit which messages are included in the conversation's context, and you can even switch models mid-conversation to compare the output of various models to the same inputs.
 
 ![Marking a previous message as a Core Memory](./docs/assets/core-memory.png)
 
@@ -105,10 +73,66 @@ the conversation details its raw inputs and outputs.
 - **Resume Conversations** Load conversations from Obsidian notes to pick up where you left off
 - **Annotate Conversations**: Incrementally update notes on save (instead of overwriting the whole note on each save)
 - **Title Generator**: Automatically generate a title based on the conversation (like ChatGPT)
-- **Mobile Support**: Use AI Research Assistant on your mobile devices, too
 - **Conversation Presets**: Save and Load preset configurations of Prefix, Model, Preamble, Context, etc. to make it easier to explore different research threads
 - **LangChain Support**: Integrate with [LangChain](https://langchain.readthedocs.io/) via [langchan.js](https://github.com/hwchase17/langchainjs)
 - **Features You Want**: [Request a Feature](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BRequest%5D%3A+)
+
+### Probably Not on the Roadmap
+
+- **Mobile Support**: Use AI Research Assistant on your mobile devices, too
+  - Due to how Obsidian plugins handle storage of things like OpenAI API keys, there currently isn't a safe way to provide user's with an option to securely store their API key in a way that can be synced to mobile devices, too.
+  - On desktop devices, Obsidian uses [Electron](https://www.electronjs.org/) and this plugin relies on Electron's [`safeStorage()` API](https://www.electronjs.org/docs/latest/api/safe-storage) to store secrets like OpenAI API Keys.
+
+## Installation
+
+This plugin is now avaialble in the Obsidian Community Plugins Directory, and can be installed directly from the Obsidian UI.
+
+1. Open Obsidian's Settings
+2. Click on **Community Plugins**
+3. Click on **Browse** to open the Community Plugins Directory
+4. Search for `AI Research Assistant`
+5. Click on the plugin to open its page
+6. Click **Install**
+7. Return to the **Community Plugins** settings in Obsidian
+8. Toggle the switch to enable `AI Research Assistant`
+9. Configure `AI Research Assistant` in Obsidian's Settings
+10. Enter your OpenAI API Key in the plugin's settings
+11. Click the **Save API Key** button to save your API Key to Obsidian's secure storage
+12. Click on the `AI Research Assistant` icon in the left sidebar to open the plugin and start chatting
+
+### Other Installation Methods
+
+You can also [install it manually](#manual-installation) or [install it via the Beta Reviewer's Auto-update Tool (BRAT)](#brat-installation), though the official Community Plugin Directory is the recommended installation method.
+
+### BRAT Installation
+
+1. Install [BRAT](https://github.com/TfTHacker/obsidian42-brat)
+2. Click the `Add Beta Plugin` button in BRAT's settings
+3. Enter this repository's URL: `https://github.com/InterwebAlchemy/obsidian-ai-research-assistant`
+4. Enable the plugin in Obsidian's Community Plugins settings
+5. Configure `AI Research Assistant` in Obsidian's Settings
+
+### Manual Installation
+
+1. Download the latest
+   [release](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/releases)
+2. Unzip the release into your Obsidian vault's `plugins` folder
+3. Enable the plugin in Obsidian's Community Plugins settings
+4. Configure `AI Research Assistant` in Obsidian's Settings
+
+## Currently Supported Models
+
+- [OpenAI](https://platform.openai.com/docs/models)
+  - [`gpt-4`](https://platform.openai.com/docs/models/gpt-4)
+  - [`gpt-3.5-turbo`](https://platform.openai.com/docs/models/gpt-3-5)
+
+### Upcoming Model Support
+
+- [OpenAI Legacy Completions API](https://platform.openai.com/docs/deprecations/instructgpt-models)
+  - `gpt-3.5-turbo-instruct`
+  - **Note**: This plugin was originally built when only the completions API was available and was built to support the `text-davinci-003` model, but with recent changes in the OpenAI API, it is now recommended to use the `gpt-3.5-turbo` model instead and `text-daivinci-003` is being deprecated, so that functionality has been temporarily disabled in this plugin.
+- Llama2
+- Anthropic Claude
 
 ## Naming Conventions
 
