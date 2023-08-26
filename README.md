@@ -12,19 +12,76 @@ encouraged to [contribute](https://github.com/InterwebAlchemy/obsidian-ai-resear
 **Table of Contents**:
 
 - [Obsidian AI Research Assistant](#obsidian-ai-research-assistant)
+  - [Summary](#summary)
+  - [Features](#features)
+  - [Roadmap](#roadmap)
+    - [Probably Not on the Roadmap](#probably-not-on-the-roadmap)
   - [Installation](#installation)
     - [Other Installation Methods](#other-installation-methods)
     - [BRAT Installation](#brat-installation)
     - [Manual Installation](#manual-installation)
   - [Currently Supported Models](#currently-supported-models)
     - [Upcoming Model Support](#upcoming-model-support)
-  - [Summary](#summary)
-  - [Features](#features)
-  - [Roadmap](#roadmap)
-    - [Probably Not on the Roadmap](#probably-not-on-the-roadmap)
   - [Naming Conventions](#naming-conventions)
   - [Memories](#memories)
     - [Memory States](#memory-states)
+
+## Summary
+
+This plugin integrates tools for Prompt Engineering and researching AI tools and language models
+like OpenAI's ChatGPT into Obsidian.
+
+![Basic interface and conversation summary](./docs/assets/basic-view.png)
+
+It allows you to manually or automatically save your conversations with AI models, and then use
+Obsidian's powerful search and tagging features to organize and analyze them.
+
+![View the Preamble for the conversation](./docs/assets/preamble-summary.png)
+
+The embedded Memory Manager allows you to edit which messages are included in the conversation's context, and you can even switch models mid-conversation to compare the output of various models to the same inputs.
+
+![Marking a previous message as a Core Memory](./docs/assets/core-memory.png)
+
+It allows you to review, search, tag, and link your conversations in Obsidian, and view a summary of
+the conversation details its raw inputs and outputs.
+
+![View the conversational exchange](./docs/assets/conversation-view.png)
+
+![View the actual input sent to the API for requests](./docs/assets/raw-user-input.png)
+
+![View the raw JSON from the API for responses](./docs/assets/raw-response.png)
+
+## Features
+
+- Save (automatically or manually) conversations with AI models to Obsidian notes
+  - Conversations become searchable, taggagle, and linkable in Obsidian
+- Live edit which previous messages are used as Context for each Prompt
+  - Mark a message as a **Core Memory** to make sure it's always in the Context
+  - Mark a message as **Forgotten** to make sure it's never in the Context
+  - Mark a message as **Remembered** to prioritize it's inclusion in the Context
+  - By default the most recent messages are more likely to be remembered and older messages are forgotten as the conversation nears the memory and token limits
+- Live edit the Preamble that is used for each Conversation
+- Live edit the Prompt that is used for each Conversation
+- View the raw JSON from the API for each response
+- View the prompt and context that was sent to the API for each request
+
+## Roadmap
+
+- **Token-aware Memories**: Memory will be constructed within the desired amount of tokens
+- **Configurable Response Token Buffer**: Ensure that the API has enough tokens to respond to your prompts
+- **Models & APIs**: [More models](#upcoming-model-support)
+- **Resume Conversations** Load conversations from Obsidian notes to pick up where you left off
+- **Annotate Conversations**: Incrementally update notes on save (instead of overwriting the whole note on each save)
+- **Title Generator**: Automatically generate a title based on the conversation (like ChatGPT)
+- **Conversation Presets**: Save and Load preset configurations of Prefix, Model, Preamble, Context, etc. to make it easier to explore different research threads
+- **LangChain Support**: Integrate with [LangChain](https://langchain.readthedocs.io/) via [langchan.js](https://github.com/hwchase17/langchainjs)
+- **Features You Want**: [Request a Feature](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BRequest%5D%3A+)
+
+### Probably Not on the Roadmap
+
+- **Mobile Support**: Use AI Research Assistant on your mobile devices, too
+  - Due to how Obsidian plugins handle storage of things like OpenAI API keys, there currently isn't a safe way to provide user's with an option to securely store their API key in a way that can be synced to mobile devices, too.
+  - On desktop devices, Obsidian uses [Electron](https://www.electronjs.org/) and this plugin relies on Electron's [`safeStorage()` API](https://www.electronjs.org/docs/latest/api/safe-storage) to store secrets like OpenAI API Keys.
 
 ## Installation
 
@@ -76,63 +133,6 @@ You can also [install it manually](#manual-installation) or [install it via the 
   - **Note**: This plugin was originally built when only the completions API was available and was built to support the `text-davinci-003` model, but with recent changes in the OpenAI API, it is now recommended to use the `gpt-3.5-turbo` model instead and `text-daivinci-003` is being deprecated, so that functionality has been temporarily disabled in this plugin.
 - Llama2
 - Anthropic Claude
-
-## Summary
-
-This plugin integrates tools for Prompt Engineering and researching AI tools and language models
-like OpenAI's ChatGPT into Obsidian.
-
-![Basic interface and conversation summary](./docs/assets/basic-view.png)
-
-It allows you to manually or automatically save your conversations with AI models, and then use
-Obsidian's powerful search and tagging features to organize and analyze them.
-
-![View the Preamble for the conversation](./docs/assets/preamble-summary.png)
-
-The embedded Memory Manager allows you to edit which messages are included in the conversation's context.
-
-![Marking a previous message as a Core Memory](./docs/assets/core-memory.png)
-
-It allows you to review, search, tag, and link your conversations in Obsidian, and view a summary of
-the conversation details its raw inputs and outputs.
-
-![View the conversational exchange](./docs/assets/conversation-view.png)
-
-![View the actual input sent to the API for requests](./docs/assets/raw-user-input.png)
-
-![View the raw JSON from the API for responses](./docs/assets/raw-response.png)
-
-## Features
-
-- Save (automatically or manually) conversations with AI models to Obsidian notes
-  - Conversations become searchable, taggagle, and linkable in Obsidian
-- Live edit which previous messages are used as Context for each Prompt
-  - Mark a message as a **Core Memory** to make sure it's always in the Context
-  - Mark a message as **Forgotten** to make sure it's never in the Context
-  - Mark a message as **Remembered** to prioritize it's inclusion in the Context
-  - By default the most recent messages are more likely to be remembered and older messages are forgotten as the conversation nears the memory and token limits
-- Live edit the Preamble that is used for each Conversation
-- Live edit the Prompt that is used for each Conversation
-- View the raw JSON from the API for each response
-- View the prompt and context that was sent to the API for each request
-
-## Roadmap
-
-- **Token-aware Memories**: Memory will be constructed within the desired amount of tokens
-- **Configurable Response Token Buffer**: Ensure that the API has enough tokens to respond to your prompts
-- **Models & APIs**: [More models](#upcoming-model-support)
-- **Resume Conversations** Load conversations from Obsidian notes to pick up where you left off
-- **Annotate Conversations**: Incrementally update notes on save (instead of overwriting the whole note on each save)
-- **Title Generator**: Automatically generate a title based on the conversation (like ChatGPT)
-- **Conversation Presets**: Save and Load preset configurations of Prefix, Model, Preamble, Context, etc. to make it easier to explore different research threads
-- **LangChain Support**: Integrate with [LangChain](https://langchain.readthedocs.io/) via [langchan.js](https://github.com/hwchase17/langchainjs)
-- **Features You Want**: [Request a Feature](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BRequest%5D%3A+)
-
-### Probably Not on the Roadmap
-
-- **Mobile Support**: Use AI Research Assistant on your mobile devices, too
-  - Due to how Obsidian plugins handle storage of things like OpenAI API keys, there currently isn't a safe way to provide user's with an option to securely store their API key in a way that can be synced to mobile devices, too.
-  - On desktop devices, Obsidian uses [Electron](https://www.electronjs.org/) and this plugin relies on Electron's [`safeStorage()` API](https://www.electronjs.org/docs/latest/api/safe-storage) to store secrets like OpenAI API Keys.
 
 ## Naming Conventions
 

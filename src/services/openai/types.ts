@@ -12,6 +12,7 @@ export type OpenAIModel = 'gpt-3.5-turbo' | 'gpt-4'
 export type OpenAICompletionObject = 'text_completion'
 
 export interface ModelDefinition {
+  name: string
   adapter: ChatAdapter
   model: OpenAIModel
   maxTokens: number

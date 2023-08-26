@@ -355,6 +355,10 @@ export class Conversation {
   updateTitle(title: string): void {
     this.title = title
   }
+
+  updateModel(model: ModelDefinition): void {
+    this.model = model
+  }
 }
 
 export interface ConversationManagerInterface {
@@ -409,6 +413,10 @@ export class ConversationManager {
 
   addMessage(id: string, message: ConversationMessage): void {
     this.conversations[id].addMessage(message)
+  }
+
+  updateConversationModel(id: string, model: ModelDefinition): void {
+    this.conversations[id].updateModel(model)
   }
 }
 

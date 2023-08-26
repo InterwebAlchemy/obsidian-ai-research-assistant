@@ -62,7 +62,7 @@ class Chat {
                   this.model.adapter.engine === 'chat'
                     ? conversation
                     : conversation.getFullMessageText(message),
-                model: this.model,
+                model: conversation.model ?? this.model,
                 temperature: conversation.settings.temperature,
                 maxTokens: conversation.settings.maxTokens,
                 topP: conversation.settings.topP,
@@ -107,6 +107,10 @@ class Chat {
         title
       )
     }
+  }
+
+  updateModel(model: ModelDefinition): void {
+    this.model = model
   }
 }
 

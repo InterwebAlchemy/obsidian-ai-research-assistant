@@ -9,6 +9,7 @@ const GPT35TurboAdapter: ChatAdapter = {
 }
 
 const GPT35Turbo: ModelDefinition = {
+  name: 'GPT-3.5',
   adapter: GPT35TurboAdapter,
   model: 'gpt-3.5-turbo',
   maxTokens: 4000,

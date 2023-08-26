@@ -1,4 +1,4 @@
-const converstUnixTimestampToISODate = (timestamp: number): string =>
+const convertUnixTimestampToISODate = (timestamp: number): string =>
   new Date(timestamp * 1000).toISOString()
 
-export default converstUnixTimestampToISODate
+export default convertUnixTimestampToISODate

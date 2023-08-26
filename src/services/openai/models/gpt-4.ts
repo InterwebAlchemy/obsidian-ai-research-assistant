@@ -9,6 +9,7 @@ const GPT4Adapter: ChatAdapter = {
 }
 
 const GPT4: ModelDefinition = {
+  name: 'GPT-4',
   adapter: GPT4Adapter,
   model: 'gpt-4',
   maxTokens: 8000,
