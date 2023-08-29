@@ -55,6 +55,7 @@ the conversation details its raw inputs and outputs.
 
 - Save (automatically or manually) conversations with AI models to Obsidian notes
   - Conversations become searchable, taggagle, and linkable in Obsidian
+- Hot swap models during your conversation
 - Live edit which previous messages are used as Context for each Prompt
   - Mark a message as a **Core Memory** to make sure it's always in the Context
   - Mark a message as **Forgotten** to make sure it's never in the Context
