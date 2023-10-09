@@ -1,6 +1,7 @@
 // combine the conversation service and openai service into an integrated chat service
 // make sure to udpate the conversation context when user sends a message
-
+import type { OpenAI } from 'openai'
+import type { Stream } from 'openai/streaming'
 import Conversations, { type Conversation } from './conversation'
 import { openAICompletion } from './openai'
 
@@ -39,7 +40,10 @@ class Chat {
     return this.conversations.getConversation(this.currentConversationId)
   }
 
-  async send(prompt: string): Promise<void> {
+  async send(
+    prompt: string,
+    { signal }: Partial<{ signal?: AbortSignal }>
+  ): Promise<Stream<OpenAI.Chat.ChatCompletionChunk> | unknown> {
     const conversation = this.currentConversation()
 
     if (
@@ -56,7 +60,7 @@ class Chat {
       switch (this.model.adapter.name) {
         case 'openai':
           try {
-            const response = await openAICompletion(
+            const responseStream = await openAICompletion(
               {
                 input:
                   this.model.adapter.engine === 'chat'
@@ -69,15 +73,15 @@ class Chat {
                 presencePenalty: conversation.settings.presencePenalty,
                 frequencyPenalty: conversation.settings.frequencyPenalty
               },
+              { signal },
               this.currentConversation()?.settings,
               this.logger
             )
 
-            conversation.addMessage(response)
+            return responseStream
           } catch (error) {
-            conversation.addMessage(error.message)
-
             console.error(error)
+            conversation.addMessage(error.message)
           }
 
           break

@@ -1,7 +1,4 @@
-import type {
-  CreateChatCompletionResponse,
-  ChatCompletionRequestMessage
-} from 'openai'
+import type OpenAI from 'openai'
 
 import type {
   ModelDefinition,
@@ -55,7 +52,7 @@ export interface UserPrompt {
   context?: string
   fullText?: string
   model?: ModelDefinition
-  messages?: ChatCompletionRequestMessage[]
+  messages?: Array<Partial<OpenAI.Chat.ChatCompletion>>
 }
 
 export interface SystemMessage {
@@ -68,8 +65,7 @@ export type ConversationMessageType =
   | UserPrompt
   | OpenAICompletion
   | SystemMessage
-  | CreateChatCompletionResponse
-
+  | OpenAI.Chat.ChatCompletion
 export interface ConversationMessage {
   id: string
   memoryState: MemoryState

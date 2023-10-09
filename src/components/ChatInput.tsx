@@ -12,6 +12,7 @@ export interface ChatInputProps {
   prompt: string
   onPromptChange: React.Dispatch<React.SetStateAction<string>>
   onPromptSubmit: (event: React.FormEvent) => void
+  cancelPromptSubmit: (event: React.FormEvent) => void
   conversation: Conversation | null
   preamble?: string
   onPreambleChange?: React.Dispatch<React.SetStateAction<string>>
@@ -24,6 +25,7 @@ const ChatInput = ({
   onPromptChange,
   onPreambleChange,
   onPromptSubmit,
+  cancelPromptSubmit,
   prompt = '',
   preamble = '',
   busy = false,
@@ -56,12 +58,12 @@ const ChatInput = ({
             countAlign="right"
           />
           <IconButton
-            iconName="send"
-            a11yText="Send"
-            buttonStyle="primary"
-            type="submit"
+            iconName={busy ? 'ban' : 'send'}
+            a11yText={busy ? 'Cancel' : 'Send'}
+            buttonStyle={busy ? 'danger' : 'primary'}
+            type={busy ? 'button' : 'submit'}
+            onClick={busy ? cancelPromptSubmit : () => {}}
             className="ai-research-assistant__chat__input__send"
-            disabled={busy}
             {...containerProps}>
             {indicatorEl}
           </IconButton>
