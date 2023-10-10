@@ -1,9 +1,10 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import type { CreateChatCompletionResponse } from 'openai'
+import type OpenAI from 'openai'
 
 import formatInput from '../utils/formatInput'
-import getUnixTimestamp from 'src/utils/getUnixTimestamp'
+import getUnixTimestamp from '../utils/getUnixTimestamp'
+import formatChat from './openai/utils/formatChat'
 
 import {
   PLUGIN_SETTINGS,
@@ -27,7 +28,6 @@ import type {
   PluginSettings,
   MemoryState
 } from '../types'
-import formatChat from './openai/utils/formatChat'
 
 export interface ConversationSettings extends PluginSettings {
   temperature?: number
@@ -163,7 +163,7 @@ export class Conversation {
         ) {
           return this.formatMessagePart(
             `${this.settings.botHandle}\n${
-              ((message.message as CreateChatCompletionResponse).choices[0]
+              ((message.message as OpenAI.Chat.ChatCompletion).choices[0]
                 .message?.content as string) ?? ''
             }`,
             true,
@@ -233,7 +233,7 @@ export class Conversation {
     } else if (currentMessage.object === OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE) {
       return formatInput(
         `${this.settings.botHandle}\n${
-          ((currentMessage as CreateChatCompletionResponse).choices[0].message
+          ((currentMessage as OpenAI.Chat.ChatCompletion).choices[0].message
             ?.content as string) ?? ''
         }`
       )
@@ -246,6 +246,10 @@ export class Conversation {
     } else {
       return this.formatMessagePart(JSON.stringify(currentMessage))
     }
+  }
+
+  getMessages(): ConversationMessage[] {
+    return this.messages
   }
 
   getConversationMessages(): ConversationMessage[] {
@@ -324,7 +328,6 @@ export class Conversation {
         ;(message as UserPrompt).fullText = fullText
       }
     } else if (
-      conversationMessage.message.object !== OPEN_AI_COMPLETION_OBJECT_TYPE &&
       conversationMessage.message.object !== OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
     ) {
       conversationMessage.memoryState = 'forgotten' as MemoryState

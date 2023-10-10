@@ -1,9 +1,9 @@
 import React from 'react'
 
-import type { CreateChatCompletionResponse } from 'openai'
-
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
+
+import type { OpenAI } from 'openai'
 
 import MemoryManager from './MemoryManager'
 
@@ -46,7 +46,7 @@ const ChatBubble = ({
   } else if (isBotMessage) {
     if (conversation?.model.adapter.engine === 'chat') {
       messageContent =
-        (message.message as CreateChatCompletionResponse).choices[0].message
+        (message.message as OpenAI.Chat.ChatCompletion).choices[0].message
           ?.content ?? ''
     } else {
       messageContent = (message.message as OpenAICompletion).choices[0].text
@@ -80,7 +80,7 @@ const ChatBubble = ({
             {isUserMessage
               ? settings.userHandle
               : `${settings.botHandle} (${
-                  (message.message as CreateChatCompletionResponse).model
+                  (message.message as OpenAI.Chat.ChatCompletion).model
                 })`}
           </div>
         ) : (

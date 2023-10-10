@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import type { OpenAI } from 'openai'
+import type { Stream } from 'openai/streaming'
 
 import ChatTitle from './ChatTitle'
 import ChatWindow from './ChatWindow'
@@ -7,6 +9,8 @@ import ChatInput from './ChatInput'
 import { useApp } from '../hooks/useApp'
 
 import type { Conversation } from '../services/conversation'
+
+import { OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
 
 export interface ChatFormProps {
   onChatUpdate?: () => Promise<void>
@@ -23,6 +27,12 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   const [loading, setLoading] = useState(false)
   const [conversation, setConversation] = useState<Conversation | null>(null)
 
+  const cancelPromptController = new AbortController()
+
+  const [latestMessageContent, setLatestMessageContent] = useState<
+    string | null
+  >(null)
+
   const handleSubmit = (event: React.FormEvent): void => {
     event.preventDefault()
 
@@ -31,7 +41,61 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
     setPrompt('')
 
     chat
-      ?.send(prompt)
+      ?.send(prompt, { signal: cancelPromptController.signal })
+      .then(async (responseStream: Stream<OpenAI.Chat.ChatCompletionChunk>) => {
+        let accumulatedMessage = ''
+
+        try {
+          for await (const chunk of responseStream) {
+            const { created, id, model, choices } = chunk
+
+            const delta = choices?.[0]?.delta
+
+            const content = delta?.content
+
+            // Update the UI with the new content
+            if (typeof content !== 'undefined') {
+              accumulatedMessage += `${content as string}`
+
+              setLatestMessageContent(
+                (oldContent) =>
+                  `${
+                    oldContent !== null
+                      ? `${oldContent}${content as string}`
+                      : (content as string)
+                  }`
+              )
+            }
+
+            if (choices?.[0]?.finish_reason === 'stop') {
+              const message = {
+                id,
+                model,
+                created,
+                object: OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE,
+                choices: [
+                  {
+                    message: {
+                      role: 'assistant',
+                      content: accumulatedMessage
+                    }
+                  }
+                ]
+              }
+
+              if (conversation !== null) {
+                const newMessage = conversation.addMessage(message)
+
+                if (typeof newMessage !== 'undefined') {
+                  setLatestMessageContent((oldContent) => null)
+                }
+              }
+            }
+          }
+        } catch (error) {
+          logger.error(error)
+        }
+      })
       .catch((error) => {
         logger.error(error)
       })
@@ -44,6 +108,12 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
 
         setLoading(false)
       })
+  }
+
+  const cancelPromptSubmit = (event: React.FormEvent): void => {
+    logger.debug(`Cancelling streaming response from ${conversation?.model?.adapter?.name as string}...`)
+
+    cancelPromptController.abort()
   }
 
   useEffect(() => {
@@ -83,11 +153,20 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
     }
   }, [conversation?.id])
 
+  useEffect(() => {
+    return () => {
+      cancelPromptController.abort()
+    }
+  }, [])
+
   return (
     <div className="ai-research-assistant-content__container">
       <ChatTitle loading={loading} />
       {conversation !== null ? (
-        <ChatWindow conversation={conversation} />
+        <ChatWindow
+          conversation={conversation}
+          latestMessageContent={latestMessageContent}
+        />
       ) : (
         <></>
       )}
@@ -95,6 +174,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
         prompt={prompt}
         onPromptChange={setPrompt}
         onPromptSubmit={handleSubmit}
+        cancelPromptSubmit={cancelPromptSubmit}
         preamble={preamble}
         onPreambleChange={setPreamble}
         conversation={conversation}
