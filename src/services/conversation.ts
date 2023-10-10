@@ -348,6 +348,8 @@ export class Conversation {
       const lastMessage = this.messages.last()
 
       if (typeof lastMessage !== 'undefined') {
+        // TODO: fix the type error after upgrading to latest openai SDK
+        // @ts-expect-error
         ;(lastMessage.message as UserPrompt).messages = formatChat(this)
       }
     }
