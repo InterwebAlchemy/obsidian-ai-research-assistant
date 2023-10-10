@@ -1,4 +1,4 @@
-import type { CreateChatCompletionResponse } from 'openai'
+import type OpenAI from 'openai'
 
 import convertUnixTimestampToISODate from '../utils/getISODate'
 import tokenCounter from '../utils/tokenCounter'
@@ -73,7 +73,7 @@ ${conversation.messages
         ? (item.message as UserPrompt).prompt
         : item.message.object === USER_MESSAGE_OBJECT_TYPE
         ? (item.message as OpenAICompletion).choices[0].text
-        : (item.message as CreateChatCompletionResponse).choices[0].message
+        : (item.message as OpenAI.Chat.ChatCompletion).choices[0].message
             ?.content ?? ''
 
     return `> **${speaker}** ${formatInput(message).replace(/\n/g, '\n> ')}\n${
