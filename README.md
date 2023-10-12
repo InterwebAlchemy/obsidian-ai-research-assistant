@@ -1,13 +1,15 @@
 # Obsidian AI Research Assistant
 
-![Forgetting a previous message](./docs/assets/forget-memory.png)
-
 > Build better Prompts and AI integrations with this advanced research tool for Prompt Engineering with the ChatGPT API.
+
+![AI-Research-Assistant-Demo](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/assets/1667415/d9312286-d5e2-458c-ba3d-ffd0ddac4bf4)
 
 **Note**: This plugin is still in development and is not considered fully stable yet. **This is Beta
 software** and may contain bugs and unexpected behaviors. Please report
 [Issues](https:/github.com/InterwebAlchemy/obsidian-ai-research-assistant/issues) you find and feel
 encouraged to [contribute](https://github.com/InterwebAlchemy/obsidian-ai-research-assistant/blob/main/docs/CONTRIBUTING.md) to the project.
+
+![Forgetting a previous message](./docs/assets/forget-memory.png)
 
 **Table of Contents**:
 
