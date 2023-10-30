@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 import type OpenAI from 'openai'
 
+import models from './openai/models'
+
 import formatInput from '../utils/formatInput'
 import getUnixTimestamp from '../utils/getUnixTimestamp'
 import formatChat from './openai/utils/formatChat'
@@ -63,16 +65,9 @@ export class Conversation {
     timestamp = getUnixTimestamp(),
     id = uuidv4(),
     messages = [],
-    model = OPEN_AI_DEFAULT_MODEL,
-    settings = PLUGIN_SETTINGS
+    settings = PLUGIN_SETTINGS,
+    model
   }: Partial<ConversationInterface>) {
-    this.id = id
-    this.preamble = preamble
-    this.title = title
-    this.timestamp = timestamp
-    this.messages = messages
-    this.model = model
-
     const conversationSettings = {
       maxTokens: OPEN_AI_RESPONSE_TOKENS,
       temperature: OPEN_AI_DEFAULT_TEMPERATURE,
@@ -83,6 +78,14 @@ export class Conversation {
     }
 
     this.settings = conversationSettings
+
+    this.id = id
+    this.preamble = preamble
+    this.title = title
+    this.timestamp = timestamp
+    this.messages = messages
+    this.model =
+      model ?? models[this.settings.defaultModel] ?? OPEN_AI_DEFAULT_MODEL
   }
 
   getNumberofMemoriesForState(state: MemoryState): number {
