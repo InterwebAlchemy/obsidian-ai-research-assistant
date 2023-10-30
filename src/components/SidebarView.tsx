@@ -10,7 +10,10 @@ import { useApp } from '../hooks/useApp'
 
 import type { Conversation } from '../services/conversation'
 
-import { OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
+import {
+  OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE,
+  OPEN_AI_COMPLETION_OBJECT_TYPE
+} from '../services/openai/constants'
 
 export interface ChatFormProps {
   onChatUpdate?: () => Promise<void>
@@ -41,7 +44,9 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
     setPrompt('')
 
     chat
-      ?.send(prompt, { signal: cancelPromptController.signal })
+      ?.send(prompt, {
+        signal: cancelPromptController.signal
+      })
       .then(async (responseStream: Stream<OpenAI.Chat.ChatCompletionChunk>) => {
         let accumulatedMessage = ''
 
@@ -72,7 +77,10 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
                 id,
                 model,
                 created,
-                object: OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE,
+                object:
+                  conversation?.model?.adapter?.engine === 'chat'
+                    ? OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
+                    : OPEN_AI_COMPLETION_OBJECT_TYPE,
                 choices: [
                   {
                     message: {
@@ -111,7 +119,11 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   }
 
   const cancelPromptSubmit = (event: React.FormEvent): void => {
-    logger.debug(`Cancelling streaming response from ${conversation?.model?.adapter?.name as string}...`)
+    logger.debug(
+      `Cancelling streaming response from ${
+        conversation?.model?.adapter?.name as string
+      }...`
+    )
 
     cancelPromptController.abort()
   }

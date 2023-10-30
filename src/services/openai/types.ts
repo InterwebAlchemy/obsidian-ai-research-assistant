@@ -5,10 +5,15 @@ import type { ChatAdapter } from '../../types'
 import type { TokenCounterType } from '../../utils/tokenCounter'
 
 // TODO: add other models
-export type OpenAIModel = 'gpt-3.5-turbo' | 'gpt-4'
-// | 'code-davinci-002'
+export type OpenAIModel =
+  | 'gpt-3.5-turbo'
+  | 'gpt-3.5-turbo-16k'
+  | 'gpt-3.5-turbo-instruct'
+  | 'gpt-4'
+  | 'gpt-4-32k'
 
 // TODO: find out what other valid object values are
+// tODO: It think this was deprecated with the older completion models
 export type OpenAICompletionObject = 'text_completion'
 
 export interface ModelDefinition {

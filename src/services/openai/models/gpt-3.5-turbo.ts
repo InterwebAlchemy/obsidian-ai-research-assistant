@@ -1,18 +1,12 @@
-import type { ChatAdapter } from '../../../types'
+import OpenAIModelChatAdapter from '../adapters/chat'
 
 import type { ModelDefinition } from '../types'
 
-const GPT35TurboAdapter: ChatAdapter = {
-  name: 'openai',
-  engine: 'chat',
-  endpoint: '/v1/chat/completions'
-}
-
 const GPT35Turbo: ModelDefinition = {
-  name: 'GPT-3.5',
-  adapter: GPT35TurboAdapter,
+  name: 'GPT-3.5 Turbo',
+  adapter: OpenAIModelChatAdapter,
   model: 'gpt-3.5-turbo',
-  maxTokens: 4000,
+  maxTokens: 4097,
   tokenType: 'gpt4'
 }
 

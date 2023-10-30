@@ -9,7 +9,7 @@ import type {
 // TODO: update this union type with other valid adapters as they are added
 export type ChatAdapterName = 'openai'
 
-export type ChatAdapterEngine = 'chat' | 'code' | 'prompt'
+export type ChatAdapterEngine = 'chat' | 'code' | 'prompt' | 'completion'
 
 export type MemoryState =
   | 'default'
