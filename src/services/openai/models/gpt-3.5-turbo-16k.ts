@@ -2,12 +2,12 @@ import OpenAIModelChatAdapter from '../adapters/chat'
 
 import type { ModelDefinition } from '../types'
 
-const GPT4: ModelDefinition = {
-  name: 'GPT-4',
+const GPT35Turbo16K: ModelDefinition = {
+  name: 'GPT-3.5 Turbo 16K',
   adapter: OpenAIModelChatAdapter,
-  model: 'gpt-4',
-  maxTokens: 8192,
+  model: 'gpt-3.5-turbo-16k',
+  maxTokens: 16385,
   tokenType: 'gpt4'
 }
 
-export default GPT4
+export default GPT35Turbo16K

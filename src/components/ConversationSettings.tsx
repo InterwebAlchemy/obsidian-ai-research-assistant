@@ -5,10 +5,7 @@ import InputArea from './InputArea'
 import { useApp } from '../hooks/useApp'
 
 import type { Conversation } from '../services/conversation'
-import {
-  OPEN_AI_DEFAULT_TEMPERATURE,
-  OPEN_AI_DEFAULT_MODEL_NAME
-} from '../services/openai/constants'
+import { OPEN_AI_DEFAULT_TEMPERATURE } from '../services/openai/constants'
 import models from '../services/openai/models'
 import type { OpenAIModel } from 'src/services/openai/types'
 
@@ -25,10 +22,6 @@ const ConversationSettings = ({
 
   const [userHandle, setUserHandle] = useState('')
   const [botHandle, setBotHandle] = useState('')
-  const [maxTokens, setMaxTokens] = useState(0)
-  const [model, setModel] = useState<OpenAIModel>(
-    conversation?.model.model ?? OPEN_AI_DEFAULT_MODEL_NAME
-  )
   const [temperature, setTemperature] = useState(
     `${OPEN_AI_DEFAULT_TEMPERATURE}`
   )
@@ -37,21 +30,18 @@ const ConversationSettings = ({
     setTemperature(temperatureString)
   }
 
-  const changeMaxTokens = (maxTokensString: string): void => {
-    setMaxTokens(Number(maxTokensString))
-  }
-
   const changeModel = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     const modelName = e.target.value
 
-    setModel(modelName as OpenAIModel)
+    if (typeof conversation !== 'undefined' && conversation !== null) {
+      conversation.updateModel(models[modelName as OpenAIModel])
+    }
   }
 
   useEffect(() => {
     if (typeof settings !== 'undefined') {
       setUserHandle(settings.userHandle)
       setBotHandle(settings.botHandle)
-      setMaxTokens(settings.defaultMaxTokens ?? 0)
     }
   }, [settings])
 
@@ -87,16 +77,6 @@ const ConversationSettings = ({
     if (
       typeof conversation !== 'undefined' &&
       conversation !== null &&
-      maxTokens !== conversation?.settings.defaultMaxTokens
-    ) {
-      conversation.settings.defaultMaxTokens = maxTokens
-    }
-  }, [maxTokens])
-
-  useEffect(() => {
-    if (
-      typeof conversation !== 'undefined' &&
-      conversation !== null &&
       Number(temperature) !== conversation?.settings.temperature
     ) {
       const temp = Number(temperature)
@@ -110,18 +90,8 @@ const ConversationSettings = ({
     }
   }, [temperature])
 
-  useEffect(() => {
-    if (
-      typeof conversation !== 'undefined' &&
-      conversation !== null &&
-      model !== conversation?.model.model
-    ) {
-      conversation.updateModel(models[model])
-    }
-  }, [model])
-
   const renderModels = (
-    selectedModel = OPEN_AI_DEFAULT_MODEL_NAME
+    selectedModel = settings.defaultModel
   ): React.ReactElement[] => {
     return Object.entries(models).map(([key, modelDefinition]) => (
       <option key={key} value={modelDefinition.model}>
@@ -131,8 +101,10 @@ const ConversationSettings = ({
   }
 
   const renderModelDropdown = (
-    defaultModel = OPEN_AI_DEFAULT_MODEL_NAME
+    defaultModel = settings.defaultModel
   ): React.ReactElement => {
+    console.log(defaultModel, settings.defaultModel)
+
     return (
       <select
         name="model"
@@ -149,7 +121,22 @@ const ConversationSettings = ({
     <div className="ai-research-assistant__chat__conversation-settings__container">
       <div className="ai-research-assistant__chat__conversation-settings">
         <div className="ai-research-assistant__chat__conversation-settings__row">
-          {renderModelDropdown(model)}
+          <div className="ai-research-assistant__input-area">
+            <label
+              className="ai-research-assistant__input-area__input__label"
+              htmlFor="model">
+              Model
+            </label>
+            {renderModelDropdown(
+              conversation?.model.model ?? settings.defaultModel
+            )}
+          </div>
+          <InputArea
+            type="text"
+            label="Temperature"
+            value={`${temperature}`}
+            onChange={changeTemperature}
+          />
         </div>
         <div className="ai-research-assistant__chat__conversation-settings__row">
           <InputArea
@@ -163,20 +150,6 @@ const ConversationSettings = ({
             label="Bot Handle"
             value={botHandle}
             onChange={setBotHandle}
-          />
-        </div>
-        <div className="ai-research-assistant__chat__conversation-settings__row">
-          <InputArea
-            type="text"
-            label="Maximum Tokens"
-            value={`${maxTokens}`}
-            onChange={changeMaxTokens}
-          />
-          <InputArea
-            type="text"
-            label="Temperature"
-            value={`${temperature}`}
-            onChange={changeTemperature}
           />
         </div>
       </div>
