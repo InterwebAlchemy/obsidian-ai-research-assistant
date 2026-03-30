@@ -42,15 +42,17 @@ export default class ObsidianAIResearchAssistant extends Plugin {
     const existingView = this.app.workspace.getLeavesOfType(PLUGIN_PREFIX)
 
     if (existingView.length === 0) {
-      await this.app.workspace.getRightLeaf(false).setViewState({
+      await this.app.workspace.getRightLeaf(false)?.setViewState({
         type: PLUGIN_PREFIX,
         active: true
       })
     }
 
-    this.app.workspace.revealLeaf(
-      this.app.workspace.getLeavesOfType(PLUGIN_PREFIX)[0]
-    )
+    const leaf = this.app.workspace.getLeavesOfType(PLUGIN_PREFIX)[0]
+
+    if (leaf !== undefined) {
+      await this.app.workspace.revealLeaf(leaf)
+    }
   }
 
   async initializeChatService(): Promise<void> {
@@ -65,7 +67,8 @@ export default class ObsidianAIResearchAssistant extends Plugin {
       providerCfg?.defaultModel ??
       this.settings.defaultModel ??
       OPEN_AI_DEFAULT_MODEL_NAME
-    const model = OpenAIModels[modelName] ?? { // Synthetic ModelDefinition for providers not in the OpenAI models catalog
+    const model = OpenAIModels[modelName] ?? {
+      // Synthetic ModelDefinition for providers not in the OpenAI models catalog
       name: modelName,
       model: modelName,
       tokenType: 'gpt4' as const,
@@ -189,33 +192,14 @@ export default class ObsidianAIResearchAssistant extends Plugin {
   }
 
   // ─── SecretStorage ────────────────────────────────────────────────────────
-  // Uses Obsidian's per-device localStorage API (not synced, not in data.json).
+  // Uses Obsidian's official secret storage API (available since 1.11.4).
 
   async getSecret(key: string): Promise<string | undefined> {
-    try {
-      const app = this.app as unknown as {
-        loadLocalStorage?: (key: string) => string | null
-      }
-      if (app.loadLocalStorage != null) {
-        return app.loadLocalStorage(key) ?? undefined
-      }
-    } catch {
-      // SecretStorage not available on this platform
-    }
-    return undefined
+    return this.app.secretStorage.getSecret(key) ?? undefined
   }
 
   async setSecret(key: string, value: string): Promise<void> {
-    try {
-      const app = this.app as unknown as {
-        saveLocalStorage?: (key: string, value: string) => void
-      }
-      if (app.saveLocalStorage != null) {
-        app.saveLocalStorage(key, value)
-      }
-    } catch {
-      // SecretStorage not available on this platform
-    }
+    this.app.secretStorage.setSecret(key, value)
   }
 
   async checkForExistingFile(title: string): Promise<boolean> {
