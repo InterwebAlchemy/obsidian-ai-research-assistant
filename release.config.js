@@ -1,5 +1,5 @@
 module.exports = {
-  branches: ['main'],
+  branches: ['main', { name: 'beta', prerelease: true }],
   // eslint-disable-next-line no-template-curly-in-string
   tagFormat: '${version}',
   plugins: [
@@ -41,6 +41,7 @@ module.exports = {
           'package.json',
           'package-lock.json',
           'manifest.json',
+          'manifest-beta.json',
           'versions.json'
         ],
         message:

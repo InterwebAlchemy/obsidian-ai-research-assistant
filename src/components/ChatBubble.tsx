@@ -24,11 +24,15 @@ import type { ConversationMessage, UserPrompt } from '../types'
 export interface ChatBubbleProps {
   message: ConversationMessage
   conversation?: Conversation
+  /** Reasoning / thinking tokens for the streaming bubble. Stored messages
+   *  carry reasoning on the message object itself. */
+  reasoning?: string
 }
 
 const ChatBubble = ({
   message,
-  conversation
+  conversation,
+  reasoning
 }: ChatBubbleProps): React.ReactElement => {
   const { plugin } = useApp()
 
@@ -55,6 +59,15 @@ const ChatBubble = ({
     messageContent = JSON.stringify(message)
   }
 
+  // Reasoning may come from the prop (streaming) or from the stored message object
+  const reasoningContent =
+    reasoning ??
+    (message.message as OpenAI.Chat.ChatCompletion & { reasoning?: string })
+      .reasoning
+
+  // The streaming bubble keeps the thinking block open; stored messages collapse it
+  const isStreaming = message.id === 'currentMessageStream'
+
   return (
     <div
       className={`ai-research-assistant__conversation__item ai-research-assistant__conversation__item${
@@ -65,6 +78,22 @@ const ChatBubble = ({
           <div className="ai-research-assistant__conversation__item__action">
             <MemoryManager message={message} conversation={conversation} />
           </div>
+        ) : (
+          <></>
+        )}
+        {isBotMessage && reasoningContent != null && reasoningContent !== '' ? (
+          <details
+            className="ai-research-assistant__conversation__item__thinking"
+            open={isStreaming}>
+            <summary className="ai-research-assistant__conversation__item__thinking__summary">
+              Thinking
+            </summary>
+            <div className="ai-research-assistant__conversation__item__thinking__content">
+              <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                {reasoningContent.trim()}
+              </ReactMarkdown>
+            </div>
+          </details>
         ) : (
           <></>
         )}

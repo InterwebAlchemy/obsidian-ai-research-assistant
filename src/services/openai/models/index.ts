@@ -4,7 +4,9 @@ import GPT35Turbo16K from './gpt-3.5-turbo-16k'
 import GPT4 from './gpt-4'
 import GPT432K from './gpt-4-32k'
 
-const models = {
+import type { ModelDefinition } from '../types'
+
+const models: Record<string, ModelDefinition> = {
   'gpt-4': GPT4,
   'gpt-3.5-turbo': GPT35Turbo,
   'gpt-3.5-turbo-instruct': GPT35TurboInstruct,

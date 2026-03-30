@@ -7,7 +7,6 @@ import { useApp } from '../hooks/useApp'
 import type { Conversation } from '../services/conversation'
 import { OPEN_AI_DEFAULT_TEMPERATURE } from '../services/openai/constants'
 import models from '../services/openai/models'
-import type { OpenAIModel } from 'src/services/openai/types'
 
 export interface ConversationSettingsProps {
   conversation: Conversation | null
@@ -34,7 +33,7 @@ const ConversationSettings = ({
     const modelName = e.target.value
 
     if (typeof conversation !== 'undefined' && conversation !== null) {
-      conversation.updateModel(models[modelName as OpenAIModel])
+      conversation.updateModel(models[modelName])
     }
   }
 

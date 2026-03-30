@@ -22,5 +22,9 @@ styles.css
 # obsidian
 data.json
 
+# robots
+CLAUDE.local.md
+.mcp.json
+
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store

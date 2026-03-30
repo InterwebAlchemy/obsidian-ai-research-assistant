@@ -1,0 +1,11 @@
+{
+	"id": "ai-research-assistant",
+	"name": "AI Research Assistant",
+	"version": "1.7.0",
+	"minAppVersion": "1.1.9",
+	"description": "A Prompt Engineering research utility for generative AI models like OpenAI's ChatGPT that facilitates archiving and searching conversations and live editing a conversation's context/memory.",
+	"author": "Interweb Alchemy",
+	"authorUrl": "https://github.com/InterwebAlchemy",
+	"fundingUrl": "https://ko-fi.com/ericrallen",
+	"isDesktopOnly": true
+}
