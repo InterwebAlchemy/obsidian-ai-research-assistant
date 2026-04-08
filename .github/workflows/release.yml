@@ -30,21 +30,27 @@ jobs:
         run: npm run build
       - name: Determine beta version
         run: |
-          # Base version from package.json (strip any pre-release suffix)
-          BASE_VERSION=$(node -p "require('./package.json').version" | sed 's/-.*//')
-          # Count existing beta tags for this base version to get the next number
-          # Match both v-prefixed and bare tags to handle mixed tag histories
-          BETA_COUNT=$(git tag | grep -E "^v?${BASE_VERSION}-beta\." | wc -l | tr -d ' ')
+          # Latest beta tag (with or without v prefix); strip v and -beta.N suffix for base
+          LAST_BETA=$(git tag | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$' | sed 's/^v//' | sort -V | tail -1)
+          if [ -n "$LAST_BETA" ]; then
+            BASE_VERSION=$(echo "$LAST_BETA" | sed 's/-beta\..*//')
+            BETA_COUNT=$(git tag | grep -E "^v?${BASE_VERSION}-beta\." | wc -l | tr -d ' ')
+          else
+            BASE_VERSION=$(node -p "require('./package.json').version" | sed 's/-.*//')
+            BETA_COUNT=0
+          fi
           NEXT_BETA=$((BETA_COUNT + 1))
           BETA_VERSION="${BASE_VERSION}-beta.${NEXT_BETA}"
           echo "BETA_VERSION=${BETA_VERSION}" >> $GITHUB_ENV
-      - name: Bump version
-        run: npm version $BETA_VERSION --no-git-tag-version
+      - name: Update manifest-beta.json
+        run: |
+          npm_package_version=$BETA_VERSION node scripts/version-bump.mjs
+          bash scripts/zip-it.sh
       - name: Tag and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add manifest-beta.json package.json package-lock.json
+          git add manifest-beta.json
           git commit -m "chore(release): updating to $BETA_VERSION [skip ci]"
           git tag v$BETA_VERSION
           git push origin main
