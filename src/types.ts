@@ -6,8 +6,9 @@ import type {
   OpenAICompletion
 } from './services/openai/types'
 
-// TODO: update this union type with other valid adapters as they are added
-export type ChatAdapterName = 'openai'
+// Provider id of the active adapter (e.g. 'openai', 'anthropic', 'openrouter',
+// 'mistral', 'local', or any user-added custom provider id).
+export type ChatAdapterName = string
 
 export type ChatAdapterEngine = 'chat' | 'code' | 'prompt' | 'completion'
 

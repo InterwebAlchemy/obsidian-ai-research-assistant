@@ -67,14 +67,23 @@ export default class ObsidianAIResearchAssistant extends Plugin {
       providerCfg?.defaultModel ??
       this.settings.defaultModel ??
       OPEN_AI_DEFAULT_MODEL_NAME
-    const model = OpenAIModels[modelName] ?? {
-      // Synthetic ModelDefinition for providers not in the OpenAI models catalog
-      name: modelName,
-      model: modelName,
-      tokenType: 'gpt4' as const,
-      maxTokens: this.settings.maxTokens ?? 4096,
-      adapter: { name: 'openai' as const, engine: 'chat' as const }
-    }
+    // Only use the OpenAI model catalog when the active provider is OpenAI.
+    // For every other provider, build a synthetic ModelDefinition that names
+    // the actual provider — otherwise saved conversation frontmatter ends up
+    // claiming `adapter: openai` regardless of which provider answered.
+    const model =
+      activeProviderId === 'openai' && OpenAIModels[modelName] !== undefined
+        ? OpenAIModels[modelName]
+        : {
+            name: modelName,
+            model: modelName,
+            tokenType: 'gpt4' as const,
+            maxTokens: this.settings.maxTokens ?? 4096,
+            adapter: {
+              name: activeProviderId,
+              engine: 'chat' as const
+            }
+          }
 
     if (this.chat !== undefined) {
       // Update in place — preserves currentConversationId and conversation history
