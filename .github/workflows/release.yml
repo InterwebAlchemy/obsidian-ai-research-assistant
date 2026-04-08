@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -27,7 +28,40 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-      - name: Release
+      - name: Determine beta version
+        run: |
+          # Base version from the latest stable tag; fall back to package.json
+          LAST_STABLE=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+          if [ -z "$LAST_STABLE" ]; then
+            BASE_VERSION=$(node -p "require('./package.json').version" | sed 's/-.*$//')
+          else
+            BASE_VERSION=${LAST_STABLE#v}
+          fi
+          # Count existing beta tags for this base version to get the next number
+          BETA_COUNT=$(git tag --list "v${BASE_VERSION}-beta.*" | wc -l | tr -d ' ')
+          NEXT_BETA=$((BETA_COUNT + 1))
+          BETA_VERSION="${BASE_VERSION}-beta.${NEXT_BETA}"
+          echo "BETA_VERSION=${BETA_VERSION}" >> $GITHUB_ENV
+      - name: Bump version
+        run: npm version $BETA_VERSION --no-git-tag-version
+      - name: Tag and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest-beta.json package.json package-lock.json
+          git commit -m "chore(release): updating to $BETA_VERSION [skip ci]"
+          git tag v$BETA_VERSION
+          git push origin main --follow-tags
+      - name: Create GitHub pre-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --extends ./.releaserc.beta.js
+        run: |
+          gh release create v$BETA_VERSION \
+            --prerelease \
+            --title "v$BETA_VERSION" \
+            --generate-notes \
+            "release/obsidian-ai-research-assistant.zip#Obsidian AI Research Assistant Plugin" \
+            dist/main.js \
+            dist/manifest.json \
+            manifest-beta.json \
+            dist/styles.css
