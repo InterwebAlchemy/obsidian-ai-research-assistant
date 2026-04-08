@@ -145,9 +145,8 @@ const InputArea = ({
           {isApproximateTokenCount ? (
             <span
               className="ai-research-assistant__input-area__toolbar__counter__hint"
-              aria-label={`Approximate token count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using GPT tokenizer as a best guess.`}
-              title={`Approximate token count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using GPT tokenizer as a best guess.`}>
-              {' '}
+              data-tooltip={`Approximate count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using the GPT tokenizer as a best guess.`}
+              aria-label={`Approximate count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using the GPT tokenizer as a best guess.`}>
               ⓘ
             </span>
           ) : null}
