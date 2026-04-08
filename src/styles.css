@@ -420,6 +420,7 @@
 }
 
 .ai-research-assistant__input-area__toolbar--top {
+  width: auto;
   bottom: 100%;
 }
 
@@ -441,7 +442,7 @@
   align-items: center;
   gap: 4px;
   position: relative;
-  z-index: 2;
+  z-index: var(--layer-popover);
   cursor: help;
 }
 

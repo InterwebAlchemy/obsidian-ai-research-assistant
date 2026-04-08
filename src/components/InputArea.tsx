@@ -142,7 +142,6 @@ const InputArea = ({
         }}>
         <div
           className="ai-research-assistant__input-area__toolbar__counter"
-          title={isApproximateTokenCount ? approximateTokenTooltip : undefined}
           aria-label={
             isApproximateTokenCount ? approximateTokenTooltip : undefined
           }>
