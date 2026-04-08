@@ -1,7 +1,7 @@
 {
 	"id": "ai-research-assistant",
 	"name": "AI Research Assistant",
-	"version": "2.0.0-beta.14",
+	"version": "2.0.0-beta.15",
 	"minAppVersion": "1.11.4",
 	"description": "A Prompt Engineering research utility for generative AI models like OpenAI's ChatGPT that facilitates archiving and searching conversations and live editing a conversation's context/memory.",
 	"author": "Interweb Alchemy",
