@@ -105,22 +105,24 @@ const ConversationSettings = ({
   }, [conversation])
 
   useEffect(() => {
-    if (
-      typeof conversation !== 'undefined' &&
-      conversation !== null &&
-      userHandle !== conversation?.settings.userHandle
-    ) {
+    if (userHandle === '') return
+    if (conversation !== null && conversation !== undefined) {
       conversation.settings.userHandle = userHandle
+    }
+    if (plugin.settings.userHandle !== userHandle) {
+      plugin.settings.userHandle = userHandle
+      void plugin.saveSettings()
     }
   }, [userHandle])
 
   useEffect(() => {
-    if (
-      typeof conversation !== 'undefined' &&
-      conversation !== null &&
-      botHandle !== conversation?.settings.botHandle
-    ) {
+    if (botHandle === '') return
+    if (conversation !== null && conversation !== undefined) {
       conversation.settings.botHandle = botHandle
+    }
+    if (plugin.settings.botHandle !== botHandle) {
+      plugin.settings.botHandle = botHandle
+      void plugin.saveSettings()
     }
   }, [botHandle])
 
