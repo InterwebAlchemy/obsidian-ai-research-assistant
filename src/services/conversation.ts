@@ -382,12 +382,14 @@ export class ConversationManager {
   startConversation({
     preamble,
     title,
-    settings
+    settings,
+    model
   }: Partial<Conversation>): Conversation {
     const conversation = new Conversation({
       preamble,
       title,
-      settings
+      settings,
+      model
     })
 
     this.conversations[conversation.id] = conversation

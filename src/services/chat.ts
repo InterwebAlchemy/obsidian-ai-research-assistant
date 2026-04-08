@@ -141,6 +141,12 @@ class Chat {
 
   updateModel(model: ModelDefinition): void {
     this.model = model
+    if (this.currentConversationId !== null) {
+      this.conversations.updateConversationModel(
+        this.currentConversationId,
+        model
+      )
+    }
   }
 
   updateAdapter(adapter: ProviderAdapter): void {
