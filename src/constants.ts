@@ -167,7 +167,7 @@ export const PLUGIN_SETTINGS: PluginSettings = {
     local: {
       id: 'local',
       name: 'Local (LM Studio / Ollama / etc.)',
-      baseUrl: 'http://localhost:11434',
+      baseUrl: 'http://localhost:1234',
       defaultModel: '',
       enabledModels: [],
       customModels: []

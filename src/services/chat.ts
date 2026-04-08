@@ -119,7 +119,8 @@ class Chat {
     const conversation = this.conversations.startConversation({
       preamble,
       title,
-      settings
+      settings,
+      model: this.model
     })
     this.currentConversationId = conversation.id
   }

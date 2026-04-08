@@ -109,7 +109,7 @@ export default class SettingsTab extends PluginSettingTab {
       cls: 'ai-research-assistant-section-inner'
     })
     customInner.createEl('p', {
-      text: 'Add any OpenAI-compatible endpoint — Ollama, vLLM, custom deployments, etc.',
+      text: 'Add any OpenAI-compatible endpoint — LM Studio, Ollama, vLLM, custom deployments, etc.',
       cls: 'setting-item-description'
     })
 
@@ -331,7 +331,7 @@ export default class SettingsTab extends PluginSettingTab {
         .setDesc('OpenAI-compatible API base URL.')
         .addText((text) =>
           text
-            .setPlaceholder('http://localhost:11434')
+            .setPlaceholder('http://localhost:1234')
             .setValue(cfg.baseUrl ?? '')
             .onChange(async (value) => {
               cfg.baseUrl = value
@@ -370,7 +370,7 @@ export default class SettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Add custom provider')
       .setDesc(
-        'Name it after the service (e.g. Ollama). The name becomes its ID slug.'
+        'Name it after the service (e.g. LM Studio). The name becomes its ID slug.'
       )
       .addText((t) =>
         t.setPlaceholder('Name').onChange((v) => {
@@ -379,7 +379,7 @@ export default class SettingsTab extends PluginSettingTab {
       )
       .addText((t) =>
         t
-          .setPlaceholder('Base URL (e.g. http://localhost:11434)')
+          .setPlaceholder('Base URL (e.g. http://localhost:1234)')
           .onChange((v) => {
             newUrl = v.trim()
           })
@@ -397,7 +397,7 @@ export default class SettingsTab extends PluginSettingTab {
           const newProvider: ProviderSettings = {
             id,
             name: newName,
-            baseUrl: newUrl !== '' ? newUrl : 'http://localhost:11434',
+            baseUrl: newUrl !== '' ? newUrl : 'http://localhost:1234',
             defaultModel: '',
             enabledModels: [],
             customModels: []
