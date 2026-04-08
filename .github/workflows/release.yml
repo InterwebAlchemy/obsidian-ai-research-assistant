@@ -1,4 +1,4 @@
-name: Release
+name: Beta Release
 
 on:
   push:
@@ -6,12 +6,12 @@ on:
       - main
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: beta-release-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   release:
-    name: Release
+    name: Beta Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,4 +30,4 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: npx semantic-release --extends .releaserc.beta.js
