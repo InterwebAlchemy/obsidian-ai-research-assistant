@@ -17,19 +17,9 @@ import {
   OPEN_AI_GPT3_STOP_WORD
 } from './models/constants'
 
-import { PLUGIN_SETTINGS } from '../../constants'
-
 import type { OpenAICompletionRequest, OpenAICompletion } from './types'
 import type { Conversation } from '../conversation'
-import type { PluginSettings } from '../../types'
 import type Logger from '../logger'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Electron = require('electron')
-
-const {
-  remote: { safeStorage }
-} = Electron
 
 export const openAICompletion = async (
   {
@@ -42,16 +32,11 @@ export const openAICompletion = async (
     presencePenalty = 0
   }: OpenAICompletionRequest,
   { signal }: { signal?: AbortSignal },
-  settings: PluginSettings = PLUGIN_SETTINGS,
+  apiKey: string,
+  { userHandle, botHandle }: { userHandle: string; botHandle: string },
   logger: Logger
   // @ts-expect-error
 ): Promise<Stream<OpenAICompletion | OpenAI.Chat.ChatCompletionChunk>> => {
-  let { openAiApiKey: apiKey, userHandle, botHandle } = settings
-
-  if (safeStorage.isEncryptionAvailable() === true) {
-    apiKey = await safeStorage.decryptString(Buffer.from(apiKey))
-  }
-
   if (model.adapter.engine === 'chat') {
     try {
       const openai = new OpenAI({

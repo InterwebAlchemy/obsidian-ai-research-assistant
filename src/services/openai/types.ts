@@ -4,13 +4,10 @@ import type { ChatAdapter } from '../../types'
 
 import type { TokenCounterType } from '../../utils/tokenCounter'
 
-// TODO: add other models
-export type OpenAIModel =
-  | 'gpt-3.5-turbo'
-  | 'gpt-3.5-turbo-16k'
-  | 'gpt-3.5-turbo-instruct'
-  | 'gpt-4'
-  | 'gpt-4-32k'
+// Model ID string — widened to string to support all providers, not just the
+// original OpenAI set. The legacy union is preserved here as documentation.
+// Legacy OpenAI values: 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k' | 'gpt-3.5-turbo-instruct' | 'gpt-4' | 'gpt-4-32k'
+export type OpenAIModel = string
 
 // TODO: find out what other valid object values are
 // tODO: It think this was deprecated with the older completion models

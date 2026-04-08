@@ -10,14 +10,17 @@ import type { Conversation } from '../services/conversation'
 import getUnixTimestamp from 'src/utils/getUnixTimestamp'
 
 import { OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
+
 export interface ChatWindowProps {
   conversation: Conversation
   latestMessageContent: string | null
+  latestReasoningContent?: string | null
 }
 
 const ChatWindow = ({
   conversation,
-  latestMessageContent
+  latestMessageContent,
+  latestReasoningContent
 }: ChatWindowProps): React.ReactElement => {
   const { plugin } = useApp()
 
@@ -28,7 +31,6 @@ const ChatWindow = ({
     indicator: <BallTriangle width="30" />
   })
 
-  // TODO: include toggleScrolling state change
   const [scrollRef] = useChatScroll(conversation.messages?.length)
 
   const renderConversation = (): React.ReactElement[] => {
@@ -75,15 +77,18 @@ const ChatWindow = ({
                 {
                   message: {
                     role: 'assistant',
-                    content: latestMessageContent
+                    content: latestMessageContent,
+                    refusal: null
                   },
                   finish_reason: 'stop',
-                  index: 0
+                  index: 0,
+                  logprobs: null
                 }
               ]
             }
           }}
           conversation={conversation}
+          reasoning={latestReasoningContent ?? undefined}
         />
       )}
     </div>

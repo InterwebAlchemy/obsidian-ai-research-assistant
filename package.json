@@ -1,6 +1,6 @@
 {
   "name": "@interwebalchemy/obsidian-ai-research-assistant",
-  "version": "1.7.0",
+  "version": "2.0.0-beta.1",
   "description": "Prompt Engineering research tool integrated into Obsidian.md",
   "license": "MIT",
   "main": "dist/main.js",
@@ -8,11 +8,16 @@
     "obsidian plugin",
     "obsidian-plugin",
     "prompt engineering",
-    "gpt-3",
     "ai",
     "research tool",
     "openai",
-    "open ai"
+    "open ai",
+    "anthropic",
+    "claude",
+    "gpt",
+    "chatgpt",
+    "llm",
+    "generative ai"
   ],
   "author": {
     "name": "Interweb Alchemy",

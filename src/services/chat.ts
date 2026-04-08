@@ -1,31 +1,74 @@
-// combine the conversation service and openai service into an integrated chat service
-// make sure to udpate the conversation context when user sends a message
-import type { OpenAI } from 'openai'
-import type { Stream } from 'openai/streaming'
 import Conversations, { type Conversation } from './conversation'
-import { openAICompletion } from './openai'
+import type { ProviderAdapter, StreamChunk, ChatMessage } from './providers'
 
-import { USER_MESSAGE_OBJECT_TYPE } from '../constants'
-
-import { OPEN_AI_DEFAULT_MODEL } from './openai/constants'
+import {
+  USER_MESSAGE_OBJECT_TYPE,
+  SYSTEM_MESSAGE_OBJECT_TYPE
+} from '../constants'
+import {
+  OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE,
+  OPEN_AI_DEFAULT_MODEL
+} from './openai/constants'
 
 import type { ModelDefinition } from './openai/types'
-
+import type { UserPrompt, SystemMessage } from '../types'
 import type Logger from './logger'
 
+import type { OpenAI } from 'openai'
+
 export interface ChatInterface {
-  apiKey: string
+  adapter: ProviderAdapter
   model?: ModelDefinition
   logger: Logger
 }
 
+// ─── Message formatting ───────────────────────────────────────────────────────
+
+/**
+ * Convert the plugin's Conversation format into the provider-agnostic
+ * ChatMessage[] format used by all adapter implementations.
+ */
+function formatMessages(conversation: Conversation): ChatMessage[] {
+  const messages = conversation.getConversationMessages()
+
+  return messages.map((msg) => {
+    switch (msg.message.object) {
+      case USER_MESSAGE_OBJECT_TYPE:
+        return { role: 'user', content: (msg.message as UserPrompt).prompt }
+
+      case OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE:
+        return {
+          role: 'assistant',
+          content:
+            ((msg.message as OpenAI.Chat.ChatCompletion).choices?.[0]?.message
+              ?.content as string) ?? ''
+        }
+
+      case SYSTEM_MESSAGE_OBJECT_TYPE:
+      default:
+        return {
+          role: 'system',
+          content: (msg.message as SystemMessage).output ?? ''
+        }
+    }
+  })
+}
+
+// ─── Chat service ─────────────────────────────────────────────────────────────
+
 class Chat {
+  adapter: ProviderAdapter
   model: ModelDefinition
   currentConversationId: string | null = null
   conversations: typeof Conversations
   logger: Logger
 
-  constructor({ model = OPEN_AI_DEFAULT_MODEL, logger }: ChatInterface) {
+  constructor({
+    adapter,
+    model = OPEN_AI_DEFAULT_MODEL,
+    logger
+  }: ChatInterface) {
+    this.adapter = adapter
     this.currentConversationId = null
     this.model = model
     this.conversations = Conversations
@@ -36,66 +79,49 @@ class Chat {
     if (this.currentConversationId === null) {
       return null
     }
-
     return this.conversations.getConversation(this.currentConversationId)
   }
 
   async send(
     prompt: string,
     { signal }: Partial<{ signal?: AbortSignal }>
-  ): Promise<Stream<OpenAI.Chat.ChatCompletionChunk> | unknown> {
+  ): Promise<AsyncIterable<StreamChunk> | undefined> {
     const conversation = this.currentConversation()
 
-    if (
-      typeof prompt !== 'undefined' &&
-      prompt !== '' &&
-      conversation !== null
-    ) {
-      const message = conversation.addMessage({
-        prompt,
-        object: USER_MESSAGE_OBJECT_TYPE,
-        model: this.model
-      })
+    if (prompt === '' || conversation === null) return undefined
 
-      switch (this.model.adapter.name) {
-        case 'openai':
-          try {
-            const responseStream = await openAICompletion(
-              {
-                input:
-                  this.model.adapter.engine === 'chat'
-                    ? conversation
-                    : conversation.getFullMessageText(message),
-                model: conversation.model ?? this.model,
-                temperature: conversation.settings.temperature,
-                maxTokens: conversation.settings.maxTokens,
-                topP: conversation.settings.topP,
-                presencePenalty: conversation.settings.presencePenalty,
-                frequencyPenalty: conversation.settings.frequencyPenalty
-              },
-              { signal },
-              this.currentConversation()?.settings,
-              this.logger
-            )
+    conversation.addMessage({
+      prompt,
+      object: USER_MESSAGE_OBJECT_TYPE,
+      model: this.model
+    })
 
-            return responseStream
-          } catch (error) {
-            console.error(error)
-            conversation.addMessage(error.message)
-          }
+    const messages = formatMessages(conversation)
+    const { settings } = conversation
 
-          break
-      }
-    }
+    return this.adapter.stream(
+      messages,
+      {
+        model: conversation.model?.model ?? this.model.model,
+        temperature: settings.temperature,
+        maxTokens: settings.maxTokens,
+        topP: (settings as { topP?: number }).topP,
+        frequencyPenalty: (settings as { frequencyPenalty?: number })
+          .frequencyPenalty,
+        presencePenalty: (settings as { presencePenalty?: number })
+          .presencePenalty
+      },
+      signal
+    )
   }
 
   start({ preamble, title, settings }: Partial<Conversation>): void {
     const conversation = this.conversations.startConversation({
       preamble,
       title,
-      settings
+      settings,
+      model: this.model
     })
-
     this.currentConversationId = conversation.id
   }
 
@@ -115,6 +141,10 @@ class Chat {
 
   updateModel(model: ModelDefinition): void {
     this.model = model
+  }
+
+  updateAdapter(adapter: ProviderAdapter): void {
+    this.adapter = adapter
   }
 }
 

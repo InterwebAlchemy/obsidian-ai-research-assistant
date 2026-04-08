@@ -6,8 +6,8 @@ import { useApp } from '../hooks/useApp'
 
 import type { Conversation } from '../services/conversation'
 import { OPEN_AI_DEFAULT_TEMPERATURE } from '../services/openai/constants'
-import models from '../services/openai/models'
-import type { OpenAIModel } from 'src/services/openai/types'
+import { KNOWN_MODELS } from '../constants'
+import type { ModelDefinition } from '../services/openai/types'
 
 export interface ConversationSettingsProps {
   conversation: Conversation | null
@@ -26,15 +26,33 @@ const ConversationSettings = ({
     `${OPEN_AI_DEFAULT_TEMPERATURE}`
   )
 
+  const activeProvider = settings.providers?.[settings.activeProviderId]
+  const knownModels = KNOWN_MODELS[settings.activeProviderId] ?? []
+  const allModelIds = [
+    ...(activeProvider?.enabledModels ?? []),
+    ...(activeProvider?.customModels ?? [])
+  ]
+
+  const getModelName = (id: string): string =>
+    knownModels.find((m) => m.id === id)?.name ?? id
+
+  const makeModelDef = (modelId: string): ModelDefinition => ({
+    name: getModelName(modelId),
+    model: modelId,
+    tokenType: 'gpt4' as const,
+    maxTokens: settings.maxTokens ?? 4096,
+    adapter: { name: 'openai' as const, engine: 'chat' as const }
+  })
+
   const changeTemperature = (temperatureString: string): void => {
     setTemperature(temperatureString)
   }
 
   const changeModel = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    const modelName = e.target.value
+    const modelId = e.target.value
 
     if (typeof conversation !== 'undefined' && conversation !== null) {
-      conversation.updateModel(models[modelName as OpenAIModel])
+      conversation.updateModel(makeModelDef(modelId))
     }
   }
 
@@ -81,7 +99,6 @@ const ConversationSettings = ({
     ) {
       const temp = Number(temperature)
 
-      // make sure temperature is valid value
       if (temp >= 0 && temp <= 1) {
         conversation.settings.temperature = temp
       } else {
@@ -90,32 +107,28 @@ const ConversationSettings = ({
     }
   }, [temperature])
 
-  const renderModels = (
-    selectedModel = settings.defaultModel
-  ): React.ReactElement[] => {
-    return Object.entries(models).map(([key, modelDefinition]) => (
-      <option key={key} value={modelDefinition.model}>
-        {modelDefinition.name}
+  const defaultModelId =
+    conversation?.model.model ??
+    activeProvider?.defaultModel ??
+    settings.defaultModel
+
+  const renderModels = (): React.ReactElement[] =>
+    allModelIds.map((id) => (
+      <option key={id} value={id}>
+        {getModelName(id)}
       </option>
     ))
-  }
 
-  const renderModelDropdown = (
-    defaultModel = settings.defaultModel
-  ): React.ReactElement => {
-    console.log(defaultModel, settings.defaultModel)
-
-    return (
-      <select
-        name="model"
-        id="model"
-        className="dropdown"
-        onChange={changeModel}
-        defaultValue={defaultModel}>
-        {renderModels(defaultModel)}
-      </select>
-    )
-  }
+  const renderModelDropdown = (): React.ReactElement => (
+    <select
+      name="model"
+      id="model"
+      className="dropdown"
+      onChange={changeModel}
+      defaultValue={defaultModelId}>
+      {renderModels()}
+    </select>
+  )
 
   return (
     <div className="ai-research-assistant__chat__conversation-settings__container">
@@ -127,9 +140,7 @@ const ConversationSettings = ({
               htmlFor="model">
               Model
             </label>
-            {renderModelDropdown(
-              conversation?.model.model ?? settings.defaultModel
-            )}
+            {renderModelDropdown()}
           </div>
           <InputArea
             type="text"

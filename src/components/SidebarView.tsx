@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import type { OpenAI } from 'openai'
-import type { Stream } from 'openai/streaming'
 
 import ChatTitle from './ChatTitle'
 import ChatWindow from './ChatWindow'
@@ -9,11 +7,12 @@ import ChatInput from './ChatInput'
 import { useApp } from '../hooks/useApp'
 
 import type { Conversation } from '../services/conversation'
+import type { StreamChunk } from '../services/providers'
 
-import {
-  OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE,
-  OPEN_AI_COMPLETION_OBJECT_TYPE
-} from '../services/openai/constants'
+import { OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE } from '../services/openai/constants'
+
+import getUnixTimestamp from 'src/utils/getUnixTimestamp'
+import { v4 as uuidv4 } from 'uuid'
 
 export interface ChatFormProps {
   onChatUpdate?: () => Promise<void>
@@ -35,67 +34,66 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   const [latestMessageContent, setLatestMessageContent] = useState<
     string | null
   >(null)
+  const [latestReasoningContent, setLatestReasoningContent] = useState<
+    string | null
+  >(null)
 
   const handleSubmit = (event: React.FormEvent): void => {
     event.preventDefault()
 
     setLoading(true)
-
     setPrompt('')
 
     chat
-      ?.send(prompt, {
-        signal: cancelPromptController.signal
-      })
-      .then(async (responseStream: Stream<OpenAI.Chat.ChatCompletionChunk>) => {
+      ?.send(prompt, { signal: cancelPromptController.signal })
+      .then(async (responseStream: AsyncIterable<StreamChunk> | undefined) => {
+        if (typeof responseStream === 'undefined') return
+
         let accumulatedMessage = ''
+        let accumulatedReasoning = ''
 
         try {
           for await (const chunk of responseStream) {
-            const { created, id, model, choices } = chunk
-
-            const delta = choices?.[0]?.delta
-
-            const content = delta?.content
-
-            // Update the UI with the new content
-            if (typeof content !== 'undefined') {
-              accumulatedMessage += `${content as string}`
-
-              setLatestMessageContent(
-                (oldContent) =>
-                  `${
-                    oldContent !== null
-                      ? `${oldContent}${content as string}`
-                      : (content as string)
-                  }`
+            if (chunk.reasoning !== undefined && chunk.reasoning !== '') {
+              accumulatedReasoning += chunk.reasoning
+              setLatestReasoningContent((prev) =>
+                prev !== null
+                  ? `${prev}${chunk.reasoning ?? ''}`
+                  : chunk.reasoning ?? ''
               )
             }
 
-            if (choices?.[0]?.finish_reason === 'stop') {
-              const message = {
-                id,
-                model,
-                created,
-                object:
-                  conversation?.model?.adapter?.engine === 'chat'
-                    ? OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
-                    : OPEN_AI_COMPLETION_OBJECT_TYPE,
+            if (chunk.content !== '') {
+              accumulatedMessage += chunk.content
+              setLatestMessageContent((prev) =>
+                prev !== null ? `${prev}${chunk.content}` : chunk.content
+              )
+            }
+
+            if (chunk.done) {
+              const stored: Record<string, unknown> = {
+                id: uuidv4(),
+                model: chat.model?.model ?? '',
+                created: getUnixTimestamp(),
+                object: OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE,
                 choices: [
                   {
-                    message: {
-                      role: 'assistant',
-                      content: accumulatedMessage
-                    }
+                    message: { role: 'assistant', content: accumulatedMessage },
+                    finish_reason: 'stop',
+                    index: 0
                   }
                 ]
               }
 
-              if (conversation !== null) {
-                const newMessage = conversation.addMessage(message)
+              if (accumulatedReasoning !== '') {
+                stored.reasoning = accumulatedReasoning
+              }
 
+              if (conversation !== null) {
+                const newMessage = conversation.addMessage(stored)
                 if (typeof newMessage !== 'undefined') {
-                  setLatestMessageContent((oldContent) => null)
+                  setLatestMessageContent(null)
+                  setLatestReasoningContent(null)
                 }
               }
             }
@@ -119,12 +117,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   }
 
   const cancelPromptSubmit = (event: React.FormEvent): void => {
-    logger.debug(
-      `Cancelling streaming response from ${
-        conversation?.model?.adapter?.name as string
-      }...`
-    )
-
+    logger.debug(`Cancelling streaming response...`)
     cancelPromptController.abort()
   }
 
@@ -141,9 +134,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
   useEffect(() => {
     if (typeof chat !== 'undefined' && chat?.currentConversation() !== null) {
       setPrompt('')
-
       setPreamble(conversation?.preamble ?? '')
-
       setConversationId(chat.currentConversationId)
     }
   }, [chat?.currentConversationId])
@@ -178,6 +169,7 @@ const SidebarView = ({ onChatUpdate }: ChatFormProps): React.ReactElement => {
         <ChatWindow
           conversation={conversation}
           latestMessageContent={latestMessageContent}
+          latestReasoningContent={latestReasoningContent}
         />
       ) : (
         <></>

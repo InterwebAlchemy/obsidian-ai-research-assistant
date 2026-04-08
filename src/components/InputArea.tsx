@@ -58,7 +58,7 @@ const InputArea = ({
   label,
   a11yLabel,
   maxCount,
-  onChange,
+  onChange
 }: InputAreaProps): React.ReactElement => {
   const { plugin } = useApp()
 
@@ -76,7 +76,9 @@ const InputArea = ({
   }
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement> | React.ChangeEvent<HTMLInputElement>
+    e:
+      | React.ChangeEvent<HTMLTextAreaElement>
+      | React.ChangeEvent<HTMLInputElement>
   ): void => {
     setText(e.target.value)
 
@@ -87,7 +89,7 @@ const InputArea = ({
 
   const updateCount = (input: string): void => {
     if (typeof countType !== 'undefined') {
-      setCount(countInput(input, countType, chat.model.tokenType))
+      setCount(countInput(input, countType, chat?.model.tokenType))
     }
   }
 
@@ -133,17 +135,15 @@ const InputArea = ({
         }`}
         style={{
           flexDirection: countAlign === 'left' ? 'row' : 'row-reverse',
-          textAlign: countAlign,
-        }}
-      >
+          textAlign: countAlign
+        }}>
         <div className="ai-research-assistant__input-area__toolbar__counter">
           {count} {count === 1 ? countType.slice(0, -1) : countType}
         </div>
         {warning ? (
           <div
             className="ai-research-assistant__input-area__counter__warning"
-            style={{ display: warning ? 'block' : 'none' }}
-          >
+            style={{ display: warning ? 'block' : 'none' }}>
             too many {countType}
           </div>
         ) : (
@@ -161,10 +161,11 @@ const InputArea = ({
           typeof label !== 'undefined'
             ? ` ai-research-assistant__input-area__input--label-${labelPosition}`
             : ''
-        }`}
-      >
+        }`}>
         {typeof label !== 'undefined' ? (
-          <label className="ai-research-assistant__input-area__input__label" htmlFor={id}>
+          <label
+            className="ai-research-assistant__input-area__input__label"
+            htmlFor={id}>
             {label}
           </label>
         ) : (

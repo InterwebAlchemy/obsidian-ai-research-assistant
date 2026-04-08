@@ -39,7 +39,8 @@ export default class ChatView extends ItemView {
     this.plugin = plugin
     this.settings = plugin.settings
     this.saveConversation = plugin.saveConversation.bind(plugin)
-    this.chat = plugin.chat
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.chat = plugin.chat!
     this.autosaveInterval = null
     this.lastSavedMessageId = null
   }

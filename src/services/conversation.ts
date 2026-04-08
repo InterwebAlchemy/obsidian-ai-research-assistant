@@ -18,9 +18,7 @@ import {
 import {
   OPEN_AI_DEFAULT_MODEL,
   OPEN_AI_COMPLETION_OBJECT_TYPE,
-  OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE,
-  OPEN_AI_DEFAULT_TEMPERATURE,
-  OPEN_AI_RESPONSE_TOKENS
+  OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE
 } from './openai/constants'
 import type { ModelDefinition, OpenAICompletion } from './openai/types'
 import type {
@@ -32,8 +30,6 @@ import type {
 } from '../types'
 
 export interface ConversationSettings extends PluginSettings {
-  temperature?: number
-  maxTokens?: number
   topP?: number
   frequencyPenalty?: number
   presencePenalty?: number
@@ -69,8 +65,6 @@ export class Conversation {
     model
   }: Partial<ConversationInterface>) {
     const conversationSettings = {
-      maxTokens: OPEN_AI_RESPONSE_TOKENS,
-      temperature: OPEN_AI_DEFAULT_TEMPERATURE,
       topP: 1,
       frequencyPenalty: 0,
       presencePenalty: 0,
@@ -85,7 +79,11 @@ export class Conversation {
     this.timestamp = timestamp
     this.messages = messages
     this.model =
-      model ?? models[this.settings.defaultModel] ?? OPEN_AI_DEFAULT_MODEL
+      model ??
+      (this.settings.defaultModel != null && this.settings.defaultModel !== ''
+        ? models[this.settings.defaultModel]
+        : undefined) ??
+      OPEN_AI_DEFAULT_MODEL
   }
 
   getNumberofMemoriesForState(state: MemoryState): number {
