@@ -77,10 +77,12 @@ const ChatWindow = ({
                 {
                   message: {
                     role: 'assistant',
-                    content: latestMessageContent
+                    content: latestMessageContent,
+                    refusal: null
                   },
                   finish_reason: 'stop',
-                  index: 0
+                  index: 0,
+                  logprobs: null
                 }
               ]
             }

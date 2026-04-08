@@ -10,7 +10,7 @@ import type { UserPrompt, SystemMessage } from '../../../types'
 
 const formatChat = (
   conversation: Conversation
-): OpenAI.Chat.ChatCompletionMessage[] => {
+): OpenAI.Chat.ChatCompletionMessageParam[] => {
   const messages = conversation.getConversationMessages()
 
   return messages.map((message) => {
@@ -21,14 +21,14 @@ const formatChat = (
           content: (message.message as UserPrompt).prompt
         }
 
-      case OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE:
-        return (
-          (message.message as OpenAI.Chat.ChatCompletion)?.choices?.[0]
-            ?.message ?? {
-            role: 'assistant',
-            content: ''
-          }
-        )
+      case OPEN_AI_CHAT_COMPLETION_OBJECT_TYPE: {
+        const assistantMessage = (message.message as OpenAI.Chat.ChatCompletion)
+          ?.choices?.[0]?.message
+        return {
+          role: 'assistant',
+          content: assistantMessage?.content ?? ''
+        }
+      }
 
       case SYSTEM_MESSAGE_OBJECT_TYPE:
       default:
