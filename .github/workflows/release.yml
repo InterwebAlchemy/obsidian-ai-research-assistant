@@ -52,16 +52,16 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add manifest-beta.json
           git commit -m "chore(release): updating to $BETA_VERSION [skip ci]"
-          git tag v$BETA_VERSION
+          git tag $BETA_VERSION
           git push origin main
-          git push origin v$BETA_VERSION
+          git push origin $BETA_VERSION
       - name: Create GitHub pre-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create v$BETA_VERSION \
+          gh release create $BETA_VERSION \
             --prerelease \
-            --title "v$BETA_VERSION" \
+            --title "$BETA_VERSION" \
             --generate-notes \
             "release/obsidian-ai-research-assistant.zip#Obsidian AI Research Assistant Plugin" \
             dist/main.js \
