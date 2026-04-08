@@ -19,8 +19,9 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  width: 100%;
+  width: auto;
   height: 40px;
+  z-index: var(--layer-cover);
 }
 
 .ai-research-assistant-toolbar > button:not(:last-child) {
@@ -340,12 +341,19 @@
 }
 
 .ai-research-assistant__chat-form .react-tabs__tab {
+  cursor: pointer;
   padding: 5px 5px 2px;
   border: none;
   color: var(--interactive-accent);
 }
 
+.ai-research-assistant__chat-form
+  .react-tabs__tab:not(.react-tabs__tab--selected):hover {
+  color: var(--interactive-accent-hover);
+}
+
 .ai-research-assistant__chat-form .react-tabs__tab--selected {
+  cursor: default;
   border: var(--border-width) solid var(--background-modifier-border);
   border-bottom: none;
   color: var(--text-muted);
