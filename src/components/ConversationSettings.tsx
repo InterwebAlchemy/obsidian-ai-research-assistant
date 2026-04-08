@@ -199,26 +199,34 @@ const ConversationSettings = ({
             </label>
             {renderModelDropdown()}
           </div>
-          <InputArea
-            type="text"
-            label="Temperature"
-            value={`${temperature}`}
-            onChange={changeTemperature}
-          />
         </div>
         <div className="ai-research-assistant__chat__conversation-settings__row">
-          <InputArea
-            type="text"
-            label="User Handle"
-            value={userHandle}
-            onChange={setUserHandle}
-          />
-          <InputArea
-            type="text"
-            label="Bot Handle"
-            value={botHandle}
-            onChange={setBotHandle}
-          />
+          <div className="ai-research-assistant__input-area">
+            <InputArea
+              type="text"
+              label="User Handle"
+              value={userHandle}
+              onChange={setUserHandle}
+            />
+          </div>
+          <div className="ai-research-assistant__input-area">
+            <InputArea
+              type="text"
+              label="Bot Handle"
+              value={botHandle}
+              onChange={setBotHandle}
+            />
+          </div>
+        </div>
+        <div className="ai-research-assistant__chat__conversation-settings__row">
+          <div className="ai-research-assistant__input-area">
+            <InputArea
+              type="text"
+              label="Temperature"
+              value={`${temperature}`}
+              onChange={changeTemperature}
+            />
+          </div>
         </div>
       </div>
     </div>
