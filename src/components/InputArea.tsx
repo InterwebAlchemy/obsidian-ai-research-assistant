@@ -1,6 +1,5 @@
 // create react functional component that wraps a textarea element and provides a throttled character count
-import React, { useState, useEffect, useRef } from 'react'
-import { setTooltip } from 'obsidian'
+import React, { useState, useEffect } from 'react'
 
 import { useThrottledCallback, useDebounce } from 'use-debounce'
 
@@ -67,13 +66,6 @@ const InputArea = ({
   const isApproximateTokenCount =
     countType === 'tokens' && plugin.settings.activeProviderId !== 'openai'
   const approximateTokenTooltip = `Approximate count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using the GPT tokenizer as a best guess.`
-  const hintRef = useRef<HTMLSpanElement | null>(null)
-
-  useEffect(() => {
-    if (isApproximateTokenCount && hintRef.current !== null) {
-      setTooltip(hintRef.current, approximateTokenTooltip)
-    }
-  }, [isApproximateTokenCount, approximateTokenTooltip])
 
   const [text, setText] = useState('')
   const [debouncedText] = useDebounce(text, delay)
@@ -148,15 +140,16 @@ const InputArea = ({
           flexDirection: countAlign === 'left' ? 'row' : 'row-reverse',
           textAlign: countAlign
         }}>
-        <div className="ai-research-assistant__input-area__toolbar__counter">
+        <div
+          className="ai-research-assistant__input-area__toolbar__counter"
+          title={isApproximateTokenCount ? approximateTokenTooltip : undefined}
+          aria-label={
+            isApproximateTokenCount ? approximateTokenTooltip : undefined
+          }>
           {isApproximateTokenCount ? '~' : ''}
           {count} {count === 1 ? countType.slice(0, -1) : countType}
           {isApproximateTokenCount ? (
-            <span
-              ref={hintRef}
-              className="ai-research-assistant__input-area__toolbar__counter__hint"
-              aria-label={approximateTokenTooltip}
-              role="img">
+            <span className="ai-research-assistant__input-area__toolbar__counter__hint">
               ⓘ
             </span>
           ) : null}

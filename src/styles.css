@@ -321,6 +321,8 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
+  position: relative;
+  z-index: 0;
 }
 
 .ai-research-assistant__chat-form .react-tabs__tab-list {
@@ -430,6 +432,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  position: relative;
+  z-index: 2;
+  cursor: help;
 }
 
 .ai-research-assistant__input-area__toolbar__counter__hint {
