@@ -31,6 +31,9 @@ const ChatWindow = ({
   const handleThinkingOpen = (): void => {
     setThinkingDefaultOpen(true)
   }
+  const handleThinkingClose = (): void => {
+    setThinkingDefaultOpen(false)
+  }
 
   const { containerProps, indicatorEl } = useLoading({
     loading: autoSaving,
@@ -49,6 +52,7 @@ const ChatWindow = ({
               conversation={conversation}
               thinkingDefaultOpen={thinkingDefaultOpen}
               onThinkingOpen={handleThinkingOpen}
+              onThinkingClose={handleThinkingClose}
             />
           )
         })
@@ -99,6 +103,7 @@ const ChatWindow = ({
           reasoning={latestReasoningContent ?? undefined}
           thinkingDefaultOpen={thinkingDefaultOpen}
           onThinkingOpen={handleThinkingOpen}
+          onThinkingClose={handleThinkingClose}
         />
       )}
     </div>

@@ -63,6 +63,8 @@ const InputArea = ({
   const { plugin } = useApp()
 
   const { chat } = plugin
+  const isApproximateTokenCount =
+    countType === 'tokens' && plugin.settings.activeProviderId !== 'openai'
 
   const [text, setText] = useState('')
   const [debouncedText] = useDebounce(text, delay)
@@ -138,7 +140,17 @@ const InputArea = ({
           textAlign: countAlign
         }}>
         <div className="ai-research-assistant__input-area__toolbar__counter">
+          {isApproximateTokenCount ? '~' : ''}
           {count} {count === 1 ? countType.slice(0, -1) : countType}
+          {isApproximateTokenCount ? (
+            <span
+              className="ai-research-assistant__input-area__toolbar__counter__hint"
+              aria-label={`Approximate token count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using GPT tokenizer as a best guess.`}
+              title={`Approximate token count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using GPT tokenizer as a best guess.`}>
+              {' '}
+              ⓘ
+            </span>
+          ) : null}
         </div>
         {warning ? (
           <div

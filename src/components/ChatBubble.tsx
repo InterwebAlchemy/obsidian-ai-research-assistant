@@ -9,8 +9,6 @@ import MemoryManager from './MemoryManager'
 
 import { useApp } from '../hooks/useApp'
 
-import relativeDate from 'src/utils/relativeDate'
-
 import { USER_MESSAGE_OBJECT_TYPE } from '../constants'
 import {
   OPEN_AI_COMPLETION_OBJECT_TYPE,
@@ -33,6 +31,9 @@ export interface ChatBubbleProps {
   /** Notifies the parent when the user opens a thinking block, so subsequent
    *  bubbles default to open. */
   onThinkingOpen?: () => void
+  /** Notifies the parent when the user closes a thinking block, so subsequent
+   *  bubbles in the same conversation stop auto-expanding. */
+  onThinkingClose?: () => void
 }
 
 const ChatBubble = ({
@@ -40,7 +41,8 @@ const ChatBubble = ({
   conversation,
   reasoning,
   thinkingDefaultOpen = false,
-  onThinkingOpen
+  onThinkingOpen,
+  onThinkingClose
 }: ChatBubbleProps): React.ReactElement => {
   const { plugin } = useApp()
 
@@ -89,6 +91,8 @@ const ChatBubble = ({
     setThinkingOpen(nextOpen)
     if (nextOpen && onThinkingOpen != null) {
       onThinkingOpen()
+    } else if (!nextOpen && onThinkingClose != null) {
+      onThinkingClose()
     }
   }
 
@@ -144,9 +148,6 @@ const ChatBubble = ({
         ) : (
           <></>
         )}
-        <div className="ai-research-assistant__conversation__item__timestamp">
-          {relativeDate(message.message.created)}
-        </div>
       </div>
     </div>
   )
