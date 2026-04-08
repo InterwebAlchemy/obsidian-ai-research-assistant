@@ -26,6 +26,9 @@ module.exports = {
             path: 'dist/manifest.json'
           },
           {
+            path: 'manifest-beta.json'
+          },
+          {
             path: 'dist/versions.json'
           },
           {
