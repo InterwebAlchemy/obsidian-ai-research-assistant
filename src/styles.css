@@ -197,17 +197,60 @@
   margin-left: 5px;
 }
 
+.ai-research-assistant__conversation__item__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 30%;
+  max-width: 80%;
+}
+
 .ai-research-assistant__conversation__item__text {
   display: flex;
   position: relative;
-  min-width: 30%;
-  max-width: 80%;
   padding: 0 10px;
   margin-bottom: 5px;
   border-radius: var(--radius-m);
   flex-direction: column;
   -webkit-user-select: text;
   user-select: text;
+}
+
+.ai-research-assistant__conversation__item__thinking {
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  border-left: 2px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller, 0.8em);
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.ai-research-assistant__conversation__item__thinking__summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-style: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.75em;
+}
+
+.ai-research-assistant__conversation__item__thinking[open]
+  .ai-research-assistant__conversation__item__thinking__summary {
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 4px;
+}
+
+.ai-research-assistant__conversation__item__thinking__content {
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.ai-research-assistant__conversation__item__thinking__content p {
+  margin: 0.25em 0;
 }
 
 .ai-research-assistant__conversation__item__footer {

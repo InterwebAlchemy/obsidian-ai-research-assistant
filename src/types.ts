@@ -53,6 +53,7 @@ export interface PluginSettings {
 
   userHandle: string
   botHandle: string
+  expandThinkingByDefault: boolean
 
   autosaveConversationHistory: boolean
   autosaveInterval: number

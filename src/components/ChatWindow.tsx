@@ -25,6 +25,12 @@ const ChatWindow = ({
   const { plugin } = useApp()
 
   const [autoSaving, setAutoSaving] = useState(false)
+  const [thinkingDefaultOpen, setThinkingDefaultOpen] = useState(
+    plugin.settings.expandThinkingByDefault
+  )
+  const handleThinkingOpen = (): void => {
+    setThinkingDefaultOpen(true)
+  }
 
   const { containerProps, indicatorEl } = useLoading({
     loading: autoSaving,
@@ -41,6 +47,8 @@ const ChatWindow = ({
               key={`message-${message.id}` ?? `message-${index}`}
               message={message}
               conversation={conversation}
+              thinkingDefaultOpen={thinkingDefaultOpen}
+              onThinkingOpen={handleThinkingOpen}
             />
           )
         })
@@ -89,6 +97,8 @@ const ChatWindow = ({
           }}
           conversation={conversation}
           reasoning={latestReasoningContent ?? undefined}
+          thinkingDefaultOpen={thinkingDefaultOpen}
+          onThinkingOpen={handleThinkingOpen}
         />
       )}
     </div>

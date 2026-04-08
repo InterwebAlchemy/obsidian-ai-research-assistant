@@ -222,6 +222,20 @@ export default class SettingsTab extends PluginSettingTab {
           })
       )
 
+    new Setting(containerEl)
+      .setName('Expand thinking tokens by default')
+      .setDesc(
+        'When enabled, reasoning / thinking blocks start expanded in every new conversation. You can still collapse individual blocks.'
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.expandThinkingByDefault)
+          .onChange(async (value) => {
+            this.plugin.settings.expandThinkingByDefault = value
+            await this.plugin.saveSettings()
+          })
+      )
+
     // ─── Conversations ────────────────────────────────────────────────────
 
     containerEl.createEl('h2', { text: 'Conversations' })

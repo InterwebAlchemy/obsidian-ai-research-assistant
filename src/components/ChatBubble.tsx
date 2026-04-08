@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
@@ -27,12 +27,20 @@ export interface ChatBubbleProps {
   /** Reasoning / thinking tokens for the streaming bubble. Stored messages
    *  carry reasoning on the message object itself. */
   reasoning?: string
+  /** Default open state for the thinking block — set true once the user has
+   *  opened any prior thinking block in this conversation. */
+  thinkingDefaultOpen?: boolean
+  /** Notifies the parent when the user opens a thinking block, so subsequent
+   *  bubbles default to open. */
+  onThinkingOpen?: () => void
 }
 
 const ChatBubble = ({
   message,
   conversation,
-  reasoning
+  reasoning,
+  thinkingDefaultOpen = false,
+  onThinkingOpen
 }: ChatBubbleProps): React.ReactElement => {
   const { plugin } = useApp()
 
@@ -65,8 +73,24 @@ const ChatBubble = ({
     (message.message as OpenAI.Chat.ChatCompletion & { reasoning?: string })
       .reasoning
 
-  // The streaming bubble keeps the thinking block open; stored messages collapse it
+  // The streaming bubble keeps the thinking block open by default. Stored
+  // messages default to `thinkingDefaultOpen` (true once the user has opened
+  // any prior thinking block). Once mounted, the user's toggle wins — we
+  // never force-collapse.
   const isStreaming = message.id === 'currentMessageStream'
+  const [thinkingOpen, setThinkingOpen] = useState<boolean>(
+    isStreaming || thinkingDefaultOpen
+  )
+
+  const handleThinkingToggle = (
+    event: React.SyntheticEvent<HTMLDetailsElement>
+  ): void => {
+    const nextOpen = event.currentTarget.open
+    setThinkingOpen(nextOpen)
+    if (nextOpen && onThinkingOpen != null) {
+      onThinkingOpen()
+    }
+  }
 
   return (
     <div
@@ -81,26 +105,31 @@ const ChatBubble = ({
         ) : (
           <></>
         )}
-        {isBotMessage && reasoningContent != null && reasoningContent !== '' ? (
-          <details
-            className="ai-research-assistant__conversation__item__thinking"
-            open={isStreaming}>
-            <summary className="ai-research-assistant__conversation__item__thinking__summary">
-              Thinking
-            </summary>
-            <div className="ai-research-assistant__conversation__item__thinking__content">
-              <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-                {reasoningContent.trim()}
-              </ReactMarkdown>
-            </div>
-          </details>
-        ) : (
-          <></>
-        )}
-        <div className="ai-research-assistant__conversation__item__text">
-          <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-            {messageContent.trim()}
-          </ReactMarkdown>
+        <div className="ai-research-assistant__conversation__item__body">
+          {isBotMessage &&
+          reasoningContent != null &&
+          reasoningContent !== '' ? (
+            <details
+              className="ai-research-assistant__conversation__item__thinking"
+              open={thinkingOpen}
+              onToggle={handleThinkingToggle}>
+              <summary className="ai-research-assistant__conversation__item__thinking__summary">
+                Thinking
+              </summary>
+              <div className="ai-research-assistant__conversation__item__thinking__content">
+                <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                  {reasoningContent.trim()}
+                </ReactMarkdown>
+              </div>
+            </details>
+          ) : (
+            <></>
+          )}
+          <div className="ai-research-assistant__conversation__item__text">
+            <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+              {messageContent.trim()}
+            </ReactMarkdown>
+          </div>
         </div>
       </div>
       <div className="ai-research-assistant__conversation__item__footer">
