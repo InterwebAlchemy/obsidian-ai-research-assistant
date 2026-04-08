@@ -26,12 +26,20 @@ const ConversationSettings = ({
     `${OPEN_AI_DEFAULT_TEMPERATURE}`
   )
 
-  const activeProvider = settings.providers?.[settings.activeProviderId]
-  const knownModels = KNOWN_MODELS[settings.activeProviderId] ?? []
+  const [activeProviderId, setActiveProviderId] = useState(
+    settings.activeProviderId
+  )
+
+  const providerIds = Object.keys(settings.providers ?? {})
+  const activeProvider = settings.providers?.[activeProviderId]
+  const knownModels = KNOWN_MODELS[activeProviderId] ?? []
   const allModelIds = [
     ...(activeProvider?.enabledModels ?? []),
     ...(activeProvider?.customModels ?? [])
   ]
+
+  const getProviderName = (id: string): string =>
+    settings.providers?.[id]?.name ?? id
 
   const getModelName = (id: string): string =>
     knownModels.find((m) => m.id === id)?.name ?? id
@@ -41,7 +49,7 @@ const ConversationSettings = ({
     model: modelId,
     tokenType: 'gpt4' as const,
     maxTokens: settings.maxTokens ?? 4096,
-    adapter: { name: 'openai' as const, engine: 'chat' as const }
+    adapter: { name: activeProviderId, engine: 'chat' as const }
   })
 
   const changeTemperature = (temperatureString: string): void => {
@@ -54,6 +62,31 @@ const ConversationSettings = ({
     if (typeof conversation !== 'undefined' && conversation !== null) {
       conversation.updateModel(makeModelDef(modelId))
     }
+  }
+
+  const changeProvider = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    const nextProviderId = e.target.value
+    const nextProvider = settings.providers?.[nextProviderId]
+    if (nextProvider === undefined) return
+
+    setActiveProviderId(nextProviderId)
+    plugin.settings.activeProviderId = nextProviderId
+
+    // Pick a sensible model for the new provider — prefer its defaultModel,
+    // otherwise the first enabled model.
+    const nextModelId =
+      nextProvider.defaultModel !== ''
+        ? nextProvider.defaultModel
+        : nextProvider.enabledModels[0] ?? nextProvider.customModels[0] ?? ''
+    if (nextModelId !== '') {
+      plugin.settings.defaultModel = nextModelId
+    }
+
+    void plugin.saveSettings().then(async () => {
+      await plugin.refreshChatView()
+      // refreshChatView rebuilds chat.model, which propagates to the active
+      // conversation via Chat.updateModel — no extra wiring needed here.
+    })
   }
 
   useEffect(() => {
@@ -121,6 +154,7 @@ const ConversationSettings = ({
 
   const renderModelDropdown = (): React.ReactElement => (
     <select
+      key={`model-${activeProviderId}`}
       name="model"
       id="model"
       className="dropdown"
@@ -130,10 +164,33 @@ const ConversationSettings = ({
     </select>
   )
 
+  const renderProviderDropdown = (): React.ReactElement => (
+    <select
+      name="provider"
+      id="provider"
+      className="dropdown"
+      onChange={changeProvider}
+      value={activeProviderId}>
+      {providerIds.map((id) => (
+        <option key={id} value={id}>
+          {getProviderName(id)}
+        </option>
+      ))}
+    </select>
+  )
+
   return (
     <div className="ai-research-assistant__chat__conversation-settings__container">
       <div className="ai-research-assistant__chat__conversation-settings">
         <div className="ai-research-assistant__chat__conversation-settings__row">
+          <div className="ai-research-assistant__input-area">
+            <label
+              className="ai-research-assistant__input-area__input__label"
+              htmlFor="provider">
+              Provider
+            </label>
+            {renderProviderDropdown()}
+          </div>
           <div className="ai-research-assistant__input-area">
             <label
               className="ai-research-assistant__input-area__input__label"

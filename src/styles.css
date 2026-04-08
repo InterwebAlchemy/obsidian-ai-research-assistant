@@ -630,3 +630,11 @@ code.hljs {
   color: var(--code-important);
   font-weight: 700;
 }
+
+.ai-research-assistant-provider-active-badge {
+  margin-left: var(--size-4-2, 8px);
+  color: var(--text-accent);
+  font-size: var(--font-smaller);
+  font-weight: var(--font-medium);
+  text-transform: lowercase;
+}

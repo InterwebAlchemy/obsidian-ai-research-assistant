@@ -22,16 +22,15 @@ export class OpenAICompatibleAdapter implements ProviderAdapter {
   constructor(config: ProviderConfig) {
     this.id = config.id
     this.name = config.name
-    this.baseUrl = (config.baseUrl ?? 'https://api.openai.com').replace(
-      /\/$/,
-      ''
-    )
+    this.baseUrl = (config.baseUrl ?? 'https://api.openai.com')
+      .replace(/\/$/, '')
+      .replace(/\/v1$/, '')
     this.apiKey = config.apiKey ?? ''
   }
 
   updateConfig(config: Partial<ProviderConfig>): void {
     if (config.baseUrl !== undefined)
-      this.baseUrl = config.baseUrl.replace(/\/$/, '')
+      this.baseUrl = config.baseUrl.replace(/\/$/, '').replace(/\/v1$/, '')
     if (config.apiKey !== undefined) this.apiKey = config.apiKey
   }
 

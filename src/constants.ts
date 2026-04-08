@@ -136,7 +136,7 @@ export const PLUGIN_SETTINGS: PluginSettings = {
     openrouter: {
       id: 'openrouter',
       name: 'OpenRouter',
-      baseUrl: 'https://openrouter.ai/api/v1',
+      baseUrl: 'https://openrouter.ai/api',
       defaultModel: 'openrouter/auto',
       enabledModels: KNOWN_MODELS.openrouter.map((m) => m.id),
       customModels: []

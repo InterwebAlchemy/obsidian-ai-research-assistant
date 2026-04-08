@@ -308,7 +308,7 @@ export default class SettingsTab extends PluginSettingTab {
     if (isActive) {
       summary.createSpan({
         cls: 'ai-research-assistant-provider-active-badge',
-        text: 'active'
+        text: '(active)'
       })
     }
 
