@@ -30,4 +30,4 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --extends .releaserc.beta.js
+        run: npx semantic-release --extends ./.releaserc.beta.js
