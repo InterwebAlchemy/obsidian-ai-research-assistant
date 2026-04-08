@@ -30,15 +30,11 @@ jobs:
         run: npm run build
       - name: Determine beta version
         run: |
-          # Base version from the latest stable tag; fall back to package.json
-          LAST_STABLE=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
-          if [ -z "$LAST_STABLE" ]; then
-            BASE_VERSION=$(node -p "require('./package.json').version" | sed 's/-.*$//')
-          else
-            BASE_VERSION=${LAST_STABLE#v}
-          fi
+          # Base version from package.json (strip any pre-release suffix)
+          BASE_VERSION=$(node -p "require('./package.json').version" | sed 's/-.*//')
           # Count existing beta tags for this base version to get the next number
-          BETA_COUNT=$(git tag --list "v${BASE_VERSION}-beta.*" | wc -l | tr -d ' ')
+          # Match both v-prefixed and bare tags to handle mixed tag histories
+          BETA_COUNT=$(git tag | grep -E "^v?${BASE_VERSION}-beta\." | wc -l | tr -d ' ')
           NEXT_BETA=$((BETA_COUNT + 1))
           BETA_VERSION="${BASE_VERSION}-beta.${NEXT_BETA}"
           echo "BETA_VERSION=${BETA_VERSION}" >> $GITHUB_ENV
@@ -51,7 +47,8 @@ jobs:
           git add manifest-beta.json package.json package-lock.json
           git commit -m "chore(release): updating to $BETA_VERSION [skip ci]"
           git tag v$BETA_VERSION
-          git push origin main --follow-tags
+          git push origin main
+          git push origin v$BETA_VERSION
       - name: Create GitHub pre-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
