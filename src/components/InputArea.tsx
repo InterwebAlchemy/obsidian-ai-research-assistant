@@ -1,5 +1,6 @@
 // create react functional component that wraps a textarea element and provides a throttled character count
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { setTooltip } from 'obsidian'
 
 import { useThrottledCallback, useDebounce } from 'use-debounce'
 
@@ -65,6 +66,14 @@ const InputArea = ({
   const { chat } = plugin
   const isApproximateTokenCount =
     countType === 'tokens' && plugin.settings.activeProviderId !== 'openai'
+  const approximateTokenTooltip = `Approximate count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using the GPT tokenizer as a best guess.`
+  const hintRef = useRef<HTMLSpanElement | null>(null)
+
+  useEffect(() => {
+    if (isApproximateTokenCount && hintRef.current !== null) {
+      setTooltip(hintRef.current, approximateTokenTooltip)
+    }
+  }, [isApproximateTokenCount, approximateTokenTooltip])
 
   const [text, setText] = useState('')
   const [debouncedText] = useDebounce(text, delay)
@@ -144,9 +153,10 @@ const InputArea = ({
           {count} {count === 1 ? countType.slice(0, -1) : countType}
           {isApproximateTokenCount ? (
             <span
+              ref={hintRef}
               className="ai-research-assistant__input-area__toolbar__counter__hint"
-              data-tooltip={`Approximate count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using the GPT tokenizer as a best guess.`}
-              aria-label={`Approximate count — no accurate tokenizer available for ${plugin.settings.activeProviderId}; using the GPT tokenizer as a best guess.`}>
+              aria-label={approximateTokenTooltip}
+              role="img">
               ⓘ
             </span>
           ) : null}
