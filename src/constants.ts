@@ -1,8 +1,13 @@
-import type { PluginSettings } from './types'
+import type { PluginSettings, ProviderSettings } from './types'
 
 import ChatGPTPreamble from './preambles/chatgpt'
 import models from './services/openai/models'
 import { OPEN_AI_DEFAULT_MODEL_NAME } from './services/openai/constants'
+import {
+  getKnownModels,
+  getProviderDefaults,
+  type KnownModel
+} from './services/modelRegistry'
 
 export const PLUGIN_NAME = 'AI Research Assistant'
 export const PLUGIN_PREFIX = 'ai-research-assistant'
@@ -26,153 +31,102 @@ export const DEFAULT_TOKEN_BUFFER = Math.floor(DEFAULT_MAX_TOKENS / 4)
 export const DEFAULT_AUTO_SAVE_INTERVAL = 60
 
 // ─── Built-in provider IDs (cannot be removed by the user) ──────────────────
+//
+// Curated subset of MMC providers that the UI surfaces by default. Includes
+// all non-OpenAI-compatible providers (anthropic protocol — anthropic, minimax)
+// plus a handful of common OpenAI-compatible direct providers and OpenRouter.
+// Other MMC providers (Groq, DeepSeek, Google, etc.) can be added by the user
+// via the "Add custom provider" form — they all use the OpenAI-compatible API.
 
 export const BUILTIN_PROVIDER_IDS = [
   'openrouter',
   'openai',
   'anthropic',
+  'minimax',
   'mistral',
   'local'
 ] as const
 
-// ─── Known model catalog (bundled, not persisted) ────────────────────────────
+// ─── Known model catalog (bundled from MMC, not persisted) ──────────────────
 
-export interface KnownModel {
-  id: string
-  name: string
-  contextWindow?: number
+export type { KnownModel }
+
+const buildKnownModels = (): Record<string, KnownModel[]> => {
+  const result: Record<string, KnownModel[]> = {}
+  for (const id of BUILTIN_PROVIDER_IDS) {
+    result[id] = getKnownModels(id)
+  }
+  return result
 }
 
-export const KNOWN_MODELS: Record<string, KnownModel[]> = {
-  openrouter: [
-    { id: 'openrouter/auto', name: 'Auto (best available)' },
-    {
-      id: 'anthropic/claude-opus-4-6',
-      name: 'Claude Opus 4.6',
-      contextWindow: 200000
-    },
-    {
-      id: 'anthropic/claude-sonnet-4-6',
-      name: 'Claude Sonnet 4.6',
-      contextWindow: 200000
-    },
-    {
-      id: 'anthropic/claude-haiku-4-5',
-      name: 'Claude Haiku 4.5',
-      contextWindow: 200000
-    },
-    { id: 'openai/gpt-4o', name: 'GPT-4o', contextWindow: 128000 },
-    { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', contextWindow: 128000 },
-    { id: 'openai/o3', name: 'o3', contextWindow: 200000 },
-    {
-      id: 'mistralai/mistral-large-2411',
-      name: 'Mistral Large',
-      contextWindow: 128000
-    },
-    {
-      id: 'google/gemini-2.0-flash-001',
-      name: 'Gemini 2.0 Flash',
-      contextWindow: 1048576
-    }
-  ],
-  openai: [
-    { id: 'gpt-4o', name: 'GPT-4o', contextWindow: 128000 },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', contextWindow: 128000 },
-    { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', contextWindow: 128000 },
-    { id: 'gpt-4', name: 'GPT-4', contextWindow: 8192 },
-    { id: 'gpt-4-32k', name: 'GPT-4 32K', contextWindow: 32768 },
-    { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', contextWindow: 16385 },
-    {
-      id: 'gpt-3.5-turbo-16k',
-      name: 'GPT-3.5 Turbo 16K',
-      contextWindow: 16385
-    },
-    {
-      id: 'gpt-3.5-turbo-instruct',
-      name: 'GPT-3.5 Turbo Instruct',
-      contextWindow: 4096
-    },
-    { id: 'o3-mini', name: 'o3 Mini', contextWindow: 200000 },
-    { id: 'o1', name: 'o1', contextWindow: 200000 },
-    { id: 'o1-mini', name: 'o1 Mini', contextWindow: 128000 }
-  ],
-  anthropic: [
-    {
-      id: 'claude-opus-4-6',
-      name: 'Claude Opus 4.6',
-      contextWindow: 200000
-    },
-    {
-      id: 'claude-sonnet-4-6',
-      name: 'Claude Sonnet 4.6',
-      contextWindow: 200000
-    },
-    {
-      id: 'claude-haiku-4-5-20251001',
-      name: 'Claude Haiku 4.5',
-      contextWindow: 200000
-    }
-  ],
-  mistral: [
-    {
-      id: 'mistral-large-latest',
-      name: 'Mistral Large',
-      contextWindow: 131072
-    },
-    {
-      id: 'mistral-small-latest',
-      name: 'Mistral Small',
-      contextWindow: 131072
-    },
-    { id: 'codestral-latest', name: 'Codestral', contextWindow: 256000 }
-  ],
-  local: []
+export const KNOWN_MODELS: Record<string, KnownModel[]> = buildKnownModels()
+
+// ─── Default provider settings, seeded from MMC ─────────────────────────────
+
+interface ProviderSeed {
+  /** Local-only fallback name when MMC has no provider entry (e.g. `local`). */
+  fallbackName: string
+  fallbackBaseUrl?: string
+  /** Preferred default model id (in MMC model_id form). Falls back to first enabled. */
+  preferredDefault?: string
+}
+
+const PROVIDER_SEEDS: Record<string, ProviderSeed> = {
+  openrouter: { fallbackName: 'OpenRouter' },
+  openai: { fallbackName: 'OpenAI', preferredDefault: 'gpt-4o' },
+  anthropic: {
+    fallbackName: 'Anthropic',
+    preferredDefault: 'claude-sonnet-4-6'
+  },
+  minimax: { fallbackName: 'MiniMax' },
+  mistral: {
+    fallbackName: 'Mistral',
+    preferredDefault: 'mistral-large-latest'
+  },
+  local: {
+    fallbackName: 'Local (LM Studio / Ollama / etc.)',
+    fallbackBaseUrl: 'http://localhost:1234'
+  }
+}
+
+const buildProviderSettings = (
+  id: string,
+  seed: ProviderSeed,
+  enabled: KnownModel[]
+): ProviderSettings => {
+  const mmc = getProviderDefaults(id)
+  const enabledIds = enabled.map((m) => m.id)
+  const preferred =
+    seed.preferredDefault !== undefined &&
+    enabledIds.includes(seed.preferredDefault)
+      ? seed.preferredDefault
+      : enabledIds[0] ?? ''
+  return {
+    id,
+    name: mmc?.name ?? seed.fallbackName,
+    baseUrl: mmc?.baseUrl ?? seed.fallbackBaseUrl,
+    defaultModel: preferred,
+    enabledModels: enabledIds,
+    customModels: []
+  }
+}
+
+const buildDefaultProviders = (): Record<string, ProviderSettings> => {
+  const out: Record<string, ProviderSettings> = {}
+  for (const id of BUILTIN_PROVIDER_IDS) {
+    out[id] = buildProviderSettings(
+      id,
+      PROVIDER_SEEDS[id],
+      KNOWN_MODELS[id] ?? []
+    )
+  }
+  return out
 }
 
 export const PLUGIN_SETTINGS: PluginSettings = {
   debugMode: false,
   activeProviderId: 'openai',
-  providers: {
-    openrouter: {
-      id: 'openrouter',
-      name: 'OpenRouter',
-      baseUrl: 'https://openrouter.ai/api',
-      defaultModel: 'openrouter/auto',
-      enabledModels: KNOWN_MODELS.openrouter.map((m) => m.id),
-      customModels: []
-    },
-    openai: {
-      id: 'openai',
-      name: 'OpenAI',
-      baseUrl: 'https://api.openai.com',
-      defaultModel: 'gpt-4o',
-      enabledModels: KNOWN_MODELS.openai.map((m) => m.id),
-      customModels: []
-    },
-    anthropic: {
-      id: 'anthropic',
-      name: 'Anthropic',
-      defaultModel: 'claude-sonnet-4-6',
-      enabledModels: KNOWN_MODELS.anthropic.map((m) => m.id),
-      customModels: []
-    },
-    mistral: {
-      id: 'mistral',
-      name: 'Mistral',
-      baseUrl: 'https://api.mistral.ai',
-      defaultModel: 'mistral-large-latest',
-      enabledModels: KNOWN_MODELS.mistral.map((m) => m.id),
-      customModels: []
-    },
-    local: {
-      id: 'local',
-      name: 'Local (LM Studio / Ollama / etc.)',
-      baseUrl: 'http://localhost:1234',
-      defaultModel: '',
-      enabledModels: [],
-      customModels: []
-    }
-  },
+  providers: buildDefaultProviders(),
   defaultModel: OPEN_AI_DEFAULT_MODEL_NAME,
   defaultTokenBuffer: DEFAULT_TOKEN_BUFFER,
   defaultMaxTokens: DEFAULT_MAX_TOKENS,
