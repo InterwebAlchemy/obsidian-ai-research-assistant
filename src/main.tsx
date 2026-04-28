@@ -57,7 +57,7 @@ export default class ObsidianAIResearchAssistant extends Plugin {
 
   async initializeChatService(): Promise<void> {
     const { activeProviderId, providers } = this.settings
-    const apiKey = (await this.getSecret(`${activeProviderId}-api-key`)) ?? ''
+    const apiKey = this.getProviderApiKey(activeProviderId) ?? ''
     const adapter = createAdapter(this.settings, apiKey)
 
     // Resolve a ModelDefinition for the active provider so the Conversation
@@ -138,24 +138,22 @@ export default class ObsidianAIResearchAssistant extends Plugin {
   async loadSettings(): Promise<void> {
     const loaded: Record<string, unknown> = (await this.loadData()) ?? {}
 
-    // ─── Migrate legacy flat API key to SecretStorage ──────────────────────
+    // 1.4+ keys were encrypted via Electron's `remote.safeStorage`, which is
+    // gone from modern Electron — we can't decrypt that blob from a renderer.
+    // Carry the value over verbatim: plaintext (pre-1.4) keys work; encrypted
+    // blobs will fail auth and the user re-enters in settings.
+    let migratedOpenAiKey: string | undefined
     if (typeof loaded.openAiApiKey === 'string' && loaded.openAiApiKey !== '') {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const Electron = require('electron')
-        const {
-          remote: { safeStorage }
-        } = Electron
-        let key = loaded.openAiApiKey
-        if (safeStorage.isEncryptionAvailable() === true) {
-          key = safeStorage.decryptString(Buffer.from(key))
-        }
-        await this.setSecret('openai-api-key', key)
-      } catch {
-        // Migration failed — user will need to re-enter their key in settings
-      }
+      const secretId = 'openai-api-key'
+      this.app.secretStorage.setSecret(secretId, loaded.openAiApiKey)
+      migratedOpenAiKey = secretId
       delete loaded.openAiApiKey
       delete loaded.apiKeySaved
+      // eslint-disable-next-line no-new
+      new Notice(
+        `${PLUGIN_NAME}: moved your OpenAI key into Obsidian's secret storage. If chat fails to authenticate, re-enter the key in Settings.`,
+        10000
+      )
     }
 
     this.settings = Object.assign({}, PLUGIN_SETTINGS, loaded)
@@ -184,6 +182,16 @@ export default class ObsidianAIResearchAssistant extends Plugin {
     ) {
       this.settings.defaultModel = activeCfg.defaultModel
     }
+
+    if (migratedOpenAiKey !== undefined) {
+      const openAiCfg = this.settings.providers.openai as
+        | PluginSettings['providers'][string]
+        | undefined
+      if (openAiCfg !== undefined) {
+        openAiCfg.apiKeySecret = migratedOpenAiKey
+        await this.saveData(this.settings)
+      }
+    }
   }
 
   async saveSettings(): Promise<void> {
@@ -201,14 +209,20 @@ export default class ObsidianAIResearchAssistant extends Plugin {
   }
 
   // ─── SecretStorage ────────────────────────────────────────────────────────
-  // Uses Obsidian's official secret storage API (available since 1.11.4).
+  // The settings UI writes API keys via Obsidian's `SecretComponent`, which
+  // owns the storage round-trip. We only ever read.
 
-  async getSecret(key: string): Promise<string | undefined> {
-    return this.app.secretStorage.getSecret(key) ?? undefined
-  }
-
-  async setSecret(key: string, value: string): Promise<void> {
-    this.app.secretStorage.setSecret(key, value)
+  getProviderApiKey(providerId: string): string | undefined {
+    const cfg = this.settings.providers[providerId] as
+      | PluginSettings['providers'][string]
+      | undefined
+    const secretId = cfg?.apiKeySecret
+    if (secretId === undefined || secretId === '') return undefined
+    try {
+      return this.app.secretStorage.getSecret(secretId) ?? undefined
+    } catch {
+      return undefined
+    }
   }
 
   async checkForExistingFile(title: string): Promise<boolean> {
