@@ -8,8 +8,9 @@ import type {
   ChatMessage,
   Model
 } from './types'
+import { getKnownModels } from '../modelRegistry'
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com'
+const DEFAULT_ANTHROPIC_BASE_URL = 'https://api.anthropic.com'
 const ANTHROPIC_VERSION = '2023-06-01'
 
 /**
@@ -25,15 +26,23 @@ export class AnthropicAdapter implements ProviderAdapter {
   readonly id: string
   readonly name: string
   private apiKey: string
+  private baseUrl: string
 
   constructor(config: ProviderConfig) {
     this.id = config.id
     this.name = config.name
     this.apiKey = config.apiKey ?? ''
+    this.baseUrl =
+      config.baseUrl !== undefined && config.baseUrl !== ''
+        ? config.baseUrl
+        : DEFAULT_ANTHROPIC_BASE_URL
   }
 
   updateConfig(config: Partial<ProviderConfig>): void {
     if (config.apiKey !== undefined) this.apiKey = config.apiKey
+    if (config.baseUrl !== undefined && config.baseUrl !== '') {
+      this.baseUrl = config.baseUrl
+    }
   }
 
   // ─── Completion ─────────────────────────────────────────────────────────────
@@ -44,7 +53,7 @@ export class AnthropicAdapter implements ProviderAdapter {
   ): Promise<CompletionResult> {
     const body = this.buildRequestBody(messages, config, false)
     const response = await requestUrl({
-      url: `${ANTHROPIC_API_URL}/v1/messages`,
+      url: `${this.baseUrl}/v1/messages`,
       method: 'POST',
       headers: this.headers(),
       body: JSON.stringify(body)
@@ -80,7 +89,7 @@ export class AnthropicAdapter implements ProviderAdapter {
   ): AsyncIterable<StreamChunk> {
     const body = this.buildRequestBody(messages, config, true)
 
-    const response = await fetch(`${ANTHROPIC_API_URL}/v1/messages`, {
+    const response = await fetch(`${this.baseUrl}/v1/messages`, {
       method: 'POST',
       headers: this.headers(),
       body: JSON.stringify(body),
@@ -146,19 +155,11 @@ export class AnthropicAdapter implements ProviderAdapter {
   // ─── Model listing ──────────────────────────────────────────────────────────
 
   async listModels(): Promise<Model[]> {
-    return [
-      { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', contextWindow: 200000 },
-      {
-        id: 'claude-sonnet-4-6',
-        name: 'Claude Sonnet 4.6',
-        contextWindow: 200000
-      },
-      {
-        id: 'claude-haiku-4-5-20251001',
-        name: 'Claude Haiku 4.5',
-        contextWindow: 200000
-      }
-    ]
+    return getKnownModels(this.id).map((m) => ({
+      id: m.id,
+      name: m.name,
+      contextWindow: m.contextWindow
+    }))
   }
 
   // ─── Private ────────────────────────────────────────────────────────────────
