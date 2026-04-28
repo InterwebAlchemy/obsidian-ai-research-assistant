@@ -30,6 +30,8 @@ export interface ProviderSettings {
   name: string
   baseUrl?: string
   defaultModel: string
+  /** Secret ID in Obsidian SecretStorage that holds this provider's API key. */
+  apiKeySecret?: string
   /** Model IDs currently shown in the model picker (subset of known + custom). */
   enabledModels: string[]
   /** User-added model IDs beyond the bundled catalog. */

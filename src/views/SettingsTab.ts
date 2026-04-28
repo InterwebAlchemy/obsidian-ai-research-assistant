@@ -1,4 +1,10 @@
-import { type App, PluginSettingTab, Setting, normalizePath } from 'obsidian'
+import {
+  type App,
+  PluginSettingTab,
+  SecretComponent,
+  Setting,
+  normalizePath
+} from 'obsidian'
 
 import {
   BOT_HANDLE,
@@ -355,21 +361,15 @@ export default class SettingsTab extends PluginSettingTab {
         )
     }
 
-    new Setting(inner)
+    const apiKeySetting = new Setting(inner)
       .setName('API key')
-      .setDesc('Stored per-device and not synced.')
-      .addText((text) => {
-        text.inputEl.type = 'password'
-        text.inputEl.autocomplete = 'off'
-        void this.plugin.getSecret(`${id}-api-key`).then((key) => {
-          if (key !== undefined && key !== '') text.setValue('••••••••')
-        })
-        text.onChange(async (value) => {
-          if (value !== '' && value !== '••••••••') {
-            await this.plugin.setSecret(`${id}-api-key`, value)
-          }
-        })
-        return text
+      .setDesc("Stored in Obsidian's SecretStorage (per-device, not synced).")
+    new SecretComponent(this.app, apiKeySetting.controlEl)
+      .setValue(cfg.apiKeySecret ?? '')
+      .onChange(async (value) => {
+        cfg.apiKeySecret = value
+        await this.plugin.saveSettings()
+        await this.plugin.reinitializeProvider(id)
       })
 
     this.renderModelSection(inner, id)
