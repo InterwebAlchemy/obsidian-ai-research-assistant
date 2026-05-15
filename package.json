@@ -95,7 +95,7 @@
     "@agney/react-loading": "^0.1.2",
     "gpt-tokenizer": "^2.1.1",
     "luxon": "^3.4.1",
-    "model-metadata-central": "^0.2.0",
+    "model-metadata-central": "^0.3.0",
     "openai": "^4.11.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
