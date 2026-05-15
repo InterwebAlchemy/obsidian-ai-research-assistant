@@ -27,6 +27,8 @@ export default class SettingsTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this
+    const openProviderIds = this.captureOpenProviderIds()
+    const customSectionOpen = this.captureCustomSectionOpen()
     containerEl.empty()
 
     // ─── Active Provider ──────────────────────────────────────────────────
@@ -90,7 +92,12 @@ export default class SettingsTab extends PluginSettingTab {
         | ProviderSettings
         | undefined
       if (cfg == null) continue
-      this.renderProviderSection(containerEl, id, false)
+      this.renderProviderSection(
+        containerEl,
+        id,
+        false,
+        openProviderIds.has(id)
+      )
     }
 
     // ─── Custom OpenAI-compatible providers ───────────────────────────────
@@ -98,6 +105,7 @@ export default class SettingsTab extends PluginSettingTab {
     const customSection = containerEl.createEl('details', {
       cls: 'ai-research-assistant-section-details'
     })
+    if (customSectionOpen) customSection.setAttribute('open', '')
     const customSummary = customSection.createEl('summary', {
       cls: 'ai-research-assistant-section-summary'
     })
@@ -122,7 +130,7 @@ export default class SettingsTab extends PluginSettingTab {
     this.renderAddProviderForm(customInner)
 
     for (const id of customIds) {
-      this.renderProviderSection(customInner, id, true)
+      this.renderProviderSection(customInner, id, true, openProviderIds.has(id))
     }
 
     // ─── Chat defaults ────────────────────────────────────────────────────
@@ -291,19 +299,44 @@ export default class SettingsTab extends PluginSettingTab {
     }
   }
 
+  // ─── Accordion open-state preservation ─────────────────────────────────────
+
+  private captureOpenProviderIds(): Set<string> {
+    const open = new Set<string>()
+    const nodes = this.containerEl.querySelectorAll<HTMLDetailsElement>(
+      'details[data-provider-id]'
+    )
+    nodes.forEach((el) => {
+      if (el.open && el.dataset.providerId != null) {
+        open.add(el.dataset.providerId)
+      }
+    })
+    return open
+  }
+
+  private captureCustomSectionOpen(): boolean {
+    const el = this.containerEl.querySelector<HTMLDetailsElement>(
+      'details.ai-research-assistant-section-details'
+    )
+    return el?.open ?? false
+  }
+
   // ─── Per-provider accordion section ───────────────────────────────────────
 
   private renderProviderSection(
     containerEl: HTMLElement,
     id: string,
-    canRemove: boolean
+    canRemove: boolean,
+    open: boolean
   ): void {
     const cfg = this.plugin.settings.providers[id]
     const isActive = id === this.plugin.settings.activeProviderId
 
     const details = containerEl.createEl('details', {
-      cls: 'ai-research-assistant-provider-details'
+      cls: 'ai-research-assistant-provider-details',
+      attr: { 'data-provider-id': id }
     })
+    if (open) details.setAttribute('open', '')
     const summary = details.createEl('summary', {
       cls: 'ai-research-assistant-provider-summary'
     })
